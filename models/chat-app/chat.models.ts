@@ -1,11 +1,12 @@
 import { ChatType } from "@/types/Chat.type";
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Model, Schema, syncIndexes } from "mongoose";
 
 const chatSchema = new Schema<ChatType>(
   {
     name: {
       type: String,
       required: true,
+      index: true,
     },
     isGroupChat: {
       type: Boolean,
@@ -29,4 +30,5 @@ const chatSchema = new Schema<ChatType>(
   { timestamps: true }
 );
 
-export const Chat = mongoose.model("Chat", chatSchema);
+export const Chat: Model<ChatType> =
+  mongoose.models.Chat || mongoose.model<ChatType>("Chat", chatSchema);

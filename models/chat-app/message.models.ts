@@ -1,28 +1,37 @@
 import { MessageType } from "@/types/Message.type";
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Model, Schema } from "mongoose";
 
-const chatMessageSchema = new Schema<MessageType>({
-  sender: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
+const chatMessageSchema = new Schema<MessageType>(
+  {
+    sender: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      index: true,
+    },
+    chat: {
+      type: Schema.Types.ObjectId,
+      ref: "Chat",
+      index: true,
+    },
+    content: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    attchments: {
+      type: [
+        {
+          url: String,
+          localPath: String,
+        },
+      ],
+      default: [],
+    },
   },
-  chat: {
-    type: Schema.Types.ObjectId,
-    ref: "Chat",
-  },
-  content: {
-    type: String,
-    required: true,
-  },
-  attchments: {
-    type: [
-      {
-        url: String,
-        localPath: String,
-      },
-    ],
-    default: [],
-  }
-}, { timestamps: true });
+  { timestamps: true }
+);
 
-export const ChatMessage = mongoose.model("ChatMessage", chatMessageSchema);
+export const ChatMessage: Model<MessageType> = mongoose.models.ChatMessage ||mongoose.model<MessageType>(
+  "ChatMessage",
+  chatMessageSchema
+);

@@ -1,4 +1,4 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Model, Schema } from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
@@ -17,7 +17,7 @@ export const UserLoginType = {
 
 export const AvailableSocialLogins = Object.values(UserLoginType);
 
-const USER_TEMPORARY_TOKEN_EXPIRY = 20 * 60 * 1000; 
+const USER_TEMPORARY_TOKEN_EXPIRY = 20 * 60 * 1000;
 
 const userSchema = new Schema<UserType>(
   {
@@ -43,6 +43,7 @@ const userSchema = new Schema<UserType>(
         unique: true,
         lowercase: true,
         trim: true,
+        index:true,
       },
       role: {
         type: String,
@@ -118,8 +119,7 @@ userSchema.methods.generateRefreshToken = function () {
     process.env.REFRESH_TOKEN_SECRET as string,
     { expiresIn: parseInt(process.env.REFRESH_TOKEN_EXPIRY as string, 10) }
   );
-}
-
+};
 
 userSchema.methods.generateTempToken = function () {
   if (!process.env.TEMP_TOKEN_SECRET) {
@@ -127,10 +127,14 @@ userSchema.methods.generateTempToken = function () {
   }
   const unHashedToken = crypto.randomBytes(20).toString("hex");
 
-  const hashedToken = crypto.createHash("sha256").update(unHashedToken).digest("hex");
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(unHashedToken)
+    .digest("hex");
 
-  const tokenExpiry = Date.now() + USER_TEMPORARY_TOKEN_EXPIRY
-  return {unHashedToken, hashedToken, tokenExpiry}
-}
+  const tokenExpiry = Date.now() + USER_TEMPORARY_TOKEN_EXPIRY;
+  return { unHashedToken, hashedToken, tokenExpiry };
+};
 
-export const User = mongoose.model("User", userSchema);
+export const User: Model<UserType> =
+  mongoose.models.User || mongoose.model<UserType>("User", userSchema);
