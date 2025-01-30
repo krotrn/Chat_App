@@ -38,7 +38,6 @@ export const initializeSocket = (io: Server) => {
         throw new ApiError({
           statusCode: 401,
           message: "Unauthorized: Missing token",
-          data: null,
         });
       const decodeToken = jwt.verify(
         token,
@@ -51,7 +50,6 @@ export const initializeSocket = (io: Server) => {
         throw new ApiError({
           statusCode: 401,
           message: "Unauthorized: Invalid token",
-          data: null,
         });
 
       socket.user = user;

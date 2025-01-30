@@ -56,7 +56,6 @@ export async function POST(
     throw new ApiError({
       statusCode: 404,
       message: "Chat Not Found",
-      data: null,
     });
   }
   const messageFiles: MessageAttachmentType[] = [];
@@ -87,7 +86,6 @@ export async function POST(
     throw new ApiError({
       statusCode: 404,
       message: "Error in Update",
-      data: null,
     });
   }
 
@@ -106,7 +104,6 @@ export async function POST(
     throw new ApiError({
       statusCode: 500,
       message: "Internal server Error",
-      data: null,
     });
   }
 
