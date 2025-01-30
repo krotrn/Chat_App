@@ -1,3 +1,4 @@
+import { connectToDatabase } from "@/lib/mongoose";
 import { Chat } from "@/models/chat-app/chat.models";
 import { emitSocketEvent } from "@/socket";
 import { ChatType } from "@/types/Chat.type";
@@ -9,6 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
+    await connectToDatabase();
     const { name, participants, user } = await req.json();
 
     // Ensure creator is not in the participants list

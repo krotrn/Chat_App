@@ -6,14 +6,14 @@ import { ApiError } from "@/utils/ApiError";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { removeLocalFile } from "@/utils/Helper";
 import { ChatEventEnum } from "@/utils/constants";
-
-
+import { connectToDatabase } from "@/lib/mongoose";
 
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { chatId: string; messageId: string } }
 ) {
   try {
+    await connectToDatabase();
     const { chatId, messageId } = params;
     const { user } = await req.json();
     if (!user) {

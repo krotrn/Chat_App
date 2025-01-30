@@ -8,22 +8,31 @@ import { ChatType } from "@/types/Chat.type";
 import { emitSocketEvent } from "@/socket";
 import { ChatEventEnum } from "@/utils/constants";
 import { ApiResponse } from "@/utils/ApiResponse";
-
+import { connectToDatabase } from "@/lib/mongoose";
 
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { chatId: string } }
 ) {
   try {
+    await connectToDatabase();
     const { chatId } = params;
     const { user } = await req.json();
 
-    if (!mongoose.Types.ObjectId.isValid(chatId) || !mongoose.Types.ObjectId.isValid(user._id)) {
-      throw new ApiError({ statusCode: 400, message: "Invalid chat ID or user ID" });
+    if (
+      !mongoose.Types.ObjectId.isValid(chatId) ||
+      !mongoose.Types.ObjectId.isValid(user._id)
+    ) {
+      throw new ApiError({
+        statusCode: 400,
+        message: "Invalid chat ID or user ID",
+      });
     }
 
     // Step 1: Fetch chat details first (to avoid unnecessary aggregation)
-    const existingChat = await Chat.findById(chatId).select("participants").lean();
+    const existingChat = await Chat.findById(chatId)
+      .select("participants")
+      .lean();
 
     if (!existingChat) {
       throw new ApiError({ statusCode: 404, message: "Chat not found" });
@@ -36,7 +45,10 @@ export async function DELETE(
     ]);
 
     if (!chatData.length) {
-      throw new ApiError({ statusCode: 404, message: "Chat not found after aggregation" });
+      throw new ApiError({
+        statusCode: 404,
+        message: "Chat not found after aggregation",
+      });
     }
 
     const payload: ChatType = chatData[0];
@@ -54,7 +66,12 @@ export async function DELETE(
 
     if (remainingParticipants.length > 0) {
       remainingParticipants.forEach((participant) => {
-        emitSocketEvent(req, participant.toString(), ChatEventEnum.LEAVE_CHAT_EVENT, payload);
+        emitSocketEvent(
+          req,
+          participant.toString(),
+          ChatEventEnum.LEAVE_CHAT_EVENT,
+          payload
+        );
       });
     }
 
@@ -70,7 +87,8 @@ export async function DELETE(
     return NextResponse.json(
       new ApiError({
         statusCode: error instanceof ApiError ? error.statusCode : 500,
-        message: error instanceof Error ? error.message : "Internal Server Error",
+        message:
+          error instanceof Error ? error.message : "Internal Server Error",
       })
     );
   }

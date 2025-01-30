@@ -11,11 +11,13 @@ import { Chat } from "@/models/chat-app/chat.models";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { emitSocketEvent } from "@/socket";
 import { ChatEventEnum } from "@/utils/constants";
+import { connectToDatabase } from "@/lib/mongoose";
 
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { chatId: string } }
 ) {
+  await connectToDatabase();
   const { chatId } = params;
   const messages: MessageType[] = await ChatMessage.find({
     chat: new mongoose.Types.ObjectId(chatId),
@@ -40,7 +42,6 @@ export async function DELETE(
 
   await ChatMessage.deleteMany({ chat: new mongoose.Types.ObjectId(chatId) });
 }
-
 
 export async function GET(
   req: NextRequest,

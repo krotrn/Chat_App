@@ -8,6 +8,7 @@ import { ChatEventEnum } from "@/utils/constants";
 import mongoose from "mongoose";
 import { DELETE as DeleteChatMessage } from "@/app/api/chat/[chatId]/route";
 import { NextRequest, NextResponse } from "next/server";
+import { connectToDatabase } from "@/lib/mongoose";
 
 // ✅ Fetch group chat details
 export async function GET(
@@ -15,6 +16,7 @@ export async function GET(
   { params }: { params: { chatId: string } }
 ) {
   try {
+    await connectToDatabase();
     const { chatId } = params;
 
     const groupChat: ChatType[] = await Chat.aggregate([
@@ -55,6 +57,7 @@ export async function PATCH(
   { params }: { params: { chatId: string } }
 ) {
   try {
+    await connectToDatabase();
     const { chatId } = params;
     const { name, user } = await req.json();
 
@@ -133,6 +136,7 @@ export async function DELETE(
   { params }: { params: { chatId: string } }
 ) {
   try {
+    await connectToDatabase();
     const { chatId } = params;
     const { user } = await req.json();
 

@@ -1,3 +1,4 @@
+import { connectToDatabase } from "@/lib/mongoose";
 import { Chat } from "@/models/chat-app/chat.models";
 import { ChatType } from "@/types/Chat.type";
 import { ApiError } from "@/utils/ApiError";
@@ -18,6 +19,7 @@ export async function DELETE(
   { params }: { params: { chatId: string } }
 ) {
   try {
+    await connectToDatabase();
     const { chatId } = params;
     const { user } = await req.json();
 
