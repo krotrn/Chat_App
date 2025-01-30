@@ -1,11 +1,13 @@
 import mongoose from "mongoose";
 
-export interface MessageType extends mongoose.Document {
+export interface MessageAttachmentType {
+  url: string;
+  localPath: string;
+}
+
+export interface MessageType extends mongoose.Document<mongoose.Schema.Types.ObjectId> {
   sender: mongoose.Schema.Types.ObjectId;
   chat: mongoose.Schema.Types.ObjectId;
   content: string;
-  attchments: {
-    url: string;
-    localPath: string;
-  }[];
+  attachments: MessageAttachmentType[];
 }

@@ -18,7 +18,7 @@ const chatMessageSchema = new Schema<MessageType>(
       required: true,
       index: true,
     },
-    attchments: {
+    attachments: {
       type: [
         {
           url: String,
@@ -31,7 +31,6 @@ const chatMessageSchema = new Schema<MessageType>(
   { timestamps: true }
 );
 
-export const ChatMessage: Model<MessageType> = mongoose.models.ChatMessage ||mongoose.model<MessageType>(
-  "ChatMessage",
-  chatMessageSchema
-);
+export const ChatMessage: Model<MessageType> =
+  mongoose.models.ChatMessage ||
+  mongoose.model<MessageType>("ChatMessage", chatMessageSchema);
