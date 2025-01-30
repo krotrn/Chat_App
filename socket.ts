@@ -1,9 +1,14 @@
-import { Server, Socket } from "socket.io";
+import { Server, Socket as BaseSocket } from "socket.io";
 import cookie from "cookie";
 import { ChatEventEnum } from "@/utils/constants";
 import { ApiError } from "./utils/ApiError";
 import jwt from "jsonwebtoken";
 import { User } from "./models/auth/user.models";
+import { UserType } from "./types/User.type";
+
+interface Socket extends BaseSocket {
+  user?: UserType;
+}
 
 interface ChatHandler {
   (socket: Socket): void;
@@ -29,7 +34,7 @@ const handleStopTypingEvent: ChatHandler = (socket) => {
 };
 
 export const initializeSocket = (io: Server) => {
-  io.on("connection", async (socket) => {
+  io.on("connection", async (socket: Socket) => {
     console.log(`🔗 New client connected: ${socket.id}`);
     try {
       const cookies = cookie.parse(socket.handshake.headers?.cookie || "");
@@ -63,7 +68,7 @@ export const initializeSocket = (io: Server) => {
       socket.on(ChatEventEnum.DISCONNECT_EVENT, () => {
         console.log("user has disconnected 🚫. userId: " + socket.user?._id);
         if (socket.user?._id) {
-          socket.leave(socket.user._id);
+          socket.leave(socket.user._id.toString());
         }
       });
     } catch (error) {
@@ -72,7 +77,7 @@ export const initializeSocket = (io: Server) => {
       socket.emit(ChatEventEnum.SOCKET_ERROR_EVENT, errorMessage);
     }
   });
-}
+};
 
 export const emitSocketEvent = async (
   req: Request,
