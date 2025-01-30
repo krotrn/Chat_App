@@ -5,7 +5,8 @@ export interface MessageAttachmentType {
   localPath: string;
 }
 
-export interface MessageType extends mongoose.Document<mongoose.Schema.Types.ObjectId> {
+export interface MessageType
+  extends mongoose.Document<mongoose.Schema.Types.ObjectId> {
   sender: mongoose.Schema.Types.ObjectId;
   chat: mongoose.Schema.Types.ObjectId;
   content: string;

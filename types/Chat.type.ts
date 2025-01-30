@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-export interface ChatType {
+export interface ChatType extends mongoose.Document<mongoose.Schema.Types.ObjectId> {
   name: string;
   isGroupChat: boolean;
   lastMessage?: mongoose.Schema.Types.ObjectId;
