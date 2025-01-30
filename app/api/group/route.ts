@@ -12,7 +12,9 @@ export async function POST(req: NextRequest) {
     const { name, participants, user } = await req.json();
 
     // Ensure creator is not in the participants list
-    if (participants.some((id: string) => id.toString() === user._id.toString())) {
+    if (
+      participants.some((id: string) => id.toString() === user._id.toString())
+    ) {
       throw new ApiError({
         statusCode: 400,
         message: "Participants array should not contain the group creator",
@@ -46,7 +48,10 @@ export async function POST(req: NextRequest) {
     const payload = chat[0];
 
     if (!payload) {
-      throw new ApiError({ statusCode: 500, message: "Failed to fetch chat details" });
+      throw new ApiError({
+        statusCode: 500,
+        message: "Failed to fetch chat details",
+      });
     }
 
     // Emit socket events to all participants except the creator
@@ -72,6 +77,11 @@ export async function POST(req: NextRequest) {
     );
   } catch (error: unknown) {
     console.error("❌ Error creating group chat:", error);
-    return NextResponse.json(new ApiError({ statusCode: 500, message: (error as NodeJS.ErrnoException).message }));
+    return NextResponse.json(
+      new ApiError({
+        statusCode: 500,
+        message: (error as NodeJS.ErrnoException).message,
+      })
+    );
   }
 }

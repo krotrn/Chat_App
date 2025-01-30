@@ -10,17 +10,25 @@ import { DELETE as DeleteChatMessage } from "@/app/api/chat/[chatId]/route";
 import { NextRequest, NextResponse } from "next/server";
 
 // ✅ Fetch group chat details
-export async function GET(req: NextRequest, { params }: { params: { chatId: string } }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { chatId: string } }
+) {
   try {
     const { chatId } = params;
 
     const groupChat: ChatType[] = await Chat.aggregate([
-      { $match: { _id: new mongoose.Types.ObjectId(chatId), isGroupChat: true } },
+      {
+        $match: { _id: new mongoose.Types.ObjectId(chatId), isGroupChat: true },
+      },
       ...chatCommonAggregation(),
     ]);
 
     if (!groupChat.length) {
-      throw new ApiError({ statusCode: 404, message: "Group chat does not exist." });
+      throw new ApiError({
+        statusCode: 404,
+        message: "Group chat does not exist.",
+      });
     }
 
     return NextResponse.json(
@@ -32,7 +40,12 @@ export async function GET(req: NextRequest, { params }: { params: { chatId: stri
     );
   } catch (error: unknown) {
     console.error("❌ Error fetching group chat:", error);
-    return NextResponse.json(new ApiError({ statusCode: 500, message: (error as NodeJS.ErrnoException).message }));
+    return NextResponse.json(
+      new ApiError({
+        statusCode: 500,
+        message: (error as NodeJS.ErrnoException).message,
+      })
+    );
   }
 }
 
@@ -48,7 +61,10 @@ export async function PATCH(
     const groupChat = await Chat.findById(chatId).lean();
 
     if (!groupChat || !groupChat.isGroupChat) {
-      throw new ApiError({ statusCode: 404, message: "Group chat does not exist" });
+      throw new ApiError({
+        statusCode: 404,
+        message: "Group chat does not exist",
+      });
     }
 
     if (groupChat.admin?.toString() !== user._id?.toString()) {
@@ -62,20 +78,34 @@ export async function PATCH(
     );
 
     if (!updatedGroupChat) {
-      throw new ApiError({ statusCode: 500, message: "Server error updating group name" });
+      throw new ApiError({
+        statusCode: 500,
+        message: "Server error updating group name",
+      });
     }
 
-    const chat:ChatType[] = await Chat.aggregate([{ $match: { _id: updatedGroupChat._id } }, ...chatCommonAggregation()]);
+    const chat: ChatType[] = await Chat.aggregate([
+      { $match: { _id: updatedGroupChat._id } },
+      ...chatCommonAggregation(),
+    ]);
 
     const payload = chat[0];
 
     if (!payload) {
-      throw new ApiError({ statusCode: 500, message: "Failed to retrieve updated chat" });
+      throw new ApiError({
+        statusCode: 500,
+        message: "Failed to retrieve updated chat",
+      });
     }
 
     await Promise.all(
       payload.participants.map((participant) =>
-        emitSocketEvent(req, participant.toString(), ChatEventEnum.UPDATE_GROUP_NAME_EVENT, payload)
+        emitSocketEvent(
+          req,
+          participant.toString(),
+          ChatEventEnum.UPDATE_GROUP_NAME_EVENT,
+          payload
+        )
       )
     );
 
@@ -88,7 +118,12 @@ export async function PATCH(
     );
   } catch (error: unknown) {
     console.error("❌ Error updating group chat name:", error);
-    return NextResponse.json(new ApiError({ statusCode: 500, message: (error as NodeJS.ErrnoException).message }));
+    return NextResponse.json(
+      new ApiError({
+        statusCode: 500,
+        message: (error as NodeJS.ErrnoException).message,
+      })
+    );
   }
 }
 
@@ -104,11 +139,17 @@ export async function DELETE(
     const groupChat = await Chat.findById(chatId).lean();
 
     if (!groupChat || !groupChat.isGroupChat) {
-      throw new ApiError({ statusCode: 404, message: "Group chat does not exist" });
+      throw new ApiError({
+        statusCode: 404,
+        message: "Group chat does not exist",
+      });
     }
 
     if (groupChat.admin?.toString() !== user._id?.toString()) {
-      throw new ApiError({ statusCode: 403, message: "Only admin can delete the group" });
+      throw new ApiError({
+        statusCode: 403,
+        message: "Only admin can delete the group",
+      });
     }
 
     await Chat.findByIdAndDelete(chatId);
@@ -118,7 +159,12 @@ export async function DELETE(
 
     await Promise.all(
       groupChat.participants.map((participant) =>
-        emitSocketEvent(req, participant.toString(), ChatEventEnum.LEAVE_CHAT_EVENT, groupChat)
+        emitSocketEvent(
+          req,
+          participant.toString(),
+          ChatEventEnum.LEAVE_CHAT_EVENT,
+          groupChat
+        )
       )
     );
 
@@ -131,6 +177,11 @@ export async function DELETE(
     );
   } catch (error: unknown) {
     console.error("❌ Error deleting group chat:", error);
-    return NextResponse.json(new ApiError({ statusCode: 500, message: (error as NodeJS.ErrnoException).message }));
+    return NextResponse.json(
+      new ApiError({
+        statusCode: 500,
+        message: (error as NodeJS.ErrnoException).message,
+      })
+    );
   }
 }

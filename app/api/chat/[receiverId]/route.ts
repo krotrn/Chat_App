@@ -20,7 +20,9 @@ export async function POST(
     const { user } = await req.json();
 
     if (!user) {
-      return NextResponse.json(new ApiError({ statusCode: 401, message: "Unauthorized" }));
+      return NextResponse.json(
+        new ApiError({ statusCode: 401, message: "Unauthorized" })
+      );
     }
 
     const receiver = await User.findById(receiverId).select(
@@ -28,12 +30,17 @@ export async function POST(
     );
 
     if (!receiver) {
-      return NextResponse.json(new ApiError({ statusCode: 404, message: "User not found" }));
+      return NextResponse.json(
+        new ApiError({ statusCode: 404, message: "User not found" })
+      );
     }
 
     if (receiver._id.toString() === user._id.toString()) {
       return NextResponse.json(
-        new ApiError({ statusCode: 400, message: "You can't chat with yourself" })
+        new ApiError({
+          statusCode: 400,
+          message: "You can't chat with yourself",
+        })
       );
     }
 
@@ -43,7 +50,10 @@ export async function POST(
         $match: {
           isGroupChat: false,
           participants: {
-            $all: [new mongoose.Types.ObjectId(receiverId), new mongoose.Types.ObjectId(user._id)],
+            $all: [
+              new mongoose.Types.ObjectId(receiverId),
+              new mongoose.Types.ObjectId(user._id),
+            ],
           },
         },
       },
@@ -52,12 +62,16 @@ export async function POST(
 
     if (existingChat.length > 0) {
       return NextResponse.json(
-        new ApiResponse({ statusCode: 200, data: existingChat[0], success: true })
+        new ApiResponse({
+          statusCode: 200,
+          data: existingChat[0],
+          success: true,
+        })
       );
     }
 
     // ✅ Create new one-on-one chat
-    const newChat:ChatType = await Chat.create({
+    const newChat: ChatType = await Chat.create({
       chatName: "One on one chat",
       isGroupChat: false,
       participants: [user._id, receiver._id],
@@ -67,13 +81,15 @@ export async function POST(
     });
 
     // ✅ Fetch the created chat with aggregation
-    const createdChat:ChatType[] = await Chat.aggregate([
+    const createdChat: ChatType[] = await Chat.aggregate([
       { $match: { _id: newChat._id } },
       ...chatCommonAggregation(),
     ]);
 
     if (!createdChat.length) {
-      return NextResponse.json(new ApiError({ statusCode: 500, message: "Chat not created" }));
+      return NextResponse.json(
+        new ApiError({ statusCode: 500, message: "Chat not created" })
+      );
     }
 
     const payload = createdChat[0];
@@ -82,7 +98,12 @@ export async function POST(
     await Promise.all(
       payload.participants.map((participantObjectId) =>
         participantObjectId.toString() !== user._id.toString()
-          ? emitSocketEvent(req, participantObjectId.toString(), ChatEventEnum.NEW_CHAT_EVENT, payload)
+          ? emitSocketEvent(
+              req,
+              participantObjectId.toString(),
+              ChatEventEnum.NEW_CHAT_EVENT,
+              payload
+            )
           : null
       )
     );
@@ -96,6 +117,11 @@ export async function POST(
     );
   } catch (error: unknown) {
     console.error("❌ Error creating one-on-one chat:", error);
-    return NextResponse.json(new ApiError({ statusCode: 500, message: (error as NodeJS.ErrnoException).message }));
+    return NextResponse.json(
+      new ApiError({
+        statusCode: 500,
+        message: (error as NodeJS.ErrnoException).message,
+      })
+    );
   }
 }

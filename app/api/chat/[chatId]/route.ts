@@ -5,7 +5,8 @@ import { removeLocalFile } from "@/utils/Helper";
 import mongoose from "mongoose";
 import { NextRequest } from "next/server";
 
-export async function DELETE(req: NextRequest,
+export async function DELETE(
+  req: NextRequest,
   { params }: { params: { chatId: string } }
 ) {
   const { chatId } = params;

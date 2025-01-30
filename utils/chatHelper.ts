@@ -80,7 +80,7 @@ export const chatCommonAggregation = () => {
               _id: 1,
               text: 1,
               sender: 1,
-              createdAt: 1, // Assuming messages have timestamps
+              createdAt: 1,
             },
           },
         ],
