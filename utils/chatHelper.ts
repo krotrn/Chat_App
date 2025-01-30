@@ -3,12 +3,13 @@ export const chatMessageCommonAggregation = () => {
     {
       $lookup: {
         from: "users",
-        foreignField: "_id",
         localField: "sender",
+        foreignField: "_id",
         as: "sender",
         pipeline: [
           {
             $project: {
+              _id: 1,
               username: 1,
               avatar: 1,
               email: 1,
@@ -19,7 +20,7 @@ export const chatMessageCommonAggregation = () => {
     },
     {
       $addFields: {
-        sender: { $first: "$sender" },
+        sender: { $first: "$sender" }, // Ensures sender is always an object, not an array
       },
     },
   ];
@@ -29,47 +30,41 @@ export const chatMessageCommonAggregation = () => {
 export const chatCommonAggregation = () => {
   return [
     {
-      // lookup for the participants present
       $lookup: {
         from: "users",
-        foreignField: "_id",
         localField: "participants",
+        foreignField: "_id",
         as: "participants",
         pipeline: [
           {
             $project: {
-              password: 0,
-              refreshToken: 0,
-              forgotPasswordToken: 0,
-              forgotPasswordExpiry: 0,
-              emailVerificationToken: 0,
-              emailVerificationExpiry: 0,
+              _id: 1,
+              username: 1,
+              avatar: 1,
             },
           },
         ],
       },
     },
     {
-      // lookup for the group chats
       $lookup: {
         from: "chatmessages",
-        foreignField: "_id",
         localField: "lastMessage",
+        foreignField: "_id",
         as: "lastMessage",
         pipeline: [
           {
-            // get details of the sender
             $lookup: {
               from: "users",
-              foreignField: "_id",
               localField: "sender",
+              foreignField: "_id",
               as: "sender",
               pipeline: [
                 {
                   $project: {
+                    _id: 1,
                     username: 1,
                     avatar: 1,
-                    email: 1,
                   },
                 },
               ],
@@ -80,12 +75,20 @@ export const chatCommonAggregation = () => {
               sender: { $first: "$sender" },
             },
           },
+          {
+            $project: {
+              _id: 1,
+              text: 1,
+              sender: 1,
+              createdAt: 1, // Assuming messages have timestamps
+            },
+          },
         ],
       },
     },
     {
       $addFields: {
-        lastMessage: { $first: "$lastMessage" },
+        lastMessage: { $first: "$lastMessage" }, // Ensures lastMessage is an object, not an array
       },
     },
   ];

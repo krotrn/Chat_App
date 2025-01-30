@@ -17,47 +17,47 @@ export async function POST(
   try {
     await connectToDatabase();
     const { receiverId } = params;
+    const { user } = await req.json();
+
+    if (!user) {
+      return NextResponse.json(new ApiError({ statusCode: 401, message: "Unauthorized" }));
+    }
 
     const receiver = await User.findById(receiverId).select(
       "-password -refreshToken -emailVerificationToken -emailVerificationExpiry"
     );
-    if (!receiver) {
-      throw new ApiError({ statusCode: 404, message: "User not found" });
-    }
 
-    const { user } = await req.json();
-    if (!user) throw new ApiError({ statusCode: 401, message: "Unauthorized" });
+    if (!receiver) {
+      return NextResponse.json(new ApiError({ statusCode: 404, message: "User not found" }));
+    }
 
     if (receiver._id.toString() === user._id.toString()) {
-      throw new ApiError({
-        statusCode: 400,
-        message: "You can't chat with yourself",
-      });
+      return NextResponse.json(
+        new ApiError({ statusCode: 400, message: "You can't chat with yourself" })
+      );
     }
 
-    const chat: ChatType | null = await Chat.findOne([
+    // ✅ Check if chat already exists
+    const existingChat = await Chat.aggregate([
       {
         $match: {
           isGroupChat: false,
-          $and: [
-            {
-              participants: {
-                $eleMatch: { $eq: new mongoose.Types.ObjectId(receiverId) },
-              },
-            },
-          ],
+          participants: {
+            $all: [new mongoose.Types.ObjectId(receiverId), new mongoose.Types.ObjectId(user._id)],
+          },
         },
       },
       ...chatCommonAggregation(),
     ]);
 
-    if (chat) {
+    if (existingChat.length > 0) {
       return NextResponse.json(
-        new ApiResponse({ statusCode: 200, data: chat, success: true })
+        new ApiResponse({ statusCode: 200, data: existingChat[0], success: true })
       );
     }
 
-    const newChatInstance: ChatType = new Chat({
+    // ✅ Create new one-on-one chat
+    const newChat:ChatType = await Chat.create({
       chatName: "One on one chat",
       isGroupChat: false,
       participants: [user._id, receiver._id],
@@ -66,29 +66,26 @@ export async function POST(
       groupAdmin: null,
     });
 
-    const createdChat: ChatType[] = await Chat.aggregate([
-      {
-        $match: {
-          _id: newChatInstance._id,
-        },
-      },
+    // ✅ Fetch the created chat with aggregation
+    const createdChat:ChatType[] = await Chat.aggregate([
+      { $match: { _id: newChat._id } },
       ...chatCommonAggregation(),
     ]);
 
-    const payload = createdChat[0];
-    if (!payload) {
-      throw new ApiError({ statusCode: 500, message: "Chat not created" });
+    if (!createdChat.length) {
+      return NextResponse.json(new ApiError({ statusCode: 500, message: "Chat not created" }));
     }
 
-    payload.participants.forEach((participantObjectId) => {
-      if (participantObjectId.toString() === user._id.toString()) return;
-      emitSocketEvent(
-        req,
-        participantObjectId.toString(),
-        ChatEventEnum.NEW_CHAT_EVENT,
-        payload
-      );
-    });
+    const payload = createdChat[0];
+
+    // ✅ Emit socket event to both participants
+    await Promise.all(
+      payload.participants.map((participantObjectId) =>
+        participantObjectId.toString() !== user._id.toString()
+          ? emitSocketEvent(req, participantObjectId.toString(), ChatEventEnum.NEW_CHAT_EVENT, payload)
+          : null
+      )
+    );
 
     return NextResponse.json(
       new ApiResponse({
@@ -97,11 +94,8 @@ export async function POST(
         message: "Chat retrieved successfully",
       })
     );
-  } catch (error) {
-    throw new ApiError({
-      statusCode: 500,
-      message: "Server Error",
-      data: error,
-    });
+  } catch (error: unknown) {
+    console.error("❌ Error creating one-on-one chat:", error);
+    return NextResponse.json(new ApiError({ statusCode: 500, message: (error as NodeJS.ErrnoException).message }));
   }
 }

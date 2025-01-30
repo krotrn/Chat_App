@@ -1,29 +1,30 @@
 interface ApiErrorOptions {
   statusCode: number;
   message?: string;
-  errors?: unknown[];
+  errors?: (Error | string)[];
   stack?: string;
   data?: unknown;
 }
 
 class ApiError extends Error {
-  statusCode;
-  data: unknown;
-  success: boolean;
-  errors: unknown;
+  public readonly statusCode: number;
+  public readonly data?: unknown;
+  public readonly success: boolean;
+  public readonly errors: (Error | string)[];
+
   constructor({
     statusCode,
     message = "Something went wrong",
     errors = [],
-    stack = "",
-    data = null
+    stack,
+    data
   }: ApiErrorOptions) {
     super(message);
+
     this.statusCode = statusCode;
     this.data = data;
-    this.message = message;
     this.success = false;
-    this.errors = errors;
+    this.errors = Array.isArray(errors) ? errors : [errors];
 
     if (stack) {
       this.stack = stack;

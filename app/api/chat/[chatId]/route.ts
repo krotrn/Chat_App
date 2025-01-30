@@ -3,8 +3,9 @@ import { MessageAttachmentType, MessageType } from "@/types/Message.type";
 import { ApiError } from "@/utils/ApiError";
 import { removeLocalFile } from "@/utils/Helper";
 import mongoose from "mongoose";
+import { NextRequest } from "next/server";
 
-export async function DELETE(
+export async function DELETE(req: NextRequest,
   { params }: { params: { chatId: string } }
 ) {
   const { chatId } = params;
