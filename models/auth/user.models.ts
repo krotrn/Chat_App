@@ -51,7 +51,6 @@ const userSchema = new Schema<UserType>(
       required: function () {
         return this.loginType === UserLoginType.EMAIL_PASSWORD;
       },
-      select: false, // Prevents password from being returned in queries
     },
     loginType: {
       type: String,
@@ -71,22 +70,22 @@ const userSchema = new Schema<UserType>(
   { timestamps: true }
 );
 
-// 🔹 Ensure fields are indexed for quick lookup
+// Ensure fields are indexed for quick lookup
 userSchema.index({ email: 1, username: 1 });
 
-// 🔹 Pre-save hook to hash passwords securely
+// Pre-save hook to hash passwords securely
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 10);
   next();
 });
 
-// 🔹 Check if provided password matches hashed password
+// Check if provided password matches hashed password
 userSchema.methods.isPasswordMatch = async function (password: string) {
   return bcrypt.compare(password, this.password);
 };
 
-// 🔹 Generate JWT Access Token
+// Generate JWT Access Token
 userSchema.methods.generateAccessToken = function () {
   if (!process.env.ACCESS_TOKEN_SECRET) {
     throw new Error("ACCESS_TOKEN_SECRET is not defined");
@@ -103,7 +102,7 @@ userSchema.methods.generateAccessToken = function () {
   );
 };
 
-// 🔹 Generate Refresh Token
+// Generate Refresh Token
 userSchema.methods.generateRefreshToken = function () {
   if (!process.env.REFRESH_TOKEN_SECRET) {
     throw new Error("REFRESH_TOKEN_SECRET is not defined");
@@ -130,5 +129,5 @@ userSchema.methods.generateTempToken = function () {
   };
 };
 
-// 🔹 Export Model
+// Export Model
 export const User: Model<UserType> = mongoose.models.User || model<UserType>("User", userSchema);

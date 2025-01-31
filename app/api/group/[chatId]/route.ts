@@ -5,12 +5,12 @@ import { ApiError } from "@/utils/ApiError";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { chatCommonAggregation } from "@/utils/chatHelper";
 import { ChatEventEnum } from "@/utils/constants";
-import mongoose from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 import { DELETE as DeleteChatMessage } from "@/app/api/chat/[chatId]/route";
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongoose";
 
-// ✅ Fetch group chat details
+// Fetch group chat details
 export async function GET(
   req: NextRequest,
   { params }: { params: { chatId: string } }
@@ -19,6 +19,11 @@ export async function GET(
     await connectToDatabase();
     const { chatId } = params;
 
+    if (!isValidObjectId(chatId)) {
+      return NextResponse.json(new ApiResponse({statusCode:500, message:"Not VaildId"}))
+    }
+
+    // Get Group Chats
     const groupChat: ChatType[] = await Chat.aggregate([
       {
         $match: { _id: new mongoose.Types.ObjectId(chatId), isGroupChat: true },
@@ -51,7 +56,7 @@ export async function GET(
   }
 }
 
-// ✅ Update group chat name
+// Update group chat name
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { chatId: string } }
@@ -59,7 +64,18 @@ export async function PATCH(
   try {
     await connectToDatabase();
     const { chatId } = params;
-    const { name, user } = await req.json();
+    const { name } = await req.json();
+    const user = req.headers.get("user");
+
+    if (!user) {
+      return NextResponse.json(
+        new ApiError({ statusCode: 401, message: "Unauthorized" })
+      );
+    }
+
+    if (!isValidObjectId(chatId)) {
+      return NextResponse.json(new ApiResponse({statusCode:500, message:"Not VaildId"}))
+    }
 
     const groupChat = await Chat.findById(chatId).lean();
 
@@ -70,15 +86,15 @@ export async function PATCH(
       });
     }
 
-    if (groupChat.admin?.toString() !== user._id?.toString()) {
+    if (groupChat.admin?.toString() !== user.toString()) {
       throw new ApiError({ statusCode: 403, message: "You are not an admin" });
     }
 
-    const updatedGroupChat = await Chat.findByIdAndUpdate(
+    const updatedGroupChat: ChatType | null = await Chat.findByIdAndUpdate(
       chatId,
       { $set: { name } },
       { new: true, lean: true }
-    );
+    ).lean();
 
     if (!updatedGroupChat) {
       throw new ApiError({
@@ -130,7 +146,7 @@ export async function PATCH(
   }
 }
 
-// ✅ Delete group chat
+// Delete group chat
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { chatId: string } }
@@ -138,7 +154,13 @@ export async function DELETE(
   try {
     await connectToDatabase();
     const { chatId } = params;
-    const { user } = await req.json();
+    const user = req.headers.get("user");
+
+    if (!user) {
+      return NextResponse.json(
+        new ApiError({ statusCode: 401, message: "Unauthorized" })
+      );
+    }
 
     const groupChat = await Chat.findById(chatId).lean();
 
@@ -149,7 +171,7 @@ export async function DELETE(
       });
     }
 
-    if (groupChat.admin?.toString() !== user._id?.toString()) {
+    if (groupChat.admin?.toString() !== user.toString()) {
       throw new ApiError({
         statusCode: 403,
         message: "Only admin can delete the group",
@@ -175,7 +197,6 @@ export async function DELETE(
     return NextResponse.json(
       new ApiResponse({
         statusCode: 200,
-        data: {},
         message: "Group chat deleted successfully",
       })
     );

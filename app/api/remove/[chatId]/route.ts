@@ -1,7 +1,7 @@
 import { Chat } from "@/models/chat-app/chat.models";
 import { ApiError } from "@/utils/ApiError";
 import { chatCommonAggregation } from "@/utils/chatHelper";
-import mongoose from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 import { DELETE as DeleteChatMessage } from "@/app/api/chat/[chatId]/route";
 import { NextRequest, NextResponse } from "next/server";
 import { ChatType } from "@/types/Chat.type";
@@ -17,11 +17,17 @@ export async function DELETE(
   try {
     await connectToDatabase();
     const { chatId } = params;
-    const { user } = await req.json();
+    const user = req.headers.get("user");
+
+    if (!user) {
+      return NextResponse.json(
+        new ApiError({ statusCode: 401, message: "Unauthorized" })
+      );
+    }
 
     if (
-      !mongoose.Types.ObjectId.isValid(chatId) ||
-      !mongoose.Types.ObjectId.isValid(user._id)
+      !isValidObjectId(chatId) ||
+      !isValidObjectId(user)
     ) {
       throw new ApiError({
         statusCode: 400,
@@ -61,7 +67,7 @@ export async function DELETE(
 
     // Step 4: Notify all remaining participants
     const remainingParticipants = existingChat.participants.filter(
-      (participant) => participant.toString() !== user._id.toString()
+      (participant) => participant.toString() !== user.toString()
     );
 
     if (remainingParticipants.length > 0) {

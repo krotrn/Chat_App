@@ -5,13 +5,15 @@ import { ChatType } from "@/types/Chat.type";
 import { ApiError } from "@/utils/ApiError";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { ChatEventEnum } from "@/utils/constants";
-import mongoose from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 
 
-const isValidObjectId = (id: string) => mongoose.Types.ObjectId.isValid(id);
 
 
+/**
+ * Handle Add Participant
+ */
 export async function POST(
   req: NextRequest,
   { params }: { params: { chatId: string; participantId: string } }
@@ -19,15 +21,20 @@ export async function POST(
   try {
     await connectToDatabase();
     const { chatId, participantId } = params;
-    const { user } = await req.json();
+    const user = req.headers.get("user");
 
     if (!isValidObjectId(chatId) || !isValidObjectId(participantId)) {
-      throw new ApiError({
-        statusCode: 400,
-        message: "Invalid chat ID or participant ID",
-      });
+      return NextResponse.json(new ApiResponse({statusCode:500, message:"Not VaildId"}))
     }
 
+    if (!user) {
+      return NextResponse.json(
+        new ApiError({ statusCode: 401, message: "Unauthorized" })
+      );
+    }
+
+
+    // getting the chatId
     const groupChat: ChatType | null = await Chat.findById(chatId).select(
       "admin participants isGroupChat"
     );
@@ -39,17 +46,18 @@ export async function POST(
       });
     }
 
-    if (groupChat.admin?.toString() !== user._id?.toString()) {
+    if (groupChat.admin?.toString() !== user.toString()) {
       throw new ApiError({ statusCode: 403, message: "You are not an admin" });
     }
 
-    if (groupChat.participants.some((p) => p.toString() === participantId)) {
+    if (groupChat.participants.some((p) => p.toString() === participantId.toString())) {
       throw new ApiError({
         statusCode: 400,
         message: "Participant already exists in the group",
       });
     }
 
+    // add Participant
     const updatedChat = await Chat.findByIdAndUpdate(
       chatId,
       {
@@ -65,7 +73,7 @@ export async function POST(
       });
     }
 
-    emitSocketEvent(
+    await emitSocketEvent(
       req,
       participantId,
       ChatEventEnum.NEW_CHAT_EVENT,
@@ -87,7 +95,9 @@ export async function POST(
   }
 }
 
-
+/**
+ * Kicking from Group
+ */
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { chatId: string; participantId: string } }
@@ -95,14 +105,18 @@ export async function DELETE(
   try {
     await connectToDatabase();
     const { chatId, participantId } = params;
-    const { user } = await req.json();
+    const user = req.headers.get("user");
 
     if (!isValidObjectId(chatId) || !isValidObjectId(participantId)) {
-      throw new ApiError({
-        statusCode: 400,
-        message: "Invalid chat ID or participant ID",
-      });
+      return NextResponse.json(new ApiResponse({statusCode:500, message:"Not VaildId"}))
     }
+
+    if (!user) {
+      return NextResponse.json(
+        new ApiError({ statusCode: 401, message: "Unauthorized" })
+      );
+    }
+
 
     const groupChat: ChatType | null = await Chat.findById(chatId).select(
       "admin participants isGroupChat"
@@ -115,7 +129,7 @@ export async function DELETE(
       });
     }
 
-    if (groupChat.admin?.toString() !== user._id?.toString()) {
+    if (groupChat.admin?.toString() !== user.toString()) {
       throw new ApiError({ statusCode: 403, message: "You are not an admin" });
     }
 
@@ -126,6 +140,7 @@ export async function DELETE(
       });
     }
 
+    // Join Group
     const updatedChat = await Chat.findByIdAndUpdate(
       chatId,
       { $pull: { participants: new mongoose.Types.ObjectId(participantId) } },
@@ -139,7 +154,7 @@ export async function DELETE(
       });
     }
 
-    emitSocketEvent(
+    await emitSocketEvent(
       req,
       participantId,
       ChatEventEnum.LEAVE_CHAT_EVENT,

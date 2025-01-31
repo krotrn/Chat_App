@@ -6,9 +6,9 @@ export interface MessageAttachmentType {
 }
 
 export interface MessageType
-  extends mongoose.Document<mongoose.Schema.Types.ObjectId> {
-  sender: mongoose.Schema.Types.ObjectId;
-  chat: mongoose.Schema.Types.ObjectId;
+  extends mongoose.Document<mongoose.Types.ObjectId> {
+  sender: mongoose.Types.ObjectId;
+  chat: mongoose.Types.ObjectId;
   content: string;
   attachments: MessageAttachmentType[];
 }

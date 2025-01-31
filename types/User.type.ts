@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 export interface UserType
-  extends mongoose.Document<mongoose.Document<mongoose.Schema.Types.ObjectId>> {
+  extends mongoose.Document<mongoose.Document<mongoose.Types.ObjectId>> {
   avatar: {
     url: string;
     localPath: string;

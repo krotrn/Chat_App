@@ -7,9 +7,13 @@ import { ApiError } from "@/utils/ApiError";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { chatCommonAggregation } from "@/utils/chatHelper";
 import { ChatEventEnum } from "@/utils/constants";
-import mongoose from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 
+
+/**
+ * Handle Create Chat one-to-one
+ */
 export async function POST(
   req: NextRequest,
   { params }: { params: { receiverId: string } }
@@ -17,7 +21,11 @@ export async function POST(
   try {
     await connectToDatabase();
     const { receiverId } = params;
-    const { user } = await req.json();
+    const user = req.headers.get("user");
+
+    if (!isValidObjectId(receiverId)) {
+      return NextResponse.json(new ApiResponse({statusCode:500, message:"Not VaildId"}))
+    }
 
     if (!user) {
       return NextResponse.json(
@@ -27,7 +35,7 @@ export async function POST(
 
     const receiver = await User.findById(receiverId).select(
       "-password -refreshToken -emailVerificationToken -emailVerificationExpiry"
-    );
+    ).lean();
 
     if (!receiver) {
       return NextResponse.json(
@@ -35,7 +43,7 @@ export async function POST(
       );
     }
 
-    if (receiver._id.toString() === user._id.toString()) {
+    if (receiver._id.toString() === user.toString()) {
       return NextResponse.json(
         new ApiError({
           statusCode: 400,
@@ -44,15 +52,15 @@ export async function POST(
       );
     }
 
-    // ✅ Check if chat already exists
-    const existingChat = await Chat.aggregate([
+    // Check if chat already exists
+    const existingChat:ChatType[] = await Chat.aggregate([
       {
         $match: {
           isGroupChat: false,
           participants: {
             $all: [
               new mongoose.Types.ObjectId(receiverId),
-              new mongoose.Types.ObjectId(user._id),
+              new mongoose.Types.ObjectId(user),
             ],
           },
         },
@@ -60,7 +68,7 @@ export async function POST(
       ...chatCommonAggregation(),
     ]);
 
-    if (existingChat.length > 0) {
+    if (existingChat.length) {
       return NextResponse.json(
         new ApiResponse({
           statusCode: 200,
@@ -70,17 +78,17 @@ export async function POST(
       );
     }
 
-    // ✅ Create new one-on-one chat
+    // Create new one-on-one chat
     const newChat: ChatType = await Chat.create({
       chatName: "One on one chat",
       isGroupChat: false,
-      participants: [user._id, receiver._id],
+      participants: [new mongoose.Types.ObjectId(user), receiver._id],
       latestMessage: null,
-      admin: user._id,
+      admin: new mongoose.Types.ObjectId(user),
       groupAdmin: null,
     });
 
-    // ✅ Fetch the created chat with aggregation
+    // Fetch the created chat with aggregation
     const createdChat: ChatType[] = await Chat.aggregate([
       { $match: { _id: newChat._id } },
       ...chatCommonAggregation(),
@@ -92,13 +100,13 @@ export async function POST(
       );
     }
 
-    const payload = createdChat[0];
+    const payload:ChatType = createdChat[0];
 
-    // ✅ Emit socket event to both participants
+    // Emit socket event to both participants
     await Promise.all(
-      payload.participants.map((participantObjectId) =>
-        participantObjectId.toString() !== user._id.toString()
-          ? emitSocketEvent(
+      payload.participants.map(async (participantObjectId) =>
+        participantObjectId.toString() !== user.toString()
+          ? await emitSocketEvent(
               req,
               participantObjectId.toString(),
               ChatEventEnum.NEW_CHAT_EVENT,

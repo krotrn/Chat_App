@@ -6,17 +6,26 @@ import { ApiError } from "@/utils/ApiError";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { chatCommonAggregation } from "@/utils/chatHelper";
 import { ChatEventEnum } from "@/utils/constants";
+import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 
+/**
+ * Handle Group Creation
+ */
 export async function POST(req: NextRequest) {
   try {
     await connectToDatabase();
-    const { name, participants, user } = await req.json();
+    const { name, participants }: { name: string; participants: string[] } =
+      await req.json();
+    const user: string | null = req.headers.get("user");
 
+    if (!user) {
+      return NextResponse.json(
+        new ApiError({ statusCode: 401, message: "Unauthorized" })
+      );
+    }
     // Ensure creator is not in the participants list
-    if (
-      participants.some((id: string) => id.toString() === user._id.toString())
-    ) {
+    if (participants.some((id: string) => id.toString() === user.toString())) {
       throw new ApiError({
         statusCode: 400,
         message: "Participants array should not contain the group creator",
@@ -24,7 +33,15 @@ export async function POST(req: NextRequest) {
     }
 
     // Create a unique members array
-    const members = [...new Set([...participants, user._id.toString()])];
+    const members: mongoose.Types.ObjectId[] = [
+      ...new Set([
+        ...participants.map(
+          (participant: string) =>
+            new mongoose.Types.ObjectId(participant.toString())
+        ),
+        new mongoose.Types.ObjectId(user.toString()),
+      ]),
+    ];
 
     if (members.length < 3) {
       throw new ApiError({
@@ -38,7 +55,7 @@ export async function POST(req: NextRequest) {
       name,
       isGroupChar: true,
       participants: members,
-      admin: user._id,
+      admin: new mongoose.Types.ObjectId(user),
     });
 
     // Fetch chat details with aggregation
@@ -59,7 +76,7 @@ export async function POST(req: NextRequest) {
     // Emit socket events to all participants except the creator
     await Promise.all(
       payload.participants.map(async (participantObjectId) => {
-        if (participantObjectId.toString() !== user._id.toString()) {
+        if (participantObjectId.toString() !== user.toString()) {
           await emitSocketEvent(
             req,
             participantObjectId.toString(),
