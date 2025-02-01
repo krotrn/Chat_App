@@ -2,7 +2,7 @@ import { Chat } from "@/models/chat-app/chat.models";
 import { ApiError } from "@/utils/ApiError";
 import { chatCommonAggregation } from "@/utils/chatHelper";
 import mongoose, { isValidObjectId } from "mongoose";
-import { DELETE as DeleteChatMessage } from "@/app/api/chat/[chatId]/route";
+import { DELETE as DeleteChatMessage } from "@/app/api/v1/chat/chat/[chatId]/route";
 import { NextRequest, NextResponse } from "next/server";
 import { ChatType } from "@/types/Chat.type";
 import { emitSocketEvent } from "@/socket";
@@ -25,10 +25,7 @@ export async function DELETE(
       );
     }
 
-    if (
-      !isValidObjectId(chatId) ||
-      !isValidObjectId(user)
-    ) {
+    if (!isValidObjectId(chatId) || !isValidObjectId(user)) {
       throw new ApiError({
         statusCode: 400,
         message: "Invalid chat ID or user ID",

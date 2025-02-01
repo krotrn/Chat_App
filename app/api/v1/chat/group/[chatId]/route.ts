@@ -6,7 +6,7 @@ import { ApiResponse } from "@/utils/ApiResponse";
 import { chatCommonAggregation } from "@/utils/chatHelper";
 import { ChatEventEnum } from "@/utils/constants";
 import mongoose, { isValidObjectId } from "mongoose";
-import { DELETE as DeleteChatMessage } from "@/app/api/chat/[chatId]/route";
+import { DELETE as DeleteChatMessage } from "@/app/api/v1/chat/chat/[chatId]/route";
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongoose";
 
@@ -20,7 +20,9 @@ export async function GET(
     const { chatId } = params;
 
     if (!isValidObjectId(chatId)) {
-      return NextResponse.json(new ApiResponse({statusCode:500, message:"Not VaildId"}))
+      return NextResponse.json(
+        new ApiResponse({ statusCode: 500, message: "Not VaildId" })
+      );
     }
 
     // Get Group Chats
@@ -74,7 +76,9 @@ export async function PATCH(
     }
 
     if (!isValidObjectId(chatId)) {
-      return NextResponse.json(new ApiResponse({statusCode:500, message:"Not VaildId"}))
+      return NextResponse.json(
+        new ApiResponse({ statusCode: 500, message: "Not VaildId" })
+      );
     }
 
     const groupChat = await Chat.findById(chatId).lean();
