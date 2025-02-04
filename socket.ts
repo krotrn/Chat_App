@@ -1,10 +1,10 @@
 import { Server, Socket as BaseSocket } from "socket.io";
 import cookie from "cookie";
 import jwt from "jsonwebtoken";
-import { ChatEventEnum } from "@/utils/constants";
-import { ApiError } from "./utils/ApiError";
-import { User } from "./models/auth/user.models";
-import { UserType } from "./types/User.type";
+import { ChatEventEnum } from "@/utils/chat/constants";
+import { ApiError } from "@/utils/api/ApiError";
+import { User } from "@/models/auth/user.models";
+import { UserType } from "@/types/User.type";
 
 interface Socket extends BaseSocket {
   user?: UserType;

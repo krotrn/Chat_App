@@ -2,14 +2,11 @@ import { connectToDatabase } from "@/lib/mongoose";
 import { Chat } from "@/models/chat-app/chat.models";
 import { emitSocketEvent } from "@/socket";
 import { ChatType } from "@/types/Chat.type";
-import { ApiError } from "@/utils/ApiError";
-import { ApiResponse } from "@/utils/ApiResponse";
-import { ChatEventEnum } from "@/utils/constants";
+import { ApiError } from "@/utils/api/ApiError";
+import { ApiResponse } from "@/utils/api/ApiResponse";
+import { ChatEventEnum } from "@/utils/chat/constants";
 import mongoose, { isValidObjectId } from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
-
-
-
 
 /**
  * Handle Add Participant
@@ -24,7 +21,9 @@ export async function POST(
     const user = req.headers.get("user");
 
     if (!isValidObjectId(chatId) || !isValidObjectId(participantId)) {
-      return NextResponse.json(new ApiResponse({statusCode:500, message:"Not VaildId"}))
+      return NextResponse.json(
+        new ApiResponse({ statusCode: 500, message: "Not VaildId" })
+      );
     }
 
     if (!user) {
@@ -32,7 +31,6 @@ export async function POST(
         new ApiError({ statusCode: 401, message: "Unauthorized" })
       );
     }
-
 
     // getting the chatId
     const groupChat: ChatType | null = await Chat.findById(chatId).select(
@@ -50,7 +48,11 @@ export async function POST(
       throw new ApiError({ statusCode: 403, message: "You are not an admin" });
     }
 
-    if (groupChat.participants.some((p) => p.toString() === participantId.toString())) {
+    if (
+      groupChat.participants.some(
+        (p) => p.toString() === participantId.toString()
+      )
+    ) {
       throw new ApiError({
         statusCode: 400,
         message: "Participant already exists in the group",
@@ -108,7 +110,9 @@ export async function DELETE(
     const user = req.headers.get("user");
 
     if (!isValidObjectId(chatId) || !isValidObjectId(participantId)) {
-      return NextResponse.json(new ApiResponse({statusCode:500, message:"Not VaildId"}))
+      return NextResponse.json(
+        new ApiResponse({ statusCode: 500, message: "Not VaildId" })
+      );
     }
 
     if (!user) {
@@ -116,7 +120,6 @@ export async function DELETE(
         new ApiError({ statusCode: 401, message: "Unauthorized" })
       );
     }
-
 
     const groupChat: ChatType | null = await Chat.findById(chatId).select(
       "admin participants isGroupChat"

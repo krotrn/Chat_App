@@ -1,10 +1,10 @@
 import { Chat } from "@/models/chat-app/chat.models";
 import { emitSocketEvent } from "@/socket";
 import { ChatType } from "@/types/Chat.type";
-import { ApiError } from "@/utils/ApiError";
-import { ApiResponse } from "@/utils/ApiResponse";
-import { chatCommonAggregation } from "@/utils/chatHelper";
-import { ChatEventEnum } from "@/utils/constants";
+import { ApiError } from "@/utils/api/ApiError";
+import { ApiResponse } from "@/utils/api/ApiResponse";
+import { chatCommonAggregation } from "@/utils/chat/chatHelper";
+import { ChatEventEnum } from "@/utils/chat/constants";
 import mongoose, { isValidObjectId } from "mongoose";
 import { DELETE as DeleteChatMessage } from "@/app/api/v1/chat/chat/[chatId]/route";
 import { NextRequest, NextResponse } from "next/server";

@@ -1,9 +1,9 @@
 import { connectToDatabase } from "@/lib/mongoose";
 import { Chat } from "@/models/chat-app/chat.models";
 import { ChatType } from "@/types/Chat.type";
-import { ApiError } from "@/utils/ApiError";
-import { ApiResponse } from "@/utils/ApiResponse";
-import { chatCommonAggregation } from "@/utils/chatHelper";
+import { ApiError } from "@/utils/api/ApiError";
+import { ApiResponse } from "@/utils/api/ApiResponse";
+import { chatCommonAggregation } from "@/utils/chat/chatHelper";
 import mongoose, { isValidObjectId } from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -27,7 +27,9 @@ export async function DELETE(
     const user = req.headers.get("user");
 
     if (!isValidObjectId(chatId)) {
-      return NextResponse.json(new ApiResponse({statusCode:500, message:"Not VaildId"}))
+      return NextResponse.json(
+        new ApiResponse({ statusCode: 500, message: "Not VaildId" })
+      );
     }
 
     if (!user) {

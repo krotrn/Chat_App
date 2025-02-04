@@ -3,13 +3,12 @@ import { User } from "@/models/auth/user.models";
 import { Chat } from "@/models/chat-app/chat.models";
 import { emitSocketEvent } from "@/socket";
 import { ChatType } from "@/types/Chat.type";
-import { ApiError } from "@/utils/ApiError";
-import { ApiResponse } from "@/utils/ApiResponse";
-import { chatCommonAggregation } from "@/utils/chatHelper";
-import { ChatEventEnum } from "@/utils/constants";
+import { ApiError } from "@/utils/api/ApiError";
+import { ApiResponse } from "@/utils/api/ApiResponse";
+import { chatCommonAggregation } from "@/utils/chat/chatHelper";
+import { ChatEventEnum } from "@/utils/chat/constants";
 import mongoose, { isValidObjectId } from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
-
 
 /**
  * Handle Create Chat one-to-one
@@ -24,7 +23,9 @@ export async function POST(
     const user = req.headers.get("user");
 
     if (!isValidObjectId(receiverId)) {
-      return NextResponse.json(new ApiResponse({statusCode:500, message:"Not VaildId"}))
+      return NextResponse.json(
+        new ApiResponse({ statusCode: 500, message: "Not VaildId" })
+      );
     }
 
     if (!user) {
@@ -33,9 +34,11 @@ export async function POST(
       );
     }
 
-    const receiver = await User.findById(receiverId).select(
-      "-password -refreshToken -emailVerificationToken -emailVerificationExpiry"
-    ).lean();
+    const receiver = await User.findById(receiverId)
+      .select(
+        "-password -refreshToken -emailVerificationToken -emailVerificationExpiry"
+      )
+      .lean();
 
     if (!receiver) {
       return NextResponse.json(
@@ -53,7 +56,7 @@ export async function POST(
     }
 
     // Check if chat already exists
-    const existingChat:ChatType[] = await Chat.aggregate([
+    const existingChat: ChatType[] = await Chat.aggregate([
       {
         $match: {
           isGroupChat: false,
@@ -100,7 +103,7 @@ export async function POST(
       );
     }
 
-    const payload:ChatType = createdChat[0];
+    const payload: ChatType = createdChat[0];
 
     // Emit socket event to both participants
     await Promise.all(

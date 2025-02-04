@@ -1,16 +1,39 @@
-import { ChatMessage } from "@/models/chat-app/message.models";
-import { MessageAttachmentType, MessageType } from "@/types/Message.type";
-import { ApiError } from "@/utils/ApiError";
-import { removeLocalFile } from "@/utils/Helper";
-import { chatMessageCommonAggregation } from "@/utils/chatHelper";
-import { ChatType } from "@/types/Chat.type";
-import mongoose, { isValidObjectId } from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import mongoose from "mongoose";
+import { ChatMessage } from "@/models/chat-app/message.models";
 import { Chat } from "@/models/chat-app/chat.models";
-import { ApiResponse } from "@/utils/ApiResponse";
+import { ApiError } from "@/utils/api/ApiError";
+import { ApiResponse } from "@/utils/api/ApiResponse";
+import { removeLocalFile } from "@/utils/chat/Helper";
+import { chatMessageCommonAggregation } from "@/utils/chat/chatHelper";
 import { emitSocketEvent } from "@/socket";
-import { ChatEventEnum } from "@/utils/constants";
+import { ChatEventEnum } from "@/utils/chat/constants";
 import { connectToDatabase } from "@/lib/mongoose";
+import { MessageAttachmentType, MessageType } from "@/types/Message.type";
+import { ChatType } from "@/types/Chat.type";
+
+//  Zod Schemas
+const chatIdSchema = z.object({
+  chatId: z.string().refine((id) => mongoose.Types.ObjectId.isValid(id), {
+    message: "Invalid chat ID",
+  }),
+});
+
+const messageSchema = z.object({
+  content: z.string().optional(),
+  files: z
+    .object({
+      attachments: z
+        .array(
+          z.object({
+            filename: z.string(),
+          })
+        )
+        .optional(),
+    })
+    .optional(),
+});
 
 /**
  * Handles DELETE request to delete all messages in a chat
@@ -20,35 +43,48 @@ export async function DELETE(
   { params }: { params: { chatId: string } }
 ) {
   try {
-    // Connecting to DB.
     await connectToDatabase();
-    const { chatId } = params;
+    const parsedParams = chatIdSchema.safeParse(params);
 
-    if (!isValidObjectId(chatId)) {
-      return NextResponse.json(new ApiResponse({statusCode:500, message:"Not VaildId"}))
+    if (!parsedParams.success) {
+      return NextResponse.json(
+        new ApiResponse({
+          statusCode: 400,
+          message: parsedParams.error.errors.map((e) => e.message).join(", "),
+        })
+      );
     }
+
+    const { chatId } = parsedParams.data;
+
     // Getting all messages related to chat.
     const messages: MessageType[] = await ChatMessage.find({
       chat: new mongoose.Types.ObjectId(chatId),
     });
 
     // Getting all attachment related to chat.
-    const attachments: MessageAttachmentType[] = [
-      ...messages.map((message) => message.attachments),
-    ].flat();
+    const attachments: MessageAttachmentType[] = messages.flatMap(
+      (message) => message.attachments
+    );
 
-    // Remove from the local file
+    // Remove files
     attachments.forEach((attachment) => {
       removeLocalFile(attachment.localPath);
     });
 
-    // delete all messages
+    // Delete all messages
     await ChatMessage.deleteMany({ chat: new mongoose.Types.ObjectId(chatId) });
+
+    return NextResponse.json(
+      new ApiResponse({ statusCode: 200, message: "Messages deleted" })
+    );
   } catch (error) {
-    throw new ApiError({
-      statusCode: 500,
-      message: (error as NodeJS.ErrnoException).message,
-    });
+    return NextResponse.json(
+      new ApiError({
+        statusCode: 500,
+        message: (error as Error).message,
+      })
+    );
   }
 }
 
@@ -60,19 +96,25 @@ export async function GET(
   { params }: { params: { chatId: string } }
 ) {
   try {
-    const { chatId } = params;
+    const parsedParams = chatIdSchema.safeParse(params);
+    if (!parsedParams.success) {
+      return NextResponse.json(
+        new ApiResponse({
+          statusCode: 400,
+          message: parsedParams.error.errors.map((e) => e.message).join(", "),
+        })
+      );
+    }
 
-    // get userId
+    const { chatId } = parsedParams.data;
     const user = req.headers.get("user");
 
-    // if user not found
     if (!user) {
       return NextResponse.json(
         new ApiError({ statusCode: 401, message: "Unauthorized" })
       );
     }
 
-    // Get chat.
     const selectedChat: ChatType | null = await Chat.findById(chatId);
     if (!selectedChat) {
       return NextResponse.json(
@@ -80,7 +122,6 @@ export async function GET(
       );
     }
 
-    // if user is not participants of that chat
     if (
       !selectedChat.participants.includes(
         new mongoose.Types.ObjectId(user.toString())
@@ -91,28 +132,25 @@ export async function GET(
       );
     }
 
-    // get all messages
     const messages: MessageType[] = await ChatMessage.aggregate([
       { $match: { chat: new mongoose.Types.ObjectId(chatId) } },
       ...chatMessageCommonAggregation(),
       { $sort: { createdAt: -1 } },
     ]);
 
-    // send the messages
     return NextResponse.json(
       new ApiResponse({
         statusCode: 200,
         data: messages,
-        message: "Messages Fetched",
+        message: "Messages fetched",
         success: true,
       })
     );
   } catch (error: unknown) {
-    console.error("GET Error:", error);
     return NextResponse.json(
       new ApiError({
         statusCode: 500,
-        message: (error as NodeJS.ErrnoException).message,
+        message: (error as Error).message,
       })
     );
   }
@@ -126,25 +164,36 @@ export async function POST(
   { params }: { params: { chatId: string } }
 ) {
   try {
-    const { chatId } = params;
-    const { content, files } = await req.json();
-
-
-    // get userid
-    const user = req.headers.get("user");
-
-    if (!isValidObjectId(chatId)) {
-      return NextResponse.json(new ApiResponse({statusCode:500, message:"Not VaildId"}))
+    const parsedParams = chatIdSchema.safeParse(params);
+    if (!parsedParams.success) {
+      return NextResponse.json(
+        new ApiResponse({
+          statusCode: 400,
+          message: parsedParams.error.errors.map((e) => e.message).join(", "),
+        })
+      );
     }
 
-    // if user not exist
+    const parsedBody = messageSchema.safeParse(await req.json());
+    if (!parsedBody.success) {
+      return NextResponse.json(
+        new ApiResponse({
+          statusCode: 400,
+          message: parsedBody.error.errors.map((e) => e.message).join(", "),
+        })
+      );
+    }
+
+    const { chatId } = parsedParams.data;
+    const { content, files } = parsedBody.data;
+    const user = req.headers.get("user");
+
     if (!user) {
       return NextResponse.json(
         new ApiError({ statusCode: 401, message: "Unauthorized" })
       );
     }
 
-    // select chat
     const selectedChat = await Chat.findById(chatId);
     if (!selectedChat) {
       return NextResponse.json(
@@ -152,30 +201,18 @@ export async function POST(
       );
     }
 
-    // if user is not participants of that chat
-    if (
-      !selectedChat.participants.includes(
-        new mongoose.Types.ObjectId(user)
-      )
-    ) {
+    if (!selectedChat.participants.includes(new mongoose.Types.ObjectId(user))) {
       return NextResponse.json(
         new ApiError({ statusCode: 401, message: "Unauthorized" })
       );
     }
 
-    const messageFiles: MessageAttachmentType[] = [];
+    const messageFiles: MessageAttachmentType[] =
+      files?.attachments?.map((file) => ({
+        url: `/uploads/${file.filename}`,
+        localPath: `/uploads/${file.filename}`,
+      })) || [];
 
-    // if there is a file then attach that to
-    if (files?.attachments?.length > 0) {
-      files.attachments.forEach((file: { filename: string }) => {
-        messageFiles.push({
-          url: `/uploads/${file.filename}`,
-          localPath: `/uploads/${file.filename}`,
-        });
-      });
-    }
-
-    // create message
     const message: MessageType = await ChatMessage.create({
       sender: new mongoose.Types.ObjectId(user),
       content: content || "",
@@ -183,7 +220,6 @@ export async function POST(
       attachments: messageFiles,
     });
 
-    // update the chat with last message
     const updatedChat = await Chat.findByIdAndUpdate(
       chatId,
       { lastMessage: message._id },
@@ -230,11 +266,10 @@ export async function POST(
       })
     );
   } catch (error: unknown) {
-    console.error("POST Error:", error);
     return NextResponse.json(
       new ApiError({
         statusCode: 500,
-        message: (error as NodeJS.ErrnoException).message,
+        message: (error as Error).message,
       })
     );
   }
