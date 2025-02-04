@@ -9,7 +9,7 @@ import mongoose from "mongoose";
 import { DELETE as DeleteChatMessage } from "@/app/api/v1/chat/chat/[chatId]/route";
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongoose";
-import { chatIdSchema, userSchema } from "@/lib/schema.validation";
+import { chatIdSchema, userSchema } from "@/lib/zod";
 
 // Fetch group chat details
 export async function GET(

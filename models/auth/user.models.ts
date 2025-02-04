@@ -3,19 +3,9 @@ import bcrypt from "bcrypt";
 import jwt, { SignOptions } from "jsonwebtoken";
 import crypto from "crypto";
 import { UserType } from "@/types/User.type";
+import { USER_TEMPORARY_TOKEN_EXPIRY, UserLoginType, UserRolesEnum } from "@/utils/constants";
 
-export const UserRolesEnum = {
-  ADMIN: "ADMIN",
-  USER: "USER",
-};
 
-export const UserLoginType = {
-  GOOGLE: "GOOGLE",
-  GITHUB: "GITHUB",
-  EMAIL_PASSWORD: "EMAIL_PASSWORD",
-};
-
-const USER_TEMPORARY_TOKEN_EXPIRY = 20 * 60 * 1000; // 20 minutes
 
 const userSchema = new Schema<UserType>(
   {
@@ -66,6 +56,10 @@ const userSchema = new Schema<UserType>(
     forgotPasswordExpiry: Date,
     emailVerificationToken: String,
     emailVerificationExpiry: Date,
+    isPasswordMatch: Boolean,
+    generateAccessToken: String,
+    generateRefreshToken:String,
+    generateTempToken:String,
   },
   { timestamps: true }
 );

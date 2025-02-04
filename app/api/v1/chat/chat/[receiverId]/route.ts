@@ -1,5 +1,5 @@
 import { connectToDatabase } from "@/lib/mongoose";
-import { receiverIdSchema, userSchema } from "@/lib/schema.validation";
+import { receiverIdSchema, userSchema } from "@/lib/zod";
 import { User } from "@/models/auth/user.models";
 import { Chat } from "@/models/chat-app/chat.models";
 import { emitSocketEvent } from "@/socket";

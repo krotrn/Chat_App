@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 
-export interface UserType
-  extends mongoose.Document<mongoose.Types.ObjectId>{
+export interface UserType extends mongoose.Document<mongoose.Types.ObjectId> {
   avatar: {
     url: string;
     localPath: string;
@@ -17,4 +16,8 @@ export interface UserType
   forgotPasswordExpiry?: Date;
   emailVerificationToken?: string;
   emailVerificationExpiry?: Date;
+  isPasswordMatch: (password: string) => Promise<boolean>;
+  generateAccessToken: () => string;
+  generateRefreshToken: () => string;
+  generateTempToken: () => string;
 }

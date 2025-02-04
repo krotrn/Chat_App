@@ -1,5 +1,5 @@
 import { connectToDatabase } from "@/lib/mongoose";
-import { chatIdSchema, userSchema } from "@/lib/schema.validation";
+import { chatIdSchema, userSchema } from "@/lib/zod";
 import { Chat } from "@/models/chat-app/chat.models";
 import { ChatType } from "@/types/Chat.type";
 import { ApiError } from "@/lib/api/ApiError";
