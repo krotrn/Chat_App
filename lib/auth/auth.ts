@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { ApiError } from "@/utils/api/ApiError";
+import { ApiError } from "@/lib/api/ApiError";
 import { UserType } from "@/types/User.type";
 
 export const verifyToken = (token: string) => {

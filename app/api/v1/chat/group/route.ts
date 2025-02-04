@@ -3,10 +3,10 @@ import { groupParticipantsSchema } from "@/lib/schema.validation";
 import { Chat } from "@/models/chat-app/chat.models";
 import { emitSocketEvent } from "@/socket";
 import { ChatType } from "@/types/Chat.type";
-import { ApiError } from "@/utils/api/ApiError";
-import { ApiResponse } from "@/utils/api/ApiResponse";
-import { chatCommonAggregation } from "@/utils/chat/chatHelper";
-import { ChatEventEnum } from "@/utils/chat/constants";
+import { ApiError } from "@/lib/api/ApiError";
+import { ApiResponse } from "@/lib/api/ApiResponse";
+import { chatCommonAggregation } from "@/lib/chat/chatHelper";
+import { ChatEventEnum } from "@/lib/chat/constants";
 import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 

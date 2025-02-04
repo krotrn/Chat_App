@@ -1,13 +1,13 @@
 import { Chat } from "@/models/chat-app/chat.models";
-import { ApiError } from "@/utils/api/ApiError";
-import { chatCommonAggregation } from "@/utils/chat/chatHelper";
+import { ApiError } from "@/lib/api/ApiError";
+import { chatCommonAggregation } from "@/lib/chat/chatHelper";
 import mongoose from "mongoose";
 import { DELETE as DeleteChatMessage } from "@/app/api/v1/chat/chat/[chatId]/route";
 import { NextRequest, NextResponse } from "next/server";
 import { ChatType } from "@/types/Chat.type";
 import { emitSocketEvent } from "@/socket";
-import { ChatEventEnum } from "@/utils/chat/constants";
-import { ApiResponse } from "@/utils/api/ApiResponse";
+import { ChatEventEnum } from "@/lib/chat/constants";
+import { ApiResponse } from "@/lib/api/ApiResponse";
 import { connectToDatabase } from "@/lib/mongoose";
 import { chatIdSchema, userSchema } from "@/lib/schema.validation";
 

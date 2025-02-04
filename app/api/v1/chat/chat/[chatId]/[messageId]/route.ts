@@ -2,17 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { Chat } from "@/models/chat-app/chat.models";
 import { ChatMessage } from "@/models/chat-app/message.models";
 import { emitSocketEvent } from "@/socket";
-import { ApiError } from "@/utils/api/ApiError";
-import { ApiResponse } from "@/utils/api/ApiResponse";
-import { removeLocalFile } from "@/utils/chat/Helper";
-import { ChatEventEnum } from "@/utils/chat/constants";
+import { ApiError } from "@/lib/api/ApiError";
+import { ApiResponse } from "@/lib/api/ApiResponse";
+import { removeLocalFile } from "@/lib/chat/Helper";
+import { ChatEventEnum } from "@/lib/chat/constants";
 import { connectToDatabase } from "@/lib/mongoose";
 import mongoose from "mongoose";
 import { userSchema } from "@/lib/schema.validation";
-import {messageParamsSchema} from '@/lib/schema.validation'
-
-
-
+import { messageParamsSchema } from "@/lib/schema.validation";
 
 /**
  * Handles DELETE request to delete a single message in a chat
@@ -42,7 +39,9 @@ export async function DELETE(
       return NextResponse.json(
         new ApiError({
           statusCode: 401,
-          message: "Unauthorized: " + parsedUser.error.errors.map((e) => e.message).join(", "),
+          message:
+            "Unauthorized: " +
+            parsedUser.error.errors.map((e) => e.message).join(", "),
         })
       );
     }
@@ -52,9 +51,15 @@ export async function DELETE(
 
     //  Check if chat exists
     const chat = await Chat.findById(chatId);
-    if (!chat || !chat.participants.includes(new mongoose.Types.ObjectId(userId))) {
+    if (
+      !chat ||
+      !chat.participants.includes(new mongoose.Types.ObjectId(userId))
+    ) {
       return NextResponse.json(
-        new ApiError({ statusCode: 404, message: "Chat not found or unauthorized" })
+        new ApiError({
+          statusCode: 404,
+          message: "Chat not found or unauthorized",
+        })
       );
     }
 
@@ -69,7 +74,10 @@ export async function DELETE(
     //  Check if the user is the sender
     if (message.sender.toString() !== userId.toString()) {
       return NextResponse.json(
-        new ApiError({ statusCode: 403, message: "You are not authorized to delete this message" })
+        new ApiError({
+          statusCode: 403,
+          message: "You are not authorized to delete this message",
+        })
       );
     }
 
@@ -86,24 +94,39 @@ export async function DELETE(
         {},
         { sort: { createdAt: -1 } }
       );
-      await Chat.findByIdAndUpdate(chatId, { lastMessage: lastMessage?._id || null });
+      await Chat.findByIdAndUpdate(chatId, {
+        lastMessage: lastMessage?._id || null,
+      });
     }
 
     //  Notify participants about the deleted message via WebSocket
     await Promise.all(
       chat.participants.map((participantObjectId) =>
         participantObjectId.toString() !== userId.toString()
-          ? emitSocketEvent(req, participantObjectId.toString(), ChatEventEnum.MESSAGE_DELETE_EVENT, message)
+          ? emitSocketEvent(
+              req,
+              participantObjectId.toString(),
+              ChatEventEnum.MESSAGE_DELETE_EVENT,
+              message
+            )
           : null
       )
     );
 
-    return NextResponse.json(new ApiResponse({ statusCode: 200, data: message, message: "Message deleted successfully" }));
-
+    return NextResponse.json(
+      new ApiResponse({
+        statusCode: 200,
+        data: message,
+        message: "Message deleted successfully",
+      })
+    );
   } catch (error) {
     console.error("DELETE Error:", error);
     return NextResponse.json(
-      new ApiError({ statusCode: 500, message: (error as NodeJS.ErrnoException).message })
+      new ApiError({
+        statusCode: 500,
+        message: (error as NodeJS.ErrnoException).message,
+      })
     );
   }
 }

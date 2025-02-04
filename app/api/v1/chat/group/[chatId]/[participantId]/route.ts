@@ -2,9 +2,9 @@ import { connectToDatabase } from "@/lib/mongoose";
 import { Chat } from "@/models/chat-app/chat.models";
 import { emitSocketEvent } from "@/socket";
 import { ChatType } from "@/types/Chat.type";
-import { ApiError } from "@/utils/api/ApiError";
-import { ApiResponse } from "@/utils/api/ApiResponse";
-import { ChatEventEnum } from "@/utils/chat/constants";
+import { ApiError } from "@/lib/api/ApiError";
+import { ApiResponse } from "@/lib/api/ApiResponse";
+import { ChatEventEnum } from "@/lib/chat/constants";
 import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 import { groupParamsSchema, userSchema } from "@/lib/schema.validation";
@@ -198,8 +198,7 @@ export async function DELETE(
     return NextResponse.json(
       new ApiError({
         statusCode: 500,
-        message:
-          error ? (error as Error).message : "Internal Server Error",
+        message: error ? (error as Error).message : "Internal Server Error",
       })
     );
   }

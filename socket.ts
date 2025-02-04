@@ -1,8 +1,8 @@
 import { Server, Socket as BaseSocket } from "socket.io";
 import cookie from "cookie";
 import jwt from "jsonwebtoken";
-import { ChatEventEnum } from "@/utils/chat/constants";
-import { ApiError } from "@/utils/api/ApiError";
+import { ChatEventEnum } from "@/lib/chat/constants";
+import { ApiError } from "@/lib/api/ApiError";
 import { User } from "@/models/auth/user.models";
 import { UserType } from "@/types/User.type";
 
