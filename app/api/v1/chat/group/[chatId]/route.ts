@@ -5,10 +5,11 @@ import { ApiError } from "@/utils/api/ApiError";
 import { ApiResponse } from "@/utils/api/ApiResponse";
 import { chatCommonAggregation } from "@/utils/chat/chatHelper";
 import { ChatEventEnum } from "@/utils/chat/constants";
-import mongoose, { isValidObjectId } from "mongoose";
+import mongoose from "mongoose";
 import { DELETE as DeleteChatMessage } from "@/app/api/v1/chat/chat/[chatId]/route";
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongoose";
+import { chatIdSchema, userSchema } from "@/lib/schema.validation";
 
 // Fetch group chat details
 export async function GET(
@@ -17,13 +18,16 @@ export async function GET(
 ) {
   try {
     await connectToDatabase();
-    const { chatId } = params;
+    const parsedParams = chatIdSchema.safeParse(params);
 
-    if (!isValidObjectId(chatId)) {
-      return NextResponse.json(
-        new ApiResponse({ statusCode: 500, message: "Not VaildId" })
-      );
+    if (!parsedParams.success) {
+      return new ApiError({
+        statusCode: 400,
+        message: parsedParams.error.errors.map((e) => e.message).join(", "),
+      });
     }
+
+    const { chatId } = parsedParams.data;
 
     // Get Group Chats
     const groupChat: ChatType[] = await Chat.aggregate([
@@ -65,21 +69,33 @@ export async function PATCH(
 ) {
   try {
     await connectToDatabase();
-    const { chatId } = params;
+    const parsedParams = chatIdSchema.safeParse(params);
+
+    if (!parsedParams.success) {
+      return new ApiError({
+        statusCode: 400,
+        message: parsedParams.error.errors.map((e) => e.message).join(", "),
+      });
+    }
+
+    const { chatId } = parsedParams.data;
     const { name } = await req.json();
-    const user = req.headers.get("user");
+    const userHeader = req.headers.get("user");
 
-    if (!user) {
+    const parsedUser = userSchema.safeParse(userHeader);
+
+    if (!parsedUser.success) {
       return NextResponse.json(
-        new ApiError({ statusCode: 401, message: "Unauthorized" })
+        new ApiError({
+          statusCode: 401,
+          message:
+            "Unauthorized: " +
+            parsedUser.error.errors.map((e) => e.message).join(", "),
+        })
       );
     }
 
-    if (!isValidObjectId(chatId)) {
-      return NextResponse.json(
-        new ApiResponse({ statusCode: 500, message: "Not VaildId" })
-      );
-    }
+    const { user } = parsedUser.data;
 
     const groupChat = await Chat.findById(chatId).lean();
 
@@ -90,7 +106,7 @@ export async function PATCH(
       });
     }
 
-    if (groupChat.admin?.toString() !== user.toString()) {
+    if (groupChat.admin.toString() !== user.toString()) {
       throw new ApiError({ statusCode: 403, message: "You are not an admin" });
     }
 
@@ -157,14 +173,33 @@ export async function DELETE(
 ) {
   try {
     await connectToDatabase();
-    const { chatId } = params;
-    const user = req.headers.get("user");
+    const parsedParams = chatIdSchema.safeParse(params);
 
-    if (!user) {
+    if (!parsedParams.success) {
+      return new ApiError({
+        statusCode: 400,
+        message: parsedParams.error.errors.map((e) => e.message).join(", "),
+      });
+    }
+
+    const { chatId } = parsedParams.data;
+
+    const userHeader = req.headers.get("user");
+
+    const parsedUser = userSchema.safeParse(userHeader);
+
+    if (!parsedUser.success) {
       return NextResponse.json(
-        new ApiError({ statusCode: 401, message: "Unauthorized" })
+        new ApiError({
+          statusCode: 401,
+          message:
+            "Unauthorized: " +
+            parsedUser.error.errors.map((e) => e.message).join(", "),
+        })
       );
     }
+
+    const user = parsedUser.data.user;
 
     const groupChat = await Chat.findById(chatId).lean();
 
@@ -175,7 +210,7 @@ export async function DELETE(
       });
     }
 
-    if (groupChat.admin?.toString() !== user.toString()) {
+    if (groupChat.admin.toString() !== user.toString()) {
       throw new ApiError({
         statusCode: 403,
         message: "Only admin can delete the group",

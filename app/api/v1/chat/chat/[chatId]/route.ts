@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
 import mongoose from "mongoose";
 import { ChatMessage } from "@/models/chat-app/message.models";
 import { Chat } from "@/models/chat-app/chat.models";
@@ -12,28 +11,11 @@ import { ChatEventEnum } from "@/utils/chat/constants";
 import { connectToDatabase } from "@/lib/mongoose";
 import { MessageAttachmentType, MessageType } from "@/types/Message.type";
 import { ChatType } from "@/types/Chat.type";
-
-//  Zod Schemas
-const chatIdSchema = z.object({
-  chatId: z.string().refine((id) => mongoose.Types.ObjectId.isValid(id), {
-    message: "Invalid chat ID",
-  }),
-});
-
-const messageSchema = z.object({
-  content: z.string().optional(),
-  files: z
-    .object({
-      attachments: z
-        .array(
-          z.object({
-            filename: z.string(),
-          })
-        )
-        .optional(),
-    })
-    .optional(),
-});
+import {
+  chatIdSchema,
+  messageSchema,
+  userSchema,
+} from "@/lib/schema.validation";
 
 /**
  * Handles DELETE request to delete all messages in a chat
@@ -96,6 +78,7 @@ export async function GET(
   { params }: { params: { chatId: string } }
 ) {
   try {
+    await connectToDatabase();
     const parsedParams = chatIdSchema.safeParse(params);
     if (!parsedParams.success) {
       return NextResponse.json(
@@ -107,13 +90,22 @@ export async function GET(
     }
 
     const { chatId } = parsedParams.data;
-    const user = req.headers.get("user");
+    const userHeader = req.headers.get("user");
 
-    if (!user) {
+    const parsedUser = userSchema.safeParse(userHeader);
+
+    if (!parsedUser.success) {
       return NextResponse.json(
-        new ApiError({ statusCode: 401, message: "Unauthorized" })
+        new ApiError({
+          statusCode: 401,
+          message:
+            "Unauthorized: " +
+            parsedUser.error.errors.map((e) => e.message).join(", "),
+        })
       );
     }
+
+    const user = parsedUser.data.user;
 
     const selectedChat: ChatType | null = await Chat.findById(chatId);
     if (!selectedChat) {
@@ -164,6 +156,7 @@ export async function POST(
   { params }: { params: { chatId: string } }
 ) {
   try {
+    await connectToDatabase();
     const parsedParams = chatIdSchema.safeParse(params);
     if (!parsedParams.success) {
       return NextResponse.json(
@@ -186,13 +179,21 @@ export async function POST(
 
     const { chatId } = parsedParams.data;
     const { content, files } = parsedBody.data;
-    const user = req.headers.get("user");
+    const userHeader = req.headers.get("user");
+    const parsedUser = userSchema.safeParse(userHeader);
 
-    if (!user) {
+    if (!parsedUser.success) {
       return NextResponse.json(
-        new ApiError({ statusCode: 401, message: "Unauthorized" })
+        new ApiError({
+          statusCode: 401,
+          message:
+            "Unauthorized" +
+            parsedUser.error.errors.map((e) => e.message).join(", "),
+        })
       );
     }
+
+    const user = parsedUser.data.user;
 
     const selectedChat = await Chat.findById(chatId);
     if (!selectedChat) {
@@ -201,7 +202,9 @@ export async function POST(
       );
     }
 
-    if (!selectedChat.participants.includes(new mongoose.Types.ObjectId(user))) {
+    if (
+      !selectedChat.participants.includes(new mongoose.Types.ObjectId(user))
+    ) {
       return NextResponse.json(
         new ApiError({ statusCode: 401, message: "Unauthorized" })
       );

@@ -1,7 +1,7 @@
 import { Chat } from "@/models/chat-app/chat.models";
 import { ApiError } from "@/utils/api/ApiError";
 import { chatCommonAggregation } from "@/utils/chat/chatHelper";
-import mongoose, { isValidObjectId } from "mongoose";
+import mongoose from "mongoose";
 import { DELETE as DeleteChatMessage } from "@/app/api/v1/chat/chat/[chatId]/route";
 import { NextRequest, NextResponse } from "next/server";
 import { ChatType } from "@/types/Chat.type";
@@ -9,6 +9,7 @@ import { emitSocketEvent } from "@/socket";
 import { ChatEventEnum } from "@/utils/chat/constants";
 import { ApiResponse } from "@/utils/api/ApiResponse";
 import { connectToDatabase } from "@/lib/mongoose";
+import { chatIdSchema, userSchema } from "@/lib/schema.validation";
 
 export async function DELETE(
   req: NextRequest,
@@ -16,21 +17,33 @@ export async function DELETE(
 ) {
   try {
     await connectToDatabase();
-    const { chatId } = params;
-    const user = req.headers.get("user");
+    const parsedParams = chatIdSchema.safeParse(params);
 
-    if (!user) {
+    if (!parsedParams.success) {
+      return new ApiError({
+        statusCode: 400,
+        message: parsedParams.error.errors.map((e) => e.message).join(", "),
+      });
+    }
+
+    const { chatId } = parsedParams.data;
+
+    const userHeader = req.headers.get("user");
+
+    const parsedUser = userSchema.safeParse(userHeader);
+
+    if (!parsedUser.success) {
       return NextResponse.json(
-        new ApiError({ statusCode: 401, message: "Unauthorized" })
+        new ApiError({
+          statusCode: 401,
+          message:
+            "Unauthorized: " +
+            parsedUser.error.errors.map((e) => e.message).join(", "),
+        })
       );
     }
 
-    if (!isValidObjectId(chatId) || !isValidObjectId(user)) {
-      throw new ApiError({
-        statusCode: 400,
-        message: "Invalid chat ID or user ID",
-      });
-    }
+    const user = parsedUser.data.user;
 
     // Step 1: Fetch chat details first (to avoid unnecessary aggregation)
     const existingChat = await Chat.findById(chatId)

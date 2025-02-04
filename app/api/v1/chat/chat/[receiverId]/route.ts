@@ -1,4 +1,5 @@
 import { connectToDatabase } from "@/lib/mongoose";
+import { receiverIdSchema, userSchema } from "@/lib/schema.validation";
 import { User } from "@/models/auth/user.models";
 import { Chat } from "@/models/chat-app/chat.models";
 import { emitSocketEvent } from "@/socket";
@@ -7,7 +8,7 @@ import { ApiError } from "@/utils/api/ApiError";
 import { ApiResponse } from "@/utils/api/ApiResponse";
 import { chatCommonAggregation } from "@/utils/chat/chatHelper";
 import { ChatEventEnum } from "@/utils/chat/constants";
-import mongoose, { isValidObjectId } from "mongoose";
+import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
@@ -19,20 +20,32 @@ export async function POST(
 ) {
   try {
     await connectToDatabase();
-    const { receiverId } = params;
-    const user = req.headers.get("user");
+    const parsedRecieverId = receiverIdSchema.safeParse(params);
+    const userHeader = req.headers.get("user");
+    const parsedUser = userSchema.safeParse(userHeader);
 
-    if (!isValidObjectId(receiverId)) {
+    if (!parsedUser.success) {
       return NextResponse.json(
-        new ApiResponse({ statusCode: 500, message: "Not VaildId" })
+        new ApiError({
+          statusCode: 401,
+          message:
+            "Unauthorized" +
+            parsedUser.error.errors.map((e) => e.message).join(", "),
+        })
       );
     }
-
-    if (!user) {
+    if (!parsedRecieverId.success) {
       return NextResponse.json(
-        new ApiError({ statusCode: 401, message: "Unauthorized" })
+        new ApiError({
+          statusCode: 401,
+          message:
+            "Unauthorized" +
+            parsedRecieverId.error.errors.map((e) => e.message).join(", "),
+        })
       );
     }
+    const { receiverId } = parsedRecieverId.data;
+    const { user } = parsedUser.data;
 
     const receiver = await User.findById(receiverId)
       .select(

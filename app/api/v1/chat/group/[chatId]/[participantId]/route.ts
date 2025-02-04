@@ -5,8 +5,9 @@ import { ChatType } from "@/types/Chat.type";
 import { ApiError } from "@/utils/api/ApiError";
 import { ApiResponse } from "@/utils/api/ApiResponse";
 import { ChatEventEnum } from "@/utils/chat/constants";
-import mongoose, { isValidObjectId } from "mongoose";
+import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
+import { groupParamsSchema, userSchema } from "@/lib/schema.validation";
 
 /**
  * Handle Add Participant
@@ -17,20 +18,33 @@ export async function POST(
 ) {
   try {
     await connectToDatabase();
-    const { chatId, participantId } = params;
-    const user = req.headers.get("user");
+    const parsedParams = groupParamsSchema.safeParse(params);
 
-    if (!isValidObjectId(chatId) || !isValidObjectId(participantId)) {
+    if (!parsedParams.success) {
+      return new ApiError({
+        statusCode: 400,
+        message: parsedParams.error.errors.map((e) => e.message).join(", "),
+      });
+    }
+
+    const { chatId, participantId } = parsedParams.data;
+
+    const userHeader = req.headers.get("user");
+
+    const parsedUser = userSchema.safeParse(userHeader);
+
+    if (!parsedUser.success) {
       return NextResponse.json(
-        new ApiResponse({ statusCode: 500, message: "Not VaildId" })
+        new ApiError({
+          statusCode: 401,
+          message:
+            "Unauthorized: " +
+            parsedUser.error.errors.map((e) => e.message).join(", "),
+        })
       );
     }
 
-    if (!user) {
-      return NextResponse.json(
-        new ApiError({ statusCode: 401, message: "Unauthorized" })
-      );
-    }
+    const user = parsedUser.data.user;
 
     // getting the chatId
     const groupChat: ChatType | null = await Chat.findById(chatId).select(
@@ -44,7 +58,7 @@ export async function POST(
       });
     }
 
-    if (groupChat.admin?.toString() !== user.toString()) {
+    if (groupChat.admin.toString() !== user.toString()) {
       throw new ApiError({ statusCode: 403, message: "You are not an admin" });
     }
 
@@ -106,20 +120,32 @@ export async function DELETE(
 ) {
   try {
     await connectToDatabase();
-    const { chatId, participantId } = params;
-    const user = req.headers.get("user");
+    const parsedParams = groupParamsSchema.safeParse(params);
 
-    if (!isValidObjectId(chatId) || !isValidObjectId(participantId)) {
+    if (!parsedParams.success) {
+      return new ApiError({
+        statusCode: 400,
+        message: parsedParams.error.errors.map((e) => e.message).join(", "),
+      });
+    }
+
+    const { chatId, participantId } = parsedParams.data;
+    const userHeader = req.headers.get("user");
+
+    const parsedUser = userSchema.safeParse(userHeader);
+
+    if (!parsedUser.success) {
       return NextResponse.json(
-        new ApiResponse({ statusCode: 500, message: "Not VaildId" })
+        new ApiError({
+          statusCode: 401,
+          message:
+            "Unauthorized: " +
+            parsedUser.error.errors.map((e) => e.message).join(", "),
+        })
       );
     }
 
-    if (!user) {
-      return NextResponse.json(
-        new ApiError({ statusCode: 401, message: "Unauthorized" })
-      );
-    }
+    const { user } = parsedUser.data;
 
     const groupChat: ChatType | null = await Chat.findById(chatId).select(
       "admin participants isGroupChat"
@@ -132,7 +158,7 @@ export async function DELETE(
       });
     }
 
-    if (groupChat.admin?.toString() !== user.toString()) {
+    if (groupChat.admin.toString() !== user.toString()) {
       throw new ApiError({ statusCode: 403, message: "You are not an admin" });
     }
 
@@ -171,9 +197,9 @@ export async function DELETE(
     console.error("Error in DELETE /chat:", error);
     return NextResponse.json(
       new ApiError({
-        statusCode: error instanceof ApiError ? error.statusCode : 500,
+        statusCode: 500,
         message:
-          error instanceof ApiError ? error.message : "Internal Server Error",
+          error ? (error as Error).message : "Internal Server Error",
       })
     );
   }

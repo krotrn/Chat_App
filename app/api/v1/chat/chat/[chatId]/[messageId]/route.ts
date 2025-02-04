@@ -8,23 +8,11 @@ import { removeLocalFile } from "@/utils/chat/Helper";
 import { ChatEventEnum } from "@/utils/chat/constants";
 import { connectToDatabase } from "@/lib/mongoose";
 import mongoose from "mongoose";
-import { z } from "zod";
+import { userSchema } from "@/lib/schema.validation";
+import {messageParamsSchema} from '@/lib/schema.validation'
 
 
-const paramsSchema = z.object({
-  chatId: z.string().refine((id) => mongoose.Types.ObjectId.isValid(id), {
-    message: "Invalid chat ID",
-  }),
-  messageId: z.string().refine((id) => mongoose.Types.ObjectId.isValid(id), {
-    message: "Invalid message ID",
-  }),
-});
 
-const userSchema = z.object({
-  user: z.string().refine((id) => mongoose.Types.ObjectId.isValid(id), {
-    message: "Invalid user ID",
-  }),
-});
 
 /**
  * Handles DELETE request to delete a single message in a chat
@@ -37,7 +25,7 @@ export async function DELETE(
     await connectToDatabase();
 
     //  Validate request params
-    const parsedParams = paramsSchema.safeParse(params);
+    const parsedParams = messageParamsSchema.safeParse(params);
     if (!parsedParams.success) {
       return NextResponse.json(
         new ApiError({

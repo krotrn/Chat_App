@@ -1,4 +1,5 @@
 import { connectToDatabase } from "@/lib/mongoose";
+import { groupParticipantsSchema } from "@/lib/schema.validation";
 import { Chat } from "@/models/chat-app/chat.models";
 import { emitSocketEvent } from "@/socket";
 import { ChatType } from "@/types/Chat.type";
@@ -15,8 +16,16 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   try {
     await connectToDatabase();
-    const { name, participants }: { name: string; participants: string[] } =
-      await req.json();
+    const parsedBody = groupParticipantsSchema.safeParse(await req.json());
+    if (!parsedBody.success) {
+      return NextResponse.json(
+        new ApiResponse({
+          statusCode: 401,
+          message: parsedBody.error.errors.map((e) => e.message).join(", "),
+        })
+      );
+    }
+    const { name, participants } = parsedBody.data;
     const user: string | null = req.headers.get("user");
 
     if (!user) {
