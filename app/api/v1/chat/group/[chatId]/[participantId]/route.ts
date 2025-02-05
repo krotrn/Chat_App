@@ -7,7 +7,7 @@ import { ApiResponse } from "@/lib/api/ApiResponse";
 import { ChatEventEnum } from "@/lib/chat/constants";
 import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
-import { groupParamsSchema, userSchema } from "@/lib/zod";
+import { groupParamsSchema, userSchema } from "@/schemas/paramsSchema";
 
 /**
  * Handle Add Participant

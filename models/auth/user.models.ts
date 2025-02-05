@@ -76,7 +76,7 @@ userSchema.pre("save", async function (next) {
 
 // Check if provided password matches hashed password
 userSchema.methods.isPasswordMatch = async function (password: string) {
-  return bcrypt.compare(password, this.password);
+  return await bcrypt.compare(password, this.password);
 };
 
 // Generate JWT Access Token

@@ -8,8 +8,8 @@ import { removeLocalFile } from "@/lib/chat/Helper";
 import { ChatEventEnum } from "@/lib/chat/constants";
 import { connectToDatabase } from "@/lib/mongoose";
 import mongoose from "mongoose";
-import { userSchema } from "@/lib/zod";
-import { messageParamsSchema } from "@/lib/zod";
+import { userSchema } from "@/schemas/paramsSchema";
+import { messageParamsSchema } from "@/schemas/paramsSchema";
 
 /**
  * Handles DELETE request to delete a single message in a chat

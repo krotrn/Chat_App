@@ -11,7 +11,7 @@ import { ChatEventEnum } from "@/lib/chat/constants";
 import { connectToDatabase } from "@/lib/mongoose";
 import { MessageAttachmentType, MessageType } from "@/types/Message.type";
 import { ChatType } from "@/types/Chat.type";
-import { chatIdSchema, messageSchema, userSchema } from "@/lib/zod";
+import { chatIdSchema, messageSchema, userSchema } from "@/schemas/paramsSchema";
 
 /**
  * Handles DELETE request to delete all messages in a chat

@@ -9,7 +9,7 @@ import { emitSocketEvent } from "@/socket";
 import { ChatEventEnum } from "@/lib/chat/constants";
 import { ApiResponse } from "@/lib/api/ApiResponse";
 import { connectToDatabase } from "@/lib/mongoose";
-import { chatIdSchema, userSchema } from "@/lib/zod";
+import { chatIdSchema, userSchema } from "@/schemas/paramsSchema";
 
 export async function DELETE(
   req: NextRequest,
