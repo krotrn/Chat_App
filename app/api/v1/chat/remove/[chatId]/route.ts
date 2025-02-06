@@ -10,6 +10,7 @@ import { ChatEventEnum } from "@/lib/chat/constants";
 import { ApiResponse } from "@/lib/api/ApiResponse";
 import { connectToDatabase } from "@/lib/mongoose";
 import { chatIdSchema, userSchema } from "@/schemas/paramsSchema";
+import { auth } from "@/auth";
 
 export async function DELETE(
   req: NextRequest,
@@ -28,7 +29,16 @@ export async function DELETE(
 
     const { chatId } = parsedParams.data;
 
-    const userHeader = req.headers.get("user");
+    const session = await auth();
+
+    if (!session || !session.user?._id) {
+      return new ApiError({
+        statusCode: 401,
+        message: "Unauthorized: Missing or invalid session",
+      });
+    }
+
+    const userHeader = session.user._id;
 
     const parsedUser = userSchema.safeParse(userHeader);
 

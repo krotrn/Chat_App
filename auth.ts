@@ -6,7 +6,6 @@ import { connectToDatabase } from "./lib/mongoose";
 import { User } from "@/models/auth/user.models";
 import { UserLoginType } from "@/utils/constants";
 import { UserType } from "@/types/User.type";
-import GitHub from "next-auth/providers/github";
 
 export const { handlers, auth } = NextAuth({
   session: {
@@ -19,48 +18,47 @@ export const { handlers, auth } = NextAuth({
         email: {
           label: "Email",
           type: "email",
-          name: "email",
           placeholder: "user@example.com",
         },
-        username: {
-          label: "Username",
-          name: "username",
-          type: "text",
-          placeholder: "Username",
-        },
-        password: {
-          label: "Password",
-          type: "password",
-        },
+        username: { label: "Username", type: "text", placeholder: "Username" },
+        password: { label: "Password", type: "password" },
       },
       authorize: async (credentials) => {
         try {
           await connectToDatabase();
-          const parsedSignInCredentials = signInSchema.safeParse(credentials);
-          if (!parsedSignInCredentials.success) {
+
+          const parsed = signInSchema.safeParse(credentials);
+          if (!parsed.success) {
             throw new ApiError({
-              statusCode: 402,
-              message: parsedSignInCredentials.error.errors
-                .map((e) => e.message)
-                .join(", "),
+              statusCode: 400,
+              message: parsed.error.errors.map((e) => e.message).join(", "),
             });
           }
-          const { email, username, password } = parsedSignInCredentials.data;
+
+          const { email, username, password } = parsed.data;
           const user: UserType | null = await User.findOne({
             $or: [{ email }, { username }],
-          }).lean();
+          });
+
           if (!user) {
-            throw new Error("User does not exist");
-          }
-          if (user.loginType !== UserLoginType.EMAIL_PASSWORD) {
-            throw new Error(
-              `You registered with ${user.loginType.toLowerCase()}. Please use that login method.`
-            );
+            throw new ApiError({
+              statusCode: 404,
+              message: "User does not exist",
+            });
           }
 
-          const isPasswordValid = await user.isPasswordMatch(password);
-          if (!isPasswordValid) {
-            throw new Error("Invalid credentials");
+          if (user.loginType !== UserLoginType.EMAIL_PASSWORD) {
+            throw new ApiError({
+              statusCode: 400,
+              message: `You registered with ${user.loginType.toLowerCase()}. Please use that login method.`,
+            });
+          }
+
+          if (!(await user.isPasswordMatch(password))) {
+            throw new ApiError({
+              statusCode: 401,
+              message: "Invalid credentials",
+            });
           }
 
           return {
@@ -71,7 +69,7 @@ export const { handlers, auth } = NextAuth({
             role: user.role,
             isEmailVerified: user.isEmailVerified,
             refreshToken: user.generateRefreshToken(),
-            accessToken: user.generateRefreshToken(),
+            accessToken: user.generateAccessToken(),
           };
         } catch (error) {
           throw new ApiError({
@@ -81,7 +79,6 @@ export const { handlers, auth } = NextAuth({
         }
       },
     }),
-    GitHub,
   ],
   pages: {
     signIn: "/sign-in",
@@ -92,7 +89,7 @@ export const { handlers, auth } = NextAuth({
         token._id = user._id;
         token.avatar = user.avatar;
         token.username = user.username;
-        token.email = user.email;
+        token.email = user.email ?? "";
         token.role = user.role;
         token.isEmailVerified = user.isEmailVerified;
         token.refreshToken = user.refreshToken;

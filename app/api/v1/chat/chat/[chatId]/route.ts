@@ -11,7 +11,12 @@ import { ChatEventEnum } from "@/lib/chat/constants";
 import { connectToDatabase } from "@/lib/mongoose";
 import { MessageAttachmentType, MessageType } from "@/types/Message.type";
 import { ChatType } from "@/types/Chat.type";
-import { chatIdSchema, messageSchema, userSchema } from "@/schemas/paramsSchema";
+import {
+  chatIdSchema,
+  messageSchema,
+  userSchema,
+} from "@/schemas/paramsSchema";
+import { auth } from "@/auth";
 
 /**
  * Handles DELETE request to delete all messages in a chat
@@ -86,7 +91,15 @@ export async function GET(
     }
 
     const { chatId } = parsedParams.data;
-    const userHeader = req.headers.get("user");
+    const session = await auth();
+
+    if (!session || !session.user?._id) {
+      return new ApiError({
+        statusCode: 401,
+        message: "Unauthorized: Missing or invalid session",
+      });
+    }
+    const userHeader = session.user._id;
 
     const parsedUser = userSchema.safeParse(userHeader);
 
@@ -175,7 +188,15 @@ export async function POST(
 
     const { chatId } = parsedParams.data;
     const { content, files } = parsedBody.data;
-    const userHeader = req.headers.get("user");
+    const session = await auth();
+
+    if (!session || !session.user?._id) {
+      return new ApiError({
+        statusCode: 401,
+        message: "Unauthorized: Missing or invalid session",
+      });
+    }
+    const userHeader = session.user._id;
     const parsedUser = userSchema.safeParse(userHeader);
 
     if (!parsedUser.success) {

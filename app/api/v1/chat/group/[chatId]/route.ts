@@ -10,6 +10,7 @@ import { DELETE as DeleteChatMessage } from "@/app/api/v1/chat/chat/[chatId]/rou
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongoose";
 import { chatIdSchema, userSchema } from "@/schemas/paramsSchema";
+import { auth } from "@/auth";
 
 // Fetch group chat details
 export async function GET(
@@ -80,7 +81,12 @@ export async function PATCH(
 
     const { chatId } = parsedParams.data;
     const { name } = await req.json();
-    const userHeader = req.headers.get("user");
+    const session = await auth();
+
+    if (!session || !session.user?._id) {
+      return new ApiError({ statusCode: 401, message: "Unauthorized: Missing or invalid session" });
+    }
+    const userHeader = session.user._id;
 
     const parsedUser = userSchema.safeParse(userHeader);
 
@@ -183,8 +189,13 @@ export async function DELETE(
     }
 
     const { chatId } = parsedParams.data;
+    const session = await auth();
 
-    const userHeader = req.headers.get("user");
+    if (!session || !session.user?._id) {
+      return new ApiError({ statusCode: 401, message: "Unauthorized: Missing or invalid session" });
+    }
+
+    const userHeader = session.user._id;
 
     const parsedUser = userSchema.safeParse(userHeader);
 

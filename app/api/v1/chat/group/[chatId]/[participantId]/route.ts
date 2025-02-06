@@ -8,6 +8,7 @@ import { ChatEventEnum } from "@/lib/chat/constants";
 import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 import { groupParamsSchema, userSchema } from "@/schemas/paramsSchema";
+import { auth } from "@/auth";
 
 /**
  * Handle Add Participant
@@ -29,7 +30,13 @@ export async function POST(
 
     const { chatId, participantId } = parsedParams.data;
 
-    const userHeader = req.headers.get("user");
+    const session = await auth();
+
+    if (!session || !session.user?._id) {
+      return new ApiError({ statusCode: 401, message: "Unauthorized: Missing or invalid session" });
+    }
+
+    const userHeader = session.user._id;
 
     const parsedUser = userSchema.safeParse(userHeader);
 
@@ -130,7 +137,13 @@ export async function DELETE(
     }
 
     const { chatId, participantId } = parsedParams.data;
-    const userHeader = req.headers.get("user");
+
+    const session = await auth();
+
+    if (!session || !session.user?._id) {
+      return new ApiError({ statusCode: 401, message: "Unauthorized: Missing or invalid session" });
+    }
+    const userHeader = session.user._id;
 
     const parsedUser = userSchema.safeParse(userHeader);
 

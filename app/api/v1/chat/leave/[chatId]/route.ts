@@ -7,6 +7,7 @@ import { ApiResponse } from "@/lib/api/ApiResponse";
 import { chatCommonAggregation } from "@/lib/chat/chatHelper";
 import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
 
 const isParticipant = (
   participants: mongoose.Types.ObjectId[],
@@ -35,7 +36,13 @@ export async function DELETE(
 
     const { chatId } = parsedParams.data;
 
-    const userHeader = req.headers.get("user");
+    const session = await auth();
+
+    if (!session || !session.user?._id) {
+      return new ApiError({ statusCode: 401, message: "Unauthorized: Missing or invalid session" });
+    }
+
+    const userHeader = session.user._id;
 
     const parsedUser = userSchema.safeParse(userHeader);
 

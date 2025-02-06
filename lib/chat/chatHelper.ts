@@ -20,12 +20,11 @@ export const chatMessageCommonAggregation = () => {
     },
     {
       $addFields: {
-        sender: { $first: "$sender" }, // Ensures sender is always an object, not an array
+        sender: { $first: "$sender" },
       },
     },
   ];
 };
-
 
 export const chatCommonAggregation = () => {
   return [

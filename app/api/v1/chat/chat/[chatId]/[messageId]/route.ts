@@ -10,6 +10,7 @@ import { connectToDatabase } from "@/lib/mongoose";
 import mongoose from "mongoose";
 import { userSchema } from "@/schemas/paramsSchema";
 import { messageParamsSchema } from "@/schemas/paramsSchema";
+import { auth } from "@/auth";
 
 /**
  * Handles DELETE request to delete a single message in a chat
@@ -33,7 +34,12 @@ export async function DELETE(
     }
 
     //  Validate user header
-    const userHeader = req.headers.get("user");
+    const session = await auth();
+
+    if (!session || !session.user?._id) {
+      return new ApiError({ statusCode: 401, message: "Unauthorized: Missing or invalid session" });
+    }
+    const userHeader = session.user._id;
     const parsedUser = userSchema.safeParse({ user: userHeader });
     if (!parsedUser.success) {
       return NextResponse.json(

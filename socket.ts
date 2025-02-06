@@ -1,6 +1,5 @@
 import { Server, Socket as BaseSocket } from "socket.io";
-import cookie from "cookie";
-import jwt from "jsonwebtoken";
+import { auth } from "@/auth";
 import { ChatEventEnum } from "@/lib/chat/constants";
 import { ApiError } from "@/lib/api/ApiError";
 import { User } from "@/models/auth/user.models";
@@ -10,28 +9,23 @@ interface Socket extends BaseSocket {
   user?: UserType;
 }
 
-type ChatHandler = (socket: Socket) => void;
+interface ChatHandler {
+  (socket: Socket): void;
+}
 
-/**
- * Middleware to authenticate WebSocket connections using JWT.
- */
-const authenticateSocket = async (socket: Socket, next: (err?: Error) => void) => {
+const authenticateSocket = async (
+  socket: Socket,
+  next: (err?: Error | undefined) => void
+) => {
   try {
-    const cookies = cookie.parse(socket.handshake.headers?.cookie || "");
-    const token = cookies.accessToken || socket.handshake.auth?.token;
+    const session = await auth();
 
-    if (!token) {
-      return next(new ApiError({ statusCode: 401, message: "Unauthorized: Missing token" }));
+    if (!session || !session.user?.email) {
+      return next(new ApiError({ statusCode: 401, message: "Unauthorized: Missing or invalid session" }));
     }
 
-    let decodedToken;
-    try {
-      decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!) as { _id: string };
-    } catch {
-      return next(new ApiError({ statusCode: 401, message: "Unauthorized: Invalid or expired token" }));
-    }
+    const user = await User.findOne({ email: session.user.email }).select("-password -refreshToken -emailVerificationToken -emailVerificationExpiry");
 
-    const user = await User.findById(decodedToken._id).select("-password -refreshToken");
     if (!user) {
       return next(new ApiError({ statusCode: 401, message: "Unauthorized: User not found" }));
     }
@@ -42,13 +36,10 @@ const authenticateSocket = async (socket: Socket, next: (err?: Error) => void) =
 
     next();
   } catch (error) {
-    next(new ApiError({ statusCode: 500, message: "Authentication error", data: error }));
+    next(new ApiError({ statusCode: 500, data: error, message: "Authentication error" }));
   }
 };
 
-/**
- * Handles user joining a chat room.
- */
 const handleJoinChat: ChatHandler = (socket) => {
   socket.on(ChatEventEnum.JOIN_CHAT_EVENT, (chatId: string) => {
     console.log(`📌 User joined chat: ${chatId}`);
@@ -56,9 +47,6 @@ const handleJoinChat: ChatHandler = (socket) => {
   });
 };
 
-/**
- * Handles real-time typing notifications.
- */
 const handleTypingEvents: ChatHandler = (socket) => {
   socket.on(ChatEventEnum.TYPING_EVENT, (chatId: string) => {
     socket.to(chatId).emit(ChatEventEnum.TYPING_EVENT, chatId);
@@ -69,40 +57,21 @@ const handleTypingEvents: ChatHandler = (socket) => {
   });
 };
 
-/**
- * Handles user disconnection and removes them from all joined rooms.
- */
 const handleDisconnection: ChatHandler = (socket) => {
   socket.on(ChatEventEnum.DISCONNECT_EVENT, () => {
     console.log(`🚫 User disconnected: ${socket.user?._id}`);
-
     if (socket.user?._id) {
-      const rooms = Array.from(socket.rooms);
-      rooms.forEach((room) => {
-        socket.leave(room);
-        console.log(`🔴 User left room: ${room}`);
-      });
+      socket.leave(socket.user._id.toString());
     }
   });
 };
 
-/**
- * Registers all event handlers for an authenticated socket.
- */
 const registerEventHandlers = (socket: Socket) => {
-  if (!socket.user) {
-    console.warn("❌ Attempted event registration without authentication.");
-    return;
-  }
-
   handleJoinChat(socket);
   handleTypingEvents(socket);
   handleDisconnection(socket);
 };
 
-/**
- * Initializes WebSocket server and applies authentication middleware.
- */
 export const initializeSocket = (io: Server) => {
   io.use(authenticateSocket);
 
@@ -113,13 +82,17 @@ export const initializeSocket = (io: Server) => {
   });
 };
 
-/**
- * Emits a WebSocket event to a specified room.
- */
-export const emitSocketEvent = (io: Server, roomId: string, event: string, payload: unknown) => {
+export const emitSocketEvent = async (
+  req: Request,
+  roomId: string,
+  event: string,
+  payload: unknown
+) => {
   try {
+    const { app } = await req.json();
+    const io: Server = app.get("io");
     io.to(roomId).emit(event, payload);
   } catch (error) {
-    console.error("❌ Error emitting socket event:", error);
+    console.error("Error emitting socket event:", error);
   }
 };

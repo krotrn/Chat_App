@@ -21,7 +21,7 @@ export async function POST(
   try {
     await connectToDatabase();
     const parsedRecieverId = receiverIdSchema.safeParse(params);
-    const userHeader = req.headers.get("user");
+    const userHeader = session.user._id;
     const parsedUser = userSchema.safeParse(userHeader);
 
     if (!parsedUser.success) {

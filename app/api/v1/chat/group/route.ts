@@ -9,7 +9,7 @@ import { chatCommonAggregation } from "@/lib/chat/chatHelper";
 import { ChatEventEnum } from "@/lib/chat/constants";
 import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
-
+import { auth } from "@/auth";
 /**
  * Handle Group Creation
  */
@@ -26,7 +26,15 @@ export async function POST(req: NextRequest) {
       );
     }
     const { name, participants } = parsedBody.data;
-    const user: string | null = req.headers.get("user");
+    const session = await auth();
+
+    if (!session || !session.user?._id) {
+      return new ApiError({
+        statusCode: 401,
+        message: "Unauthorized: Missing or invalid session",
+      });
+    }
+    const user: string | null = session.user._id;
 
     if (!user) {
       return NextResponse.json(
@@ -42,15 +50,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Create a unique members array
-    const members: mongoose.Types.ObjectId[] = [
-      ...new Set([
-        ...participants.map(
-          (participant: string) =>
-            new mongoose.Types.ObjectId(participant.toString())
-        ),
-        new mongoose.Types.ObjectId(user.toString()),
-      ]),
-    ];
+    const members = Array.from(
+      new Set([...participants, user].map((id) => id.toString()))
+    ).map((id) => new mongoose.Types.ObjectId(id));
 
     if (members.length < 3) {
       throw new ApiError({
@@ -62,7 +64,7 @@ export async function POST(req: NextRequest) {
     // Create the group chat
     const groupChat: ChatType = await Chat.create({
       name,
-      isGroupChar: true,
+      isGroupChat: true,
       participants: members,
       admin: new mongoose.Types.ObjectId(user),
     });
@@ -84,16 +86,19 @@ export async function POST(req: NextRequest) {
 
     // Emit socket events to all participants except the creator
     await Promise.all(
-      payload.participants.map(async (participantObjectId) => {
-        if (participantObjectId.toString() !== user.toString()) {
-          await emitSocketEvent(
+      payload.participants
+        .filter(
+          (participantObjectId) =>
+            participantObjectId.toString() !== user.toString()
+        )
+        .map((participantObjectId) =>
+          emitSocketEvent(
             req,
             participantObjectId.toString(),
             ChatEventEnum.NEW_CHAT_EVENT,
             payload
-          );
-        }
-      })
+          )
+        )
     );
 
     return NextResponse.json(
@@ -105,11 +110,9 @@ export async function POST(req: NextRequest) {
     );
   } catch (error: unknown) {
     console.error("❌ Error creating group chat:", error);
-    return NextResponse.json(
-      new ApiError({
-        statusCode: 500,
-        message: (error as NodeJS.ErrnoException).message,
-      })
-    );
+    throw new ApiError({
+      statusCode: 500,
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 }
