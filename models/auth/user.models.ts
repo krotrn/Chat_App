@@ -1,7 +1,6 @@
 import mongoose, { Schema, model, Model } from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt, { SignOptions } from "jsonwebtoken";
-import crypto from "crypto";
 import { UserType } from "@/types/User.type";
 import { USER_TEMPORARY_TOKEN_EXPIRY, UserLoginType, UserRolesEnum } from "@/utils/constants";
 
@@ -109,12 +108,19 @@ userSchema.methods.generateRefreshToken = function () {
 };
 
 
-userSchema.methods.generateTempToken = function () {
+userSchema.methods.generateTempToken = async function () {
   if (!process.env.TEMP_TOKEN_SECRET) {
     throw new Error("TEMP_TOKEN_SECRET is not defined");
   }
-  const unHashedToken = crypto.randomBytes(20).toString("hex");
-  const hashedToken = crypto.createHash("sha256").update(unHashedToken).digest("hex");
+
+  const array = new Uint8Array(20);
+  globalThis.crypto.getRandomValues(array);
+  const unHashedToken = Buffer.from(array).toString("hex");
+
+  const encoder = new TextEncoder();
+  const data = encoder.encode(unHashedToken);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashedToken = Buffer.from(hashBuffer).toString("hex");
 
   return {
     unHashedToken,
@@ -123,5 +129,5 @@ userSchema.methods.generateTempToken = function () {
   };
 };
 
-// Export Model
-export const User: Model<UserType> = mongoose.models.User || model<UserType>("User", userSchema);
+
+export const User: Model<UserType> =  model<UserType>("User", userSchema) || mongoose.models.User;

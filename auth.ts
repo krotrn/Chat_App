@@ -7,7 +7,7 @@ import { User } from "@/models/auth/user.models";
 import { UserLoginType } from "@/utils/constants";
 import { UserType } from "@/types/User.type";
 
-export const { handlers, auth } = NextAuth({
+export const { handlers, auth, signIn, signOut } = NextAuth({
   session: {
     strategy: "jwt",
   },
@@ -20,13 +20,18 @@ export const { handlers, auth } = NextAuth({
           type: "email",
           placeholder: "user@example.com",
         },
-        username: { label: "Username", type: "text", placeholder: "Username" },
-        password: { label: "Password", type: "password" },
+        username: {
+          label: "Username",
+          type: "text",
+          placeholder: "Username",
+        },
+        password: {
+          label: "Password",
+          type: "password",
+        },
       },
       authorize: async (credentials) => {
         try {
-          await connectToDatabase();
-
           const parsed = signInSchema.safeParse(credentials);
           if (!parsed.success) {
             throw new ApiError({
@@ -34,6 +39,7 @@ export const { handlers, auth } = NextAuth({
               message: parsed.error.errors.map((e) => e.message).join(", "),
             });
           }
+          await connectToDatabase();
 
           const { email, username, password } = parsed.data;
           const user: UserType | null = await User.findOne({
@@ -81,9 +87,22 @@ export const { handlers, auth } = NextAuth({
     }),
   ],
   pages: {
-    signIn: "/sign-in",
+    signIn: "/auth/sign-in",
+    signOut: "/sign-out",
+    error: '/auth/error'
   },
   callbacks: {
+    async signIn({ user }) {
+      const existingUser = await User.findOne({ _id: user._id });
+      if (
+        !existingUser ||
+        (!existingUser.isEmailVerified &&
+          existingUser.loginType === UserLoginType.EMAIL_PASSWORD)
+      ) {
+        return false;
+      }
+      return true;
+    },
     async jwt({ token, user }) {
       if (user) {
         token._id = user._id;
@@ -116,4 +135,12 @@ export const { handlers, auth } = NextAuth({
     },
   },
   secret: process.env.AUTH_SECRET,
+  events: {
+    async linkAccount({ user }) {
+      await User.findByIdAndUpdate(
+        { _id: user._id },
+        { isEmailVerified: true }
+      );
+    },
+  },
 });

@@ -20,11 +20,11 @@ const authenticateSocket = async (
   try {
     const session = await auth();
 
-    if (!session || !session.user?.email) {
+    if (!session || !session.user?._id) {
       return next(new ApiError({ statusCode: 401, message: "Unauthorized: Missing or invalid session" }));
     }
 
-    const user = await User.findOne({ email: session.user.email }).select("-password -refreshToken -emailVerificationToken -emailVerificationExpiry");
+    const user = await User.findOne({ _id: session.user._id }).select("-password -refreshToken -emailVerificationToken -emailVerificationExpiry").lean();
 
     if (!user) {
       return next(new ApiError({ statusCode: 401, message: "Unauthorized: User not found" }));

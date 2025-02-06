@@ -2,7 +2,6 @@ import "next-auth";
 import { DefaultSession } from "next-auth";
 
 
-// Extend User & Session Interfaces
 declare module "next-auth" {
   interface User {
     _id: string;
