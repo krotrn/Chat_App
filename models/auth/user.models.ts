@@ -1,5 +1,5 @@
 import mongoose, { Schema, model, Model } from "mongoose";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jwt, { SignOptions } from "jsonwebtoken";
 import crypto from "crypto";
 import { UserType } from "@/types/User.type";
