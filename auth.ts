@@ -1,82 +1,122 @@
-import NextAuth from "next-auth"
-import { ZodError } from "zod"
-import Credentials from "next-auth/providers/credentials"
-import { signInSchema } from "./lib/zod"
-import { authenticateUser } from "@/utils/db"
-import { ApiError } from "./lib/api/ApiError";
-import { DefaultSession } from "next-auth";
-import { UserType } from "./types/User.type";
+import NextAuth from "next-auth";
+import Credentials from "next-auth/providers/credentials";
+import { signInSchema } from "@/schemas/signinSchema";
+import { ApiError } from "@/lib/api/ApiError";
+import { connectToDatabase } from "./lib/mongoose";
+import { User } from "@/models/auth/user.models";
+import { UserLoginType } from "@/utils/constants";
+import { UserType } from "@/types/User.type";
+import GitHub from "next-auth/providers/github";
 
-
-declare module "next-auth" {
-  interface Session {
-    user: UserType & DefaultSession["user"]
-  }
-}
-
- 
 export const { handlers, auth } = NextAuth({
+  session: {
+    strategy: "jwt",
+  },
   providers: [
     Credentials({
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "text" },
-        username: { label: "Username", type: "text" },
-        password: { label: "Password", type: "password" },
+        email: {
+          label: "Email",
+          type: "email",
+          name: "email",
+          placeholder: "user@example.com",
+        },
+        username: {
+          label: "Username",
+          name: "username",
+          type: "text",
+          placeholder: "Username",
+        },
+        password: {
+          label: "Password",
+          type: "password",
+        },
       },
-      async authorize(credentials) {
+      authorize: async (credentials) => {
         try {
-          // Validate and parse the credentials.
-          const { email, username, password } =
-            await signInSchema.parseAsync(credentials);
-
-          // Authenticate the user and generate tokens.
-          const { user, tokens } = await authenticateUser(
-            email,
-            username,
-            password
-          );
-
+          await connectToDatabase();
+          const parsedSignInCredentials = signInSchema.safeParse(credentials);
+          if (!parsedSignInCredentials.success) {
+            throw new ApiError({
+              statusCode: 402,
+              message: parsedSignInCredentials.error.errors
+                .map((e) => e.message)
+                .join(", "),
+            });
+          }
+          const { email, username, password } = parsedSignInCredentials.data;
+          const user: UserType | null = await User.findOne({
+            $or: [{ email }, { username }],
+          }).lean();
           if (!user) {
-            throw new ApiError({ statusCode: 404, message: "User does not exist" });
+            throw new Error("User does not exist");
+          }
+          if (user.loginType !== UserLoginType.EMAIL_PASSWORD) {
+            throw new Error(
+              `You registered with ${user.loginType.toLowerCase()}. Please use that login method.`
+            );
           }
 
-          // Optionally attach token data to the user object.
-          // This will be available in the JWT and session callbacks.
-          return { ...user.toObject(), ...tokens };
-        } catch (error) {
-          // Log validation errors (Zod) or authentication errors.
-          if (error instanceof ZodError) {
-            console.error("Validation error:", error.flatten());
-          } else {
-            console.error("Authentication error:", error);
+          const isPasswordValid = await user.isPasswordMatch(password);
+          if (!isPasswordValid) {
+            throw new Error("Invalid credentials");
           }
-          return null; // Returning null signals an authentication failure.
+
+          return {
+            _id: user._id.toString(),
+            avatar: user.avatar,
+            username: user.username,
+            email: user.email,
+            role: user.role,
+            isEmailVerified: user.isEmailVerified,
+            refreshToken: user.generateRefreshToken(),
+            accessToken: user.generateRefreshToken(),
+          };
+        } catch (error) {
+          throw new ApiError({
+            statusCode: 500,
+            message: (error as Error).message,
+          });
         }
       },
     }),
+    GitHub,
   ],
+  pages: {
+    signIn: "/sign-in",
+  },
   callbacks: {
-    /**
-     * The jwt callback is called when a token is created or updated.
-     * We merge the user data (if present) into the token.
-     */
     async jwt({ token, user }) {
       if (user) {
-        token = { ...token, ...user };
+        token._id = user._id;
+        token.avatar = user.avatar;
+        token.username = user.username;
+        token.email = user.email;
+        token.role = user.role;
+        token.isEmailVerified = user.isEmailVerified;
+        token.refreshToken = user.refreshToken;
+        token.accessToken = user.accessToken;
       }
       return token;
     },
-    /**
-     * The session callback is called whenever a session is checked.
-     * We attach the token (which includes user and token data) to the session.
-     */
     async session({ session, token }) {
-      session.user = token;
+      if (token) {
+        session.user._id = token._id as string;
+        session.user.avatar = token.avatar as {
+          url: string;
+          localPath: string;
+        };
+        session.user.username = token.username as string;
+        session.user.email = token.email as string;
+        session.user.role = token.role as string;
+        session.user.isEmailVerified = token.isEmailVerified as boolean;
+        session.user.refreshToken = token.refreshToken as string;
+        session.user.accessToken = token.accessToken as string;
+      }
+
       return session;
     },
   },
-  session: {
-    strategy: "jwt", // Use JWT for session management.
-  },
-})
+  secret: process.env.AUTH_SECRET,
+});

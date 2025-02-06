@@ -1,8 +1,12 @@
 import { ApiError } from "@/lib/api/ApiError";
 import { User } from "@/models/auth/user.models";
 import { UserType } from "@/types/User.type";
-import { UserLoginType } from "./constants";
+import { UserLoginType } from "@/utils/constants";
 import { connectToDatabase } from "@/lib/mongoose";
+import { z } from "zod";
+import { signInSchema } from "@/schemas/signinSchema";
+import { NextResponse } from "next/server";
+import { ApiResponse } from "@/lib/api/ApiResponse";
 
 /**
  * Generates both access and refresh tokens for a given user.
@@ -38,13 +42,22 @@ const generateAccessAndRefreshTokens = async (userId: string) => {
  * Authenticates the user by email/username and password.
  * Returns an object with user data and tokens on success.
  */
-export const authenticateUser = async (
-  email: string,
-  username: string,
-  password: string
-) => {
+export const authenticateUser = async (credentials: z.infer<typeof signInSchema>) => {
   try {
     await connectToDatabase();
+
+    const validateField = signInSchema.safeParse(credentials);
+
+    if (!validateField.success) {
+      return NextResponse.json(
+        new ApiResponse({
+          statusCode: 402,
+          message: validateField.error.errors.map((e) => e.message).join(", "),
+        })
+      );
+    }
+
+    const { email, username, password } = validateField.data;
     // Find a user matching the email or username.
     const user: UserType | null = await User.findOne({
       $or: [{ username }, { email }],
@@ -78,7 +91,7 @@ export const authenticateUser = async (
     // Retrieve the user data without sensitive fields.
     const loggedInUser = await User.findById(user._id).select(
       "-password -refreshToken -emailVerificationToken -emailVerificationExpiry"
-    );
+    ).lean();
 
     return { user: loggedInUser, tokens: { accessToken, refreshToken } };
   } catch (error) {
