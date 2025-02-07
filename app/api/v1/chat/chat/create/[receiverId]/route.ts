@@ -1,6 +1,6 @@
 import { connectToDatabase } from "@/lib/mongoose";
 import { receiverIdSchema, userSchema } from "@/schemas/paramsSchema";
-import { User } from "@/models/auth/user.models";
+import User from "@/models/auth/user.models";
 import { Chat } from "@/models/chat-app/chat.models";
 import { emitSocketEvent } from "@/socket";
 import { ChatType } from "@/types/Chat.type";

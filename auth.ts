@@ -3,9 +3,11 @@ import Credentials from "next-auth/providers/credentials";
 import { signInSchema } from "@/schemas/signinSchema";
 import { ApiError } from "@/lib/api/ApiError";
 import { connectToDatabase } from "./lib/mongoose";
-import { User } from "@/models/auth/user.models";
+import User from "@/models/auth/user.models";
 import { UserLoginType } from "@/utils/constants";
 import { UserType } from "@/types/User.type";
+
+
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: {
@@ -86,23 +88,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
-  pages: {
-    signIn: "/auth/sign-in",
-    signOut: "/sign-out",
-    error: '/auth/error'
-  },
   callbacks: {
-    async signIn({ user }) {
-      const existingUser = await User.findOne({ _id: user._id });
-      if (
-        !existingUser ||
-        (!existingUser.isEmailVerified &&
-          existingUser.loginType === UserLoginType.EMAIL_PASSWORD)
-      ) {
-        return false;
-      }
-      return true;
-    },
     async jwt({ token, user }) {
       if (user) {
         token._id = user._id;

@@ -1,4 +1,4 @@
-import mongoose, { Schema, model, Model } from "mongoose";
+import { Schema, model, models } from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt, { SignOptions } from "jsonwebtoken";
 import { UserType } from "@/types/User.type";
@@ -55,10 +55,6 @@ const userSchema = new Schema<UserType>(
     forgotPasswordExpiry: Date,
     emailVerificationToken: String,
     emailVerificationExpiry: Date,
-    isPasswordMatch: Boolean,
-    generateAccessToken: String,
-    generateRefreshToken:String,
-    generateTempToken:String,
   },
   { timestamps: true }
 );
@@ -129,5 +125,7 @@ userSchema.methods.generateTempToken = async function () {
   };
 };
 
+ const User = models.User || model("User", userSchema);
 
-export const User: Model<UserType> =  model<UserType>("User", userSchema) || mongoose.models.User;
+export default User;
+

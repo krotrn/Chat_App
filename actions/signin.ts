@@ -21,17 +21,14 @@ export const signin = async (credentials: z.infer<typeof signInSchema>) => {
 
   try {
     await signIn("credentials", { email, username, password });
+    return { success: "Logged In Successfully." };
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
         case "CredentialsSignin":
-          return NextResponse.json(
-            new ApiError({ statusCode: 402, message: "Invalid Credentials." })
-          );
+          return  {error : "Invalid Credentials."}
         default:
-          return NextResponse.json(
-            new ApiError({ statusCode: 500, message: "something went wro.ng" })
-          );
+          return  {error : "Someting went Wrong."}
       }
     }
     throw new ApiError({ statusCode: 500, message: (error as Error).message });
