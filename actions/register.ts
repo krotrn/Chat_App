@@ -1,37 +1,49 @@
 "use server";
 
-import { ApiError } from "@/lib/api/ApiError";
-import { ApiResponse } from "@/lib/api/ApiResponse";
+import { connectToDatabase } from "@/lib/mongoose";
+import User from "@/models/auth/user.models";
 import { registerSchema } from "@/schemas/registerSchema";
-import { NextResponse } from "next/server";
+import { UserType } from "@/types/User.type";
+import { UserLoginType, UserRolesEnum } from "@/utils/constants";
 import { z } from "zod";
 
 export const register = async (credentials: z.infer<typeof registerSchema>) => {
-  const parsedData = registerSchema.safeParse(credentials);
-
-  if (!parsedData.success) {
-    return NextResponse.json(
-      new ApiResponse({ statusCode: 400, message: "Invalid Field" })
-    );
-  }
-
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/user/create`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(parsedData.data),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      throw new ApiError({ statusCode: res.status, message: data.message });
+    const parsedData = registerSchema.safeParse(credentials);
+    if (!parsedData.success) {
+      return { error: "Invalid field." };
     }
 
-    return data; // Successfully registered
+    await connectToDatabase();
+
+    const { email, username, password } = parsedData.data;
+
+    const existingUser = await User.findOne({
+      $or: [{ username }, { email }],
+    })
+      .select("_id")
+      .lean();
+
+    if (existingUser) {
+      return { error: "user already exist." };
+    }
+
+    const user: UserType = await User.create({
+      email,
+      username,
+      password,
+      role: UserRolesEnum.USER,
+      loginType: UserLoginType.EMAIL_PASSWORD,
+    });
+    await user.save({ validateBeforeSave: false });
+
+    const createdUser = await User.findById(user._id).select("_id").lean();
+    if (!createdUser) {
+      return { error: "Error on creating user." };
+    }
+    return {success: "Successfully registered."}
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
-    return NextResponse.json(
-      new ApiResponse({ statusCode: 500, message: (error as Error).message })
-    );
+    return { error: "something went wrong." };
   }
 };

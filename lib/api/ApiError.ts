@@ -20,7 +20,7 @@ class ApiError extends Error {
     data
   }: ApiErrorOptions) {
     super(message);
-
+    this.name = 'ApiError';
     this.statusCode = statusCode;
     this.data = data;
     this.success = false;
@@ -31,6 +31,19 @@ class ApiError extends Error {
     } else {
       Error.captureStackTrace(this, this.constructor);
     }
+  }
+
+  toJSON() {
+    return {
+      statusCode: this.statusCode,
+      message: this.message,
+      errors: this.errors.map(error => 
+        error instanceof Error ? error.message : error
+      ),
+      success: this.success,
+      data: this.data,
+      ...(process.env.NODE_ENV === 'development' && { stack: this.stack })
+    };
   }
 }
 

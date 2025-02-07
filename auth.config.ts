@@ -1,4 +1,4 @@
-// import GitHub from "next-auth/providers/github";
+import GitHub from "next-auth/providers/github";
 import type { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { ApiError } from "./lib/api/ApiError";
@@ -10,7 +10,7 @@ export default {
     strategy: "jwt",
   },
   providers: [
-    // GitHub,
+    GitHub,
     Credentials({
       name: "Credentials",
       credentials: {
