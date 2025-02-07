@@ -1,9 +1,6 @@
 import fs from "fs/promises";
+import { AuthError } from "next-auth";
 
-/**
- * Removes a local file if it exists.
- * @param localPath - The path to the file that needs to be deleted.
- */
 export const removeLocalFile = async (localPath: string): Promise<void> => {
   try {
     await fs.unlink(localPath);
@@ -16,3 +13,28 @@ export const removeLocalFile = async (localPath: string): Promise<void> => {
     }
   }
 };
+
+
+export const handleAuthError = (error: AuthError): { error: string } => {
+  switch (error.type) {
+    case "CredentialsSignin":
+      return { error: "Invalid credentials." };
+    case "CallbackRouteError":
+      return { error: "Account does not exist." };
+    case "OAuthSignInError":
+      return { error: "OAuth authentication failed." };
+    case "OAuthCallbackError":
+      return { error: "OAuth callback error." };
+    case "OAuthAccountNotLinked":
+      return { error: "Failed to create OAuth account." };
+    case "EmailSignInError":
+      return { error: "Failed to create an email-based account." };
+    case "AccountNotLinked":
+      return { error: "This email is already linked to another account." };
+    case "SessionTokenError":
+      return { error: "Please log in to continue." };
+    default:
+      return { error: "Something went wrong. Please try again." };
+  }
+};
+

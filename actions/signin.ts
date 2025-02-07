@@ -3,6 +3,7 @@
 import { signIn } from "@/auth";
 import { ApiError } from "@/lib/api/ApiError";
 import { ApiResponse } from "@/lib/api/ApiResponse";
+import { handleAuthError } from "@/lib/chat/Helper";
 import { signInSchema } from "@/schemas/signinSchema";
 import { AuthError } from "next-auth";
 import { NextResponse } from "next/server";
@@ -24,12 +25,7 @@ export const signin = async (credentials: z.infer<typeof signInSchema>) => {
     return { success: "Logged In Successfully." };
   } catch (error) {
     if (error instanceof AuthError) {
-      switch (error.type) {
-        case "CredentialsSignin":
-          return  {error : "Invalid Credentials."}
-        default:
-          return  {error : "Someting went Wrong."}
-      }
+      return handleAuthError(error);
     }
     throw new ApiError({ statusCode: 500, message: (error as Error).message });
   }

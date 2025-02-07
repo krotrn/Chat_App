@@ -4,7 +4,7 @@ export const registerSchema = z.object({
   email: z
     .string({ required_error: "Email is required" })
     .nonempty("Email is required")
-    .email("Invalid email"),
+    .email("Invalid email").toLowerCase(),
   username: z
     .string({ required_error: "username is required" })
     .nonempty({ message: "username is required." }),

@@ -1,42 +1,44 @@
 "use client";
-import { CardWrapper } from "@/components/auth/card-wrapper";
-import { useForm } from "react-hook-form";
+import { CardWrapper } from "./card-wrapper";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+  FormLabel,
+} from "../ui/form";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { signInSchema } from "@/schemas/signinSchema";
+import { useForm } from "react-hook-form";
+import { registerSchema } from "@/schemas/registerSchema";
 import { Input } from "../ui/input";
-import { Button } from "../ui/button";
 import { FormError } from "./Form-Error";
 import { FormSuccess } from "./Form-Success";
+import { Button } from "../ui/button";
 import { useState, useTransition } from "react";
-import { signin } from "@/actions/signin";
+import { register } from "@/actions/register";
 
-const LoginForm = () => {
-  const form = useForm<z.infer<typeof signInSchema>>({
-    resolver: zodResolver(signInSchema),
+const RegisterForm = () => {
+  const form = useForm<z.infer<typeof registerSchema>>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       email: "",
       username: "",
       password: "",
     },
   });
+
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
 
-  const onSubmit = (credentials: z.infer<typeof signInSchema>) => {
+  const onSubmit = (credentials: z.infer<typeof registerSchema>) => {
     setError("");
     setSuccess("");
     startTransition(() => {
-      signin(credentials).then((data) => {
+      register(credentials).then((data) => {
         if ("error" in data) {
           setError(data.error);
         }
@@ -49,13 +51,12 @@ const LoginForm = () => {
 
   return (
     <CardWrapper
-      backButtonHref="/register"
-      backButtonLabel="Don't have an account ?"
-      headerLabel="Welcome Back"
-      showSocial
+      backButtonHref="/login"
+      backButtonLabel="Already have an Account?"
+      headerLabel="Welcome"
     >
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit)}>
           <FormField
             control={form.control}
             name="email"
@@ -73,7 +74,7 @@ const LoginForm = () => {
                 <FormMessage />
               </FormItem>
             )}
-          />
+          ></FormField>
           <FormField
             control={form.control}
             name="username"
@@ -83,15 +84,15 @@ const LoginForm = () => {
                 <FormControl>
                   <Input
                     {...field}
-                    disabled={isPending}
                     placeholder="Username"
                     type="text"
+                    disabled={isPending}
                   />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
-          />
+          ></FormField>
           <FormField
             control={form.control}
             name="password"
@@ -101,25 +102,26 @@ const LoginForm = () => {
                 <FormControl>
                   <Input
                     {...field}
-                    disabled={isPending}
                     placeholder="Password"
                     type="password"
+                    disabled={isPending}
                   />
                 </FormControl>
-
                 <FormMessage />
               </FormItem>
             )}
-          />
+          ></FormField>
           <FormError message={error} />
           <FormSuccess message={success} />
-          <Button type="submit" disabled={isPending} className="w-full">
-            Login
-          </Button>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isPending}
+          ></Button>
         </form>
       </Form>
     </CardWrapper>
   );
 };
 
-export default LoginForm;
+export default RegisterForm;
