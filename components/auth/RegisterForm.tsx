@@ -1,5 +1,5 @@
 "use client";
-import { CardWrapper } from "./card-wrapper";
+import { CardWrapper } from "@/components/auth/card-wrapper";
 import {
   Form,
   FormControl,
@@ -7,16 +7,16 @@ import {
   FormItem,
   FormMessage,
   FormLabel,
-} from "../ui/form";
+} from "@/components/ui/form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { registerSchema } from "@/schemas/registerSchema";
-import { Input } from "../ui/input";
-import { FormError } from "./Form-Error";
-import { FormSuccess } from "./Form-Success";
-import { Button } from "../ui/button";
+import { Input } from "@/components/ui/input";
+import { FormError } from "@/components/auth/Form-Error";
+import { FormSuccess } from "@/components/auth/Form-Success";
+import { Button } from "@/components/ui/button";
 import { useState, useTransition } from "react";
 import { register } from "@/actions/register";
 
@@ -54,9 +54,10 @@ const RegisterForm = () => {
       backButtonHref="/login"
       backButtonLabel="Already have an Account?"
       headerLabel="Welcome"
+      showSocial
     >
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
             name="email"
@@ -117,7 +118,7 @@ const RegisterForm = () => {
             type="submit"
             className="w-full"
             disabled={isPending}
-          ></Button>
+          >Register</Button>
         </form>
       </Form>
     </CardWrapper>

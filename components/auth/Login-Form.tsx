@@ -12,10 +12,10 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { signInSchema } from "@/schemas/signinSchema";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
-import { FormError } from "./Form-Error";
-import { FormSuccess } from "./Form-Success";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { FormError } from "@/components/auth/Form-Error";
+import { FormSuccess } from "@/components/auth/Form-Success";
 import { useState, useTransition } from "react";
 import { signin } from "@/actions/signin";
 

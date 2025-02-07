@@ -4,7 +4,7 @@ import { connectToDatabase } from "@/lib/mongoose";
 import User from "@/models/auth/user.models";
 import { registerSchema } from "@/schemas/registerSchema";
 import { UserType } from "@/types/User.type";
-import { UserRolesEnum } from "@/utils/constants";
+import { UserLoginType, UserRolesEnum } from "@/utils/constants";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await connectToDatabase()
+    await connectToDatabase();
 
     const existingUser = await User.findOne({
       $or: [{ username }, { email }],
@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
       username,
       password,
       role: role || UserRolesEnum.USER,
+      loginType: UserLoginType.EMAIL_PASSWORD,
     });
     await user.save({ validateBeforeSave: false });
 
