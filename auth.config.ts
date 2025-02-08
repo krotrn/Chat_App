@@ -1,16 +1,33 @@
 import GitHub from "next-auth/providers/github";
+import Google from "next-auth/providers/google";
 import type { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { ApiError } from "./lib/api/ApiError";
 import { UserType } from "./types/User.type";
-import { UserLoginType } from "./utils/constants";
-
+import { UserLoginType, UserRolesEnum } from "./utils/constants";
 export default {
   session: {
     strategy: "jwt",
   },
   providers: [
-    GitHub,
+    GitHub({
+      clientId: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    }),
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      profile(profile) {
+        return {
+          username: profile.user,
+          _id: profile._id,
+          email: profile.email,
+          isEmailVerified: true,
+          role: UserRolesEnum.USER,
+          id:profile.id
+        }
+      }
+    }),
     Credentials({
       name: "Credentials",
       credentials: {
@@ -47,8 +64,8 @@ export default {
 
           if (!user) {
             throw new ApiError({
-              statusCode: 404,
-              message: "User does not exist",
+              statusCode: 401,
+              message: "Invalid email or password",
             });
           }
 
@@ -87,6 +104,7 @@ export default {
       if (user) {
         token._id = user._id;
         token.email = user.email;
+        token.username = user.username;
         token.role = user.role;
         token.isEmailVerified = user.isEmailVerified;
       }

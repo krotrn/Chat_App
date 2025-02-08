@@ -2,20 +2,29 @@ import { Schema, model, models } from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt, { SignOptions } from "jsonwebtoken";
 import { UserType } from "@/types/User.type";
-import { USER_TEMPORARY_TOKEN_EXPIRY, UserLoginType, UserRolesEnum } from "@/utils/constants";
-
-
+import {
+  USER_TEMPORARY_TOKEN_EXPIRY,
+  UserLoginType,
+  UserRolesEnum,
+} from "@/utils/constants";
 
 const userSchema = new Schema<UserType>(
   {
     avatar: {
       type: {
-        url: { type: String, default: "https://via.placeholder.com/200x200.png" },
+        url: {
+          type: String,
+          default: "https://via.placeholder.com/200x200.png",
+        },
         localPath: { type: String, default: "" },
       },
     },
     username: {
       type: String,
+      validate: {
+        validator: (v: string) => /^[a-zA-Z0-9_]{3,20}$/.test(v),
+        message: "Username must be 3-20 alphanumeric characters",
+      },
       required: true,
       unique: true,
       trim: true,
@@ -60,10 +69,12 @@ const userSchema = new Schema<UserType>(
 );
 
 // Ensure fields are indexed for quick lookup
-userSchema.index({ email: 1, username: 1 });
+userSchema.index({ email: 1 }, { unique: true, sparse: true });
+userSchema.index({ username: 1 }, { unique: true, sparse: true });
 
 // Pre-save hook to hash passwords securely
 userSchema.pre("save", async function (next) {
+  if (this.loginType !== UserLoginType.EMAIL_PASSWORD) return next();
   if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 10);
   next();
@@ -96,13 +107,10 @@ userSchema.methods.generateRefreshToken = function () {
   if (!process.env.REFRESH_TOKEN_SECRET) {
     throw new Error("REFRESH_TOKEN_SECRET is not defined");
   }
-  return jwt.sign(
-    { _id: this._id },
-    process.env.REFRESH_TOKEN_SECRET,
-    { expiresIn: process.env.REFRESH_TOKEN_EXPIRY || "7d" } as SignOptions
-  );
+  return jwt.sign({ _id: this._id }, process.env.REFRESH_TOKEN_SECRET, {
+    expiresIn: process.env.REFRESH_TOKEN_EXPIRY || "7d",
+  } as SignOptions);
 };
-
 
 userSchema.methods.generateTempToken = async function () {
   if (!process.env.TEMP_TOKEN_SECRET) {
@@ -125,7 +133,6 @@ userSchema.methods.generateTempToken = async function () {
   };
 };
 
- const User = models.User || model("User", userSchema);
+const User = models.User || model("User", userSchema);
 
 export default User;
-
