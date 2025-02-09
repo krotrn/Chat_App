@@ -136,4 +136,8 @@ export default {
       );
     },
   },
+  pages: {
+    signIn: '/login',
+    error: '/error'
+  }
 } satisfies NextAuthConfig;

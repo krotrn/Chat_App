@@ -41,7 +41,7 @@ const LoginForm = () => {
           setError(data.error);
         }
         if ("success" in data) {
-          setSuccess(data.success);
+          // setSuccess(data.success);
         }
       });
     });

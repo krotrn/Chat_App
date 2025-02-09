@@ -12,7 +12,7 @@ import Social from "@/components/auth/Social";
 import BackButton from "@/components/auth/BackButton";
 
 interface CardWrapperProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   headerLabel: string;
   backButtonLabel: string;
   backButtonHref: string;
@@ -33,10 +33,10 @@ export const CardWrapper = ({
           <Header label={headerLabel} />
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
+      {children && <CardContent className="space-y-6">
         {children}
         {showSocial && <Social />}
-      </CardContent>
+      </CardContent>}
       <CardFooter>
         <BackButton label={backButtonLabel} href={backButtonHref} />
       </CardFooter>

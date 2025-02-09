@@ -19,8 +19,11 @@ import { FormSuccess } from "@/components/auth/Form-Success";
 import { Button } from "@/components/ui/button";
 import { useState, useTransition } from "react";
 import { register } from "@/actions/register";
+import { useSearchParams } from "next/navigation";
 
 const RegisterForm = () => {
+  const searchParams = useSearchParams();
+  const urlError = searchParams.get("error") == "OAuthAccountNotLinked" ? "Email already in use with different provider!" : ""
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -112,7 +115,7 @@ const RegisterForm = () => {
               </FormItem>
             )}
           ></FormField>
-          <FormError message={error} />
+          <FormError message={error || urlError} />
           <FormSuccess message={success} />
           <Button
             type="submit"
