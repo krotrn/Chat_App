@@ -10,7 +10,7 @@ export interface UserType extends mongoose.Document<mongoose.Types.ObjectId> {
   role: string;
   password: string;
   loginType: string;
-  isEmailVerified: boolean;
+  emailVerified: Date | null
   refreshToken?: string;
   forgotPasswordToken?: string;
   forgotPasswordExpiry?: Date;

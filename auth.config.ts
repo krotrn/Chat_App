@@ -1,143 +1,133 @@
-import GitHub from "next-auth/providers/github";
-import Google from "next-auth/providers/google";
+import GitHub, { GitHubProfile } from "next-auth/providers/github";
+import Google, { GoogleProfile } from "next-auth/providers/google";
 import type { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import { signInSchema } from "./schemas/signinSchema";
+import { db } from "./prisma";
+import bcrypt from "bcryptjs";
 import { ApiError } from "./lib/api/ApiError";
-import { UserType } from "./types/User.type";
-import { UserLoginType, UserRolesEnum } from "./utils/constants";
+import { AccountType, UserRoles } from "@prisma/client";
+import { generateUniqueUsername } from "./utils/auth.utils";
+
+
 export default {
-  session: {
-    strategy: "jwt",
+  callbacks: {
+    async jwt({ token, user, trigger, session }) {
+      if (user) {
+        token.id = user.id;
+        token.email = user.email;
+        token.username = user.username;
+        token.role = user.role;
+      }
+      if (trigger === "update" && session) {
+        token = { ...token, ...session };
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token && session.user) {
+        session.user = {
+          ...session.user,
+          id: token.id as string,
+          email: token.email as string,
+          username: token.username as string,
+          role: token.role as UserRoles,
+        };
+      }
+      return session;
+    },
   },
   providers: [
     GitHub({
       clientId: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      profile: async (profile:GitHubProfile) => {
+        return {
+          id: profile.id.toString(),
+          avatarUrl:profile.avatar_url,
+          name: profile.name,
+          username: await generateUniqueUsername(profile.login),
+          email: profile.email,
+          emailVerified: Date.now,
+          role: UserRoles.USER,
+          loginType: AccountType.GITHUB,
+        };
+      },
     }),
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      profile(profile) {
+      profile: async (profile:GoogleProfile) => {
         return {
-          username: profile.user,
-          _id: profile._id,
+          id: profile.sub,
+          avatarUrl: profile.picture,
+          name: profile.name,
+          username: await generateUniqueUsername(profile.name),
           email: profile.email,
-          isEmailVerified: true,
-          role: UserRolesEnum.USER,
-          id:profile.id
-        }
-      }
+          emailVerified: profile.email_verified || null,
+          role: UserRoles.USER,
+          loginType: AccountType.GOOGLE,
+        };
+      },
     }),
     Credentials({
       name: "Credentials",
       credentials: {
-        email: {
-          label: "Email",
-          type: "email",
-          placeholder: "user@example.com",
-        },
-        username: { label: "Username", type: "text", placeholder: "Username" },
+        identifier: { label: "Email/Username", type: "text" },
         password: { label: "Password", type: "password" },
       },
       authorize: async (credentials) => {
         try {
-          if (typeof window !== "undefined") return null;
-
-          if (process.env.NEXT_RUNTIME !== "nodejs") return null;
-
-          const { signInSchema } = await import("./schemas/signinSchema");
-          const { connectToDatabase } = await import("./lib/mongoose");
-          const User = (await import("@/models/auth/user.models")).default;
           const parsed = signInSchema.safeParse(credentials);
           if (!parsed.success) {
             throw new ApiError({
               statusCode: 400,
-              message: parsed.error.errors.map((e) => e.message).join(", "),
+              message: "Invalid credentials format",
             });
           }
-          await connectToDatabase();
 
-          const { email, username, password } = parsed.data;
-          const user: UserType | null = await User.findOne({
-            $or: [{ email }, { username }],
+          const { identifier, password } = parsed.data;
+
+          const user = await db.user.findFirst({
+            where: {
+              OR: [{ email: identifier }, { username: identifier }],
+              loginType: AccountType.EMAIL,
+            },
           });
 
-          if (!user) {
-            throw new ApiError({
-              statusCode: 401,
-              message: "Invalid email or password",
-            });
-          }
+          if (!user?.password) return null;
 
-          if (user.loginType !== UserLoginType.EMAIL_PASSWORD) {
-            throw new ApiError({
-              statusCode: 400,
-              message: `You registered with ${user.loginType.toLowerCase()}. Please use that login method.`,
-            });
-          }
-
-          if (!(await user.isPasswordMatch(password))) {
-            throw new ApiError({
-              statusCode: 401,
-              message: "Invalid credentials",
-            });
-          }
+          const passwordValid = await bcrypt.compare(password, user.password);
+          if (!passwordValid) return null;
 
           return {
-            _id: user._id.toString(),
+            id: user.id,
             username: user.username,
             email: user.email,
             role: user.role,
-            isEmailVerified: user.isEmailVerified,
+            emailVerified: user.emailVerified,
           };
         } catch (error) {
-          throw new ApiError({
-            statusCode: 500,
-            message: (error as Error).message,
-          });
+          console.error("Authentication error:", error);
+          return null;
         }
       },
     }),
   ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token._id = user._id;
-        token.email = user.email;
-        token.username = user.username;
-        token.role = user.role;
-        token.isEmailVerified = user.isEmailVerified;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user._id = token._id as string;
-        session.user.email = token.email as string;
-        session.user.username = token.username as string;
-        session.user.role = token.role as string;
-        session.user.isEmailVerified = token.isEmailVerified as boolean;
-      }
-      return session;
-    },
-  },
   secret: process.env.AUTH_SECRET,
+  pages: {
+    signIn: "/login",
+    error: "/auth/error",
+    verifyRequest: "/auth/verify-email",
+  },
   events: {
     async linkAccount({ user }) {
-      if (process.env.NEXT_RUNTIME !== "nodejs") return;
-
-      const { default: User } = await import("@/models/auth/user.models");
-      const { connectToDatabase } = await import("./lib/mongoose");
-
-      await connectToDatabase();
-      await User.findByIdAndUpdate(
-        { _id: user._id },
-        { isEmailVerified: true }
-      );
+      await db.user.update({
+        where: { id: user.id },
+        data: {
+          emailVerified: new Date(),
+        },
+      });
     },
   },
-  pages: {
-    signIn: '/login',
-    error: '/error'
-  }
 } satisfies NextAuthConfig;

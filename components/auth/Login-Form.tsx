@@ -15,7 +15,6 @@ import { signInSchema } from "@/schemas/signinSchema";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { FormError } from "@/components/auth/Form-Error";
-import { FormSuccess } from "@/components/auth/Form-Success";
 import { useState, useTransition } from "react";
 import { signin } from "@/actions/signin";
 
@@ -23,34 +22,32 @@ const LoginForm = () => {
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
-      email: "",
-      username: "",
+      identifier: "",
       password: "",
     },
   });
   const [error, setError] = useState<string | undefined>("");
-  const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
 
   const onSubmit = (credentials: z.infer<typeof signInSchema>) => {
     setError("");
-    setSuccess("");
     startTransition(() => {
-      signin(credentials).then((data) => {
-        if ("error" in data) {
-          setError(data.error);
-        }
-        if ("success" in data) {
-          // setSuccess(data.success);
-        }
-      });
+      signin(credentials)
+        .then((data) => {
+          if ("success" in data && data.success === false) {
+            setError("message" in data ? data.message : "An error occurred");
+          }
+        })
+        .catch(() => {
+          setError("An unexpected error occurred");
+        });
     });
   };
 
   return (
     <CardWrapper
       backButtonHref="/register"
-      backButtonLabel="Don't have an account ?"
+      backButtonLabel="Don't have an account?"
       headerLabel="Welcome Back"
       showSocial
     >
@@ -58,34 +55,17 @@ const LoginForm = () => {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
-            name="email"
+            name="identifier"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>Email or Username</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
-                    placeholder="youremail@example.com"
-                    type="email"
-                    disabled={isPending}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="username"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Username</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    disabled={isPending}
-                    placeholder="Username"
+                    placeholder="you@example.com or username"
                     type="text"
+                    disabled={isPending}
+                    autoComplete="username"
                   />
                 </FormControl>
                 <FormMessage />
@@ -102,19 +82,23 @@ const LoginForm = () => {
                   <Input
                     {...field}
                     disabled={isPending}
-                    placeholder="Password"
+                    placeholder="••••••••"
                     type="password"
+                    autoComplete="current-password"
                   />
                 </FormControl>
-
                 <FormMessage />
               </FormItem>
             )}
           />
           <FormError message={error} />
-          <FormSuccess message={success} />
-          <Button type="submit" disabled={isPending} className="w-full">
-            Login
+          <Button
+            type="submit"
+            disabled={isPending}
+            className="w-full"
+            aria-disabled={isPending}
+          >
+            {isPending ? "Signing in..." : "Sign in"}
           </Button>
         </form>
       </Form>

@@ -1,49 +1,94 @@
 "use server";
-
-import { connectToDatabase } from "@/lib/mongoose";
-import User from "@/models/auth/user.models";
 import { registerSchema } from "@/schemas/registerSchema";
-import { UserType } from "@/types/User.type";
-import { UserLoginType, UserRolesEnum } from "@/utils/constants";
+import { UserRoles, AccountType } from "@prisma/client";
 import { z } from "zod";
+import { db } from "@/prisma";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+import { hashPassword } from "@/utils/auth.utils";
 
 export const register = async (credentials: z.infer<typeof registerSchema>) => {
+  const parsedData = registerSchema.safeParse(credentials);
+  if (!parsedData.success) {
+    return { error: "Invalid field values." };
+  }
+
+  const { email, username, password } = parsedData.data;
+
   try {
-    const parsedData = registerSchema.safeParse(credentials);
-    if (!parsedData.success) {
-      return { error: "Invalid field." };
+    const [existingEmail, existingUsername] = await Promise.all([
+      db.user.findUnique({
+        where: { email },
+        select: { emailVerified: true },
+      }),
+      db.user.findUnique({
+        where: { username },
+        select: { emailVerified: true },
+      }),
+    ]);
+
+    // Handle verified account conflicts
+    if (existingEmail?.emailVerified) {
+      return { error: "Email already in use" };
+    }
+    if (existingUsername?.emailVerified) {
+      return { error: "Username already taken" };
     }
 
-    await connectToDatabase();
+    await db.$transaction(async (tx) => {
+      // Cleanup unverified conflicts
+      await Promise.all([
+        tx.user.deleteMany({
+          where: {
+            OR: [
+              { email, emailVerified: null },
+              { username, emailVerified: null },
+            ],
+          },
+        }),
+      ]);
 
-    const { email, username, password } = parsedData.data;
+      const [emailAvailable, usernameAvailable] = await Promise.all([
+        tx.user.count({ where: { email } }),
+        tx.user.count({ where: { username } }),
+      ]);
 
-    const existingUser = await User.findOne({
-      $or: [{ username }, { email }],
-    })
-      .select("_id")
-      .lean();
+      if (emailAvailable > 0 || usernameAvailable > 0) {
+        throw new Error("Registration conflict detected");
+      }
 
-    if (existingUser) {
-      return { error: "user already exist." };
-    }
-
-    const user: UserType = await User.create({
-      email,
-      username,
-      password,
-      role: UserRolesEnum.USER,
-      loginType: UserLoginType.EMAIL_PASSWORD,
+      // Create verified user
+      return tx.user.create({
+        data: {
+          email,
+          username,
+          password: await hashPassword(password),
+          role: UserRoles.USER,
+          loginType: AccountType.EMAIL,
+          emailVerified: null,
+          emailVerificationExpiry: new Date(Date.now() + 3600 * 1000),
+        },
+        select: { email: true },
+      });
     });
-    await user.save({ validateBeforeSave: false });
 
-    const createdUser = await User.findById(user._id).select("_id").lean();
-    if (!createdUser) {
-      return { error: "Error on creating user." };
-    }
-    return {success: "Successfully registered."}
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // TODO: Implement email verification trigger
+    return {
+      success: "Registration successful. Please verify your email.",
+    };
   } catch (error) {
-    return { error: "something went wrong." };
+    console.error("Registration error:", error);
+
+    if (error instanceof PrismaClientKnownRequestError) {
+      if (error.code === "P2002") {
+        return { error: "Duplicate registration attempt detected" };
+      }
+    }
+
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to complete registration",
+    };
   }
 };

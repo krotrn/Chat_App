@@ -1,0 +1,165 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRoles {
+  ADMIN
+  USER
+}
+
+enum AccountType {
+  EMAIL
+  GOOGLE
+  GITHUB
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum GroupMemberRole {
+  ADMIN
+  MEMBER
+}
+
+model User {
+  id                      String      @id @default(cuid())
+  username                String      @unique @db.VarChar(20)
+  avatarUrl               String?     @db.Text
+  name                    String?
+  email                   String      @unique @db.Text
+  role                    UserRoles   @default(USER)
+  emailVerified           DateTime?
+  password                String?
+  loginType               AccountType @default(EMAIL)
+  refreshToken            String?
+  forgotPasswordToken     String?
+  forgotPasswordExpiry    DateTime?
+  emailVerificationToken  String?
+  emailVerificationExpiry DateTime?
+  createdAt               DateTime    @default(now())
+  updatedAt               DateTime    @default(now()) @updatedAt
+
+  // Relationships
+  accounts           Account[]
+  sentRequests       FriendRequest[] @relation("SentRequests")
+  receivedRequests   FriendRequest[] @relation("ReceivedRequests")
+  friends            UserFriends[]   @relation("UserFriends")
+  friendOf           UserFriends[]   @relation("UserFriendsFriend")
+  administeredGroups Group[]         @relation("GroupAdmin")
+  groupMemberships   GroupMembers[]
+  sentMessages       DirectMessage[] @relation("SentMessages")
+  receivedMessages   DirectMessage[] @relation("ReceivedMessages")
+
+  @@unique([username, email])
+  @@index([email])
+  @@index([username])
+  @@index([createdAt])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model FriendRequest {
+  id         String           @id @default(cuid())
+  senderId   String
+  receiverId String
+  status     FriendshipStatus @default(PENDING)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @default(now()) @updatedAt
+  expiresAt  DateTime?
+
+  sender   User @relation("SentRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+  @@index([senderId, receiverId])
+}
+
+model UserFriends {
+  id        String   @id @default(cuid())
+  userId    String
+  friendId  String
+  createdAt DateTime @default(now())
+
+  user   User @relation("UserFriends", fields: [userId], references: [id], onDelete: Cascade)
+  friend User @relation("UserFriendsFriend", fields: [friendId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, friendId])
+  @@index([userId])
+  @@index([friendId])
+}
+
+model Group {
+  id          String   @id @default(cuid())
+  avatarUrl   String?
+  name        String
+  description String?
+  adminId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  admin   User           @relation("GroupAdmin", fields: [adminId], references: [id], onDelete: Restrict)
+  members GroupMembers[]
+}
+
+model GroupMembers {
+  id       String          @id @default(cuid())
+  groupId  String
+  userId   String
+  role     GroupMemberRole @default(MEMBER)
+  joinedAt DateTime        @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([userId])
+}
+
+model DirectMessage {
+  id         String    @id @default(cuid())
+  content    String
+  senderId   String
+  receiverId String
+  isSeen     Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now()) @updatedAt
+  seenAt     DateTime? // Add timestamp for when message was seen
+
+  sender   User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([senderId, receiverId])
+  @@index([isSeen])
+  @@index([createdAt, updatedAt])
+}
