@@ -80,3 +80,31 @@ export const generateTempToken = async () => {
     tokenExpiry: new Date(Date.now() +  20 * 60 * 1000),
   };
 };
+
+export const verifyToken = async (email: string, token: string) => {
+  try {
+    
+    const user = await db.user.findUnique({
+      where: {
+        emailVerificationToken: token, 
+      },
+      select: {
+        email: true,
+        emailVerificationExpiry: true
+      },
+    });
+if (
+      !user || 
+      user.email !== email || 
+      !user.emailVerificationExpiry || 
+      user.emailVerificationExpiry < new Date()
+    ) {
+      return null;
+    }
+ 
+    return user;
+  } catch (error) {
+    console.error("Error verifying token:", error);
+    return null;
+  }
+};

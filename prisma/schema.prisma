@@ -65,6 +65,7 @@ model User {
   receivedMessages   DirectMessage[] @relation("ReceivedMessages")
 
   @@unique([username, email])
+  @@unique([emailVerificationToken])
   @@index([email])
   @@index([username])
   @@index([createdAt])

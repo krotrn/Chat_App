@@ -1,12 +1,9 @@
 import "next-auth";
 import { DefaultSession } from "next-auth";
-import { AdapterUser as DefaultAdapterUser } from "next-auth/adapters";
 
 declare module "next-auth" {
   interface User {
-    id: string;
-    avatarUrl?: string;
-    email: string;
+    avatarUrl: string | null;
     username: string;
     role: string;
     emailVerified?: date;
@@ -20,6 +17,7 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     id: string;
+    avatarUrl: string | null;
     username: string;
     email: string;
     role: string;
@@ -27,10 +25,3 @@ declare module "next-auth/jwt" {
   }
 }
 
-declare module "next-auth/adapters" {
-  interface AdapterUser extends DefaultAdapterUser {
-    role: string;
-    emailVerified: date | null;
-    username: string;
-  }
-}

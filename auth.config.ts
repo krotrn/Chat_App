@@ -9,18 +9,26 @@ import { ApiError } from "./lib/api/ApiError";
 import { AccountType, UserRoles } from "@prisma/client";
 import { generateUniqueUsername } from "./utils/auth.utils";
 
-
 export default {
   callbacks: {
-    async jwt({ token, user, trigger, session }) {
+    async signIn({ user: { id } }) {
+      const existingUser = await db.user.findUnique({
+        where: { id },
+        select: { emailVerified: true, loginType: true },
+      });
+      return !!(
+        existingUser &&
+        (existingUser.loginType !== AccountType.EMAIL || existingUser.emailVerified)
+      );  
+    },
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.name = user.name;
+        token.avatarUrl = user.avatarUrl;
         token.email = user.email;
         token.username = user.username;
         token.role = user.role;
-      }
-      if (trigger === "update" && session) {
-        token = { ...token, ...session };
       }
       return token;
     },
@@ -28,6 +36,8 @@ export default {
       if (token && session.user) {
         session.user = {
           ...session.user,
+          name: token.name,
+          avatarUrl: (token.avatarUrl as string) || null,
           id: token.id as string,
           email: token.email as string,
           username: token.username as string,
@@ -41,10 +51,10 @@ export default {
     GitHub({
       clientId: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      profile: async (profile:GitHubProfile) => {
+      profile: async (profile: GitHubProfile) => {
         return {
           id: profile.id.toString(),
-          avatarUrl:profile.avatar_url,
+          avatarUrl: profile.avatar_url,
           name: profile.name,
           username: await generateUniqueUsername(profile.login),
           email: profile.email,
@@ -57,7 +67,7 @@ export default {
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      profile: async (profile:GoogleProfile) => {
+      profile: async (profile: GoogleProfile) => {
         return {
           id: profile.sub,
           avatarUrl: profile.picture,
@@ -103,6 +113,7 @@ export default {
           return {
             id: user.id,
             username: user.username,
+            avatarUrl: user.avatarUrl || null,
             email: user.email,
             role: user.role,
             emailVerified: user.emailVerified,
@@ -114,11 +125,10 @@ export default {
       },
     }),
   ],
-  secret: process.env.AUTH_SECRET,
   pages: {
     signIn: "/login",
-    error: "/auth/error",
-    verifyRequest: "/auth/verify-email",
+    error: "/error"
+    
   },
   events: {
     async linkAccount({ user }) {
