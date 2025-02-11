@@ -1,36 +1,100 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ChatApp
+
+A feature-rich chatting application built with Next.js (App Router) that supports multiple authentication methods, group chats, friend chats, friend requests, and more. This project uses Auth.js v5 for authentication, PostgreSQL (via Prisma) for user authentication and identification, and MongoDB (via Mongoose) for chat storage. The UI is built with [shadcn/ui](https://ui.shadcn.com/) components.
+
+## Table of Contents
+
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+- [Running the Application](#running-the-application)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
+
+## Features
+
+- **Authentication & Authorization**
+  - Credential authentication
+  - Social authentication with Google and GitHub
+  - Email verification (Resend)
+  - OTP-based login
+
+- **Chat Functionality**
+  - Group chat support
+  - One-on-one friend chats
+  - Friend request system
+
+- **User Interface**
+  - Built with shadcn/ui components for a modern and responsive design
+
+- **Scalable & Modular**
+  - Uses PostgreSQL (via Prisma) for handling user data
+  - Uses MongoDB (via Mongoose) for efficient chat storage
+  - Clean separation between authentication and chat data
+
+- **Future Enhancements**
+  - Additional chat features
+  - Improved notifications and real-time updates
+  - More integrations and social login providers
+
+## Tech Stack
+
+- **Frontend:** Next.js (App Router), React, shadcn/ui
+- **Authentication:** Auth.js v5 (with support for multiple providers)
+- **Databases:**
+  - **PostgreSQL** (with Prisma ORM) – for user data and authentication
+  - **MongoDB** (with Mongoose) – for chat messages and related data
+- **Languages:** TypeScript
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (v14 or later)
+- [PostgreSQL](https://www.postgresql.org/) instance
+- [MongoDB](https://www.mongodb.com/) instance
+
+### Installation
+
+1. **Clone the Repository**
+
+   ```bash
+   git clone https://github.com/krotrn/Chat_App.git
+   cd Chat_App
+   ```
+
+2. **Install Dependencies**
+
+   Using npm:
+
+   ```bash
+   npm install
+   ```
+
+## Running the Application
+
+Start the development server with:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Contributing
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Contributions are welcome! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) file for guidelines on how to contribute, report issues, or propose new features.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## License
 
-## Learn More
+This project is licensed under the [MIT License](LICENSE).
 
-To learn more about Next.js, take a look at the following resources:
+## Contact
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+For any questions, suggestions, or feedback, please open an issue or contact [krotrn.ks@gmail.com](mailto:krotrn.ks@gmail.com).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+Happy coding!
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
