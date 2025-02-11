@@ -36,6 +36,8 @@ const LoginForm = () => {
         .then((data) => {
           if ("success" in data && data.success === false) {
             setError("message" in data ? data.message : "An error occurred");
+          } else {
+            setError(data.error)
           }
         })
         .catch(() => {

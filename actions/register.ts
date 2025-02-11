@@ -5,6 +5,7 @@ import { z } from "zod";
 import { db } from "@/prisma";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { hashPassword } from "@/utils/auth.utils";
+import { sendEmail } from "./sendEmail";
 
 export const register = async (credentials: z.infer<typeof registerSchema>) => {
   const parsedData = registerSchema.safeParse(credentials);
@@ -26,7 +27,6 @@ export const register = async (credentials: z.infer<typeof registerSchema>) => {
       }),
     ]);
 
-    // Handle verified account conflicts
     if (existingEmail?.emailVerified) {
       return { error: "Email already in use" };
     }
@@ -35,7 +35,6 @@ export const register = async (credentials: z.infer<typeof registerSchema>) => {
     }
 
     await db.$transaction(async (tx) => {
-      // Cleanup unverified conflicts
       await Promise.all([
         tx.user.deleteMany({
           where: {
@@ -47,17 +46,15 @@ export const register = async (credentials: z.infer<typeof registerSchema>) => {
         }),
       ]);
 
-      const [emailAvailable, usernameAvailable] = await Promise.all([
-        tx.user.count({ where: { email } }),
-        tx.user.count({ where: { username } }),
-      ]);
+      const userAvailable = await tx.user.count({
+        where: { OR: [{ email }, { username }] },
+      });
 
-      if (emailAvailable > 0 || usernameAvailable > 0) {
+      if (userAvailable > 0) {
         throw new Error("Registration conflict detected");
       }
 
-      // Create verified user
-      return tx.user.create({
+      return await tx.user.create({
         data: {
           email,
           username,
@@ -71,10 +68,7 @@ export const register = async (credentials: z.infer<typeof registerSchema>) => {
       });
     });
 
-    // TODO: Implement email verification trigger
-    return {
-      success: "Registration successful. Please verify your email.",
-    };
+    return await sendEmail(email);
   } catch (error) {
     console.error("Registration error:", error);
 

@@ -8,18 +8,24 @@ import bcrypt from "bcryptjs";
 import { ApiError } from "./lib/api/ApiError";
 import { AccountType, UserRoles } from "@prisma/client";
 import { generateUniqueUsername } from "./utils/auth.utils";
+import { getUserById } from "./utils/user.utils";
+import { redirect } from "next/navigation";
 
 export default {
   callbacks: {
-    async signIn({ user: { id } }) {
-      const existingUser = await db.user.findUnique({
-        where: { id },
-        select: { emailVerified: true, loginType: true },
+    async signIn({ user: { id }, account }) {
+      if (account?.provider !== "credentials") return true;
+      if (!id) return false;
+      const existingUser = await getUserById(id, {
+        loginType: true,
+        emailVerified: true,
       });
-      return !!(
-        existingUser &&
-        (existingUser.loginType !== AccountType.EMAIL || existingUser.emailVerified)
-      );  
+
+      if (existingUser && !existingUser.emailVerified) {
+        return !redirect(`/verify-otp?email=${existingUser.email}`);
+      }
+
+      return !!existingUser;
     },
     async jwt({ token, user }) {
       if (user) {
@@ -58,7 +64,7 @@ export default {
           name: profile.name,
           username: await generateUniqueUsername(profile.login),
           email: profile.email,
-          emailVerified: Date.now,
+          emailVerified: new Date(),
           role: UserRoles.USER,
           loginType: AccountType.GITHUB,
         };
@@ -81,7 +87,7 @@ export default {
       },
     }),
     Credentials({
-      name: "Credentials",
+      name: "credentials",
       credentials: {
         identifier: { label: "Email/Username", type: "text" },
         password: { label: "Password", type: "password" },
@@ -110,6 +116,10 @@ export default {
           const passwordValid = await bcrypt.compare(password, user.password);
           if (!passwordValid) return null;
 
+          if (!user.emailVerified && user.loginType !== AccountType.EMAIL) {
+            redirect(`/verify-otp?email=${user.email}`);
+          }
+
           return {
             id: user.id,
             username: user.username,
@@ -127,8 +137,7 @@ export default {
   ],
   pages: {
     signIn: "/login",
-    error: "/error"
-    
+    error: "/auth/error",
   },
   events: {
     async linkAccount({ user }) {

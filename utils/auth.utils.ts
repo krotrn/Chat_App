@@ -2,25 +2,22 @@
 import bcrypt from "bcryptjs";
 import jwt, { SignOptions } from "jsonwebtoken";
 import { db } from "@/prisma";
+import { ApiError } from "@/lib/api/ApiError";
 
 export const hashPassword = async (password: string) => {
   return await bcrypt.hash(password, 10);
 };
 
-export const comparePassword = async (password: string, hash: string) => {
-  return await bcrypt.compare(password, hash);
-};
-
 export const generateUniqueUsername = async (base: string) => {
   const username = base
     .toLowerCase()
-    .replace(/\s+/g, '_')
-    .replace(/[^a-z0-9_]/g, '')
+    .replace(/\s+/g, "_")
+    .replace(/[^a-z0-9_]/g, "")
     .slice(0, 15);
 
-  const exists = await db.user.findUnique({ 
+  const exists = await db.user.findUnique({
     where: { username },
-    select: { id: true }
+    select: { id: true },
   });
 
   if (!exists) return username;
@@ -28,7 +25,6 @@ export const generateUniqueUsername = async (base: string) => {
   const suffix = Math.random().toString(36).slice(2, 6);
   return `${username.slice(0, 10)}_${suffix}`;
 };
-
 
 export const generateAccessToken = (user: {
   id: string;
@@ -57,7 +53,7 @@ export const generateRefreshToken = (userId: string) => {
   }
   return jwt.sign({ id: userId }, process.env.REFRESH_TOKEN_SECRET, {
     expiresIn: process.env.REFRESH_TOKEN_EXPIRY || "7d",
-  }as SignOptions);
+  } as SignOptions);
 };
 
 export const generateTempToken = async () => {
@@ -77,34 +73,30 @@ export const generateTempToken = async () => {
   return {
     unHashedToken,
     hashedToken,
-    tokenExpiry: new Date(Date.now() +  20 * 60 * 1000),
+    tokenExpiry: new Date(Date.now() + 20 * 60 * 1000),
   };
 };
 
-export const verifyToken = async (email: string, token: string) => {
+export const getVerificationTokenByEmail = async (email: string) => {
   try {
-    
     const user = await db.user.findUnique({
-      where: {
-        emailVerificationToken: token, 
-      },
-      select: {
-        email: true,
-        emailVerificationExpiry: true
-      },
+      where: { email },
+      select: { emailVerificationToken: true },
     });
-if (
-      !user || 
-      user.email !== email || 
-      !user.emailVerificationExpiry || 
-      user.emailVerificationExpiry < new Date()
-    ) {
-      return null;
-    }
- 
-    return user;
-  } catch (error) {
-    console.error("Error verifying token:", error);
-    return null;
+    if (!user)
+      throw new ApiError({
+        statusCode: 404,
+        message: "user not found for verification",
+      });
+    return user.emailVerificationToken;
+  } catch {
+    throw new ApiError({
+      statusCode: 500,
+      message: "error in getting verification token",
+    });
   }
 };
+
+export const generateOTP = (num: number) => {
+  return Math.floor(100000 + Math.random() * 900000).toString().slice(0, num);
+}
