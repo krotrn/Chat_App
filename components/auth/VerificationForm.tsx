@@ -50,7 +50,7 @@ export default function InputOTPForm({
   const [resendSuccess, setResendSuccess] = useState<string>("");
   const [resendError, setResendError] = useState<string>("");
   const [isPending, startTransition] = useTransition();
-  const { secondsLeft, startCountdown } = useCountdown(0);
+  const { secondsLeft, startCountdown } = useCountdown(30);
 
   useEffect(() => {
     if (email) {
