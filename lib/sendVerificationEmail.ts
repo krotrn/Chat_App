@@ -21,7 +21,6 @@ export const sendVerificationEmail = async (email: string, token: string) => {
       }
     )}`;
 
-
     const { error } = await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL!,
       to: email,
@@ -29,9 +28,10 @@ export const sendVerificationEmail = async (email: string, token: string) => {
       react: EmailVerification({ otp, verificationLink, expirationHours }),
     });
 
-    return { success: !error, error: error?.message };
+    return { error: error?.message, success: !error ? "Email sent" : undefined };
+
   } catch (error) {
     console.error("Email sending error:", error);
-    return { success: false, error: "Failed to send verification email" };
+    return { error: "Failed to send verification email" };
   }
 };

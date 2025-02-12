@@ -1,5 +1,5 @@
 import { ApiError } from "@/lib/api/ApiError";
-import { sendVerificationEmail } from "@/lib/mail";
+import { sendVerificationEmail } from "@/lib/sendVerificationEmail";
 import { generateVerificationToken } from "@/utils/token.utils";
 
 export const sendEmail = async (email: string) => {
@@ -10,9 +10,5 @@ export const sendEmail = async (email: string) => {
       message: "Error Generating Verification Token.",
     });
 
-  const { success, error } = await sendVerificationEmail(
-    email,
-    verificationToken
-  );
-  return success ? { success: "Check the confirmation email." } : { error };
+  return await sendVerificationEmail(email, verificationToken);
 };

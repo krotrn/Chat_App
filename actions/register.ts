@@ -6,6 +6,7 @@ import { db } from "@/prisma";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { hashPassword } from "@/utils/auth.utils";
 import { sendEmail } from "./sendEmail";
+import { redirect } from "next/navigation";
 
 export const register = async (credentials: z.infer<typeof registerSchema>) => {
   const parsedData = registerSchema.safeParse(credentials);
@@ -68,7 +69,10 @@ export const register = async (credentials: z.infer<typeof registerSchema>) => {
       });
     });
 
-    return await sendEmail(email);
+    const { error } = await sendEmail(email);
+    return error ? { error } : redirect(`/verify-otp?${new URLSearchParams({
+      email:encodeURIComponent(email)
+    })}`);
   } catch (error) {
     console.error("Registration error:", error);
 

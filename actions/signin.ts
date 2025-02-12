@@ -8,6 +8,7 @@ import { getUserByIdentifier } from "@/utils/user.utils";
 import { AccountType } from "@prisma/client";
 import { AuthError } from "next-auth";
 import { z } from "zod";
+import { sendEmail } from "./sendEmail";
 
 export const signin = async (credentials: z.infer<typeof signInSchema>) => {
   const parsedData = signInSchema.safeParse(credentials);
@@ -31,6 +32,10 @@ export const signin = async (credentials: z.infer<typeof signInSchema>) => {
   }
 
   try {
+    if (!existingUser.emailVerified) {
+      const { error } = await sendEmail(existingUser.email!);
+      if(error)return { error };
+    }
     await signIn("credentials", {
       identifier,
       password,

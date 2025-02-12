@@ -22,7 +22,11 @@ export default {
       });
 
       if (existingUser && !existingUser.emailVerified) {
-        return !redirect(`/verify-otp?email=${existingUser.email}`);
+        return !!redirect(
+          `/verify-otp?${new URLSearchParams({
+            email: encodeURIComponent(existingUser.email!),
+          })}`
+        );
       }
 
       return !!existingUser;

@@ -26,6 +26,7 @@ import { FormSuccess } from "./Form-Success";
 import { verify } from "@/actions/verify-otp";
 import { sendEmail } from "@/actions/sendEmail";
 import { getUserByEmail } from "@/utils/user.utils";
+import useCountdown from "@/hooks/useCountdown";
 
 export default function InputOTPForm({
   email,
@@ -49,7 +50,7 @@ export default function InputOTPForm({
   const [resendSuccess, setResendSuccess] = useState<string>("");
   const [resendError, setResendError] = useState<string>("");
   const [isPending, startTransition] = useTransition();
-  const [secondsLeft, setSecondsLeft] = useState<number>(0);
+  const { secondsLeft, startCountdown } = useCountdown(0);
 
   useEffect(() => {
     if (email) {
@@ -63,13 +64,14 @@ export default function InputOTPForm({
 
     startTransition(async () => {
       try {
-        const result = await verify(values.email, values.pin);
-        if (result?.error) {
-          setError(result.error);
-        } else if (result?.success) {
-          setSuccess(result.success);
-          form.reset({ email: values.email, pin: "" });
-        }
+        verify(values.email, values.pin).then((data) => {
+          if ("error" in data) {
+            setError(data.error!);
+          } else {
+            setSuccess(data.success);
+            form.reset({ email: values.email, pin: "" });
+          }
+        });
       } catch {
         setError("An unexpected error occurred. Please try again.");
       }
@@ -79,22 +81,20 @@ export default function InputOTPForm({
   const handleResend = async () => {
     setResendError("");
     setResendSuccess("");
-
+    if (!email) {
+      setResendError("Enter the Email.");
+      return;
+    }
     try {
       const user = await getUserByEmail(email!);
       if (user) {
-        const result = await sendEmail(email!);
+        const result = await sendEmail(email);
+
         if (result?.error) {
           setResendError(result.error);
-        } else if (result?.success) {
-          setResendSuccess(result.success);
-          setSecondsLeft(30);
-          const interval = setInterval(() => {
-            setSecondsLeft((prev) => {
-              if (prev <= 1) clearInterval(interval);
-              return prev > 0 ? prev - 1 : 0;
-            });
-          }, 1000);
+        } else {
+          setResendSuccess("New OTP sent successfully");
+          startCountdown(30);
         }
       } else {
         setResendError("Invalid Email.");
