@@ -4,6 +4,7 @@ import { encryptToken } from "@/utils/crypto.utils";
 import { generateOTP } from "@/utils/auth.utils";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+const baseurl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export const sendVerificationEmail = async (email: string, token: string) => {
   try {
@@ -12,7 +13,7 @@ export const sendVerificationEmail = async (email: string, token: string) => {
     const expirationHours = 1;
     const appName = process.env.APP_NAME || "Your App Name";
 
-    const verificationLink = `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/verify-email?${new URLSearchParams({
+    const verificationLink = `${baseurl}/auth/verify-email?${new URLSearchParams({
       email: encodeURIComponent(email),
       otp: encodeURIComponent(otp),
       token: encodeURIComponent(encryptedToken)
