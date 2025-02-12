@@ -24,7 +24,6 @@ export const generateUniqueUsername = async (base: string) => {
   return `${username.slice(0, 10)}_${suffix}`;
 };
 
-
 export const getVerificationTokenByEmail = async (email: string) => {
   try {
     const user = await db.user.findUnique({
@@ -46,5 +45,7 @@ export const getVerificationTokenByEmail = async (email: string) => {
 };
 
 export const generateOTP = (num: number) => {
-  return Math.floor(100000 + Math.random() * 900000).toString().slice(0, num);
-}
+  return Math.floor(100000 + Math.random() * 900000)
+    .toString()
+    .slice(0, num);
+};
