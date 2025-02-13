@@ -1,13 +1,20 @@
 import React from "react";
 
+/**
+ * EmailVerification component renders an email verification template.
+ * It displays an OTP, a verification link, and an expiration notice.
+ *
+ * @param {Object} props - The properties object.
+ * @param {string} props.verificationLink - The link to verify the email address.
+ * @param {string} props.expirationHours - The number of hours until the verification link expires.
+ * @returns {React.ReactNode} The rendered email verification template.
+ */
 const EmailVerification = ({
-  otp,
   verificationLink,
   expirationHours,
 }: {
-  otp: string;
   verificationLink: string;
-  expirationHours: number;
+  expirationHours: string;
 }):React.ReactNode => {
   return (
     <div className="font-sans max-w-lg mx-auto p-6 bg-white border border-gray-300 rounded-lg shadow-md">
@@ -18,18 +25,9 @@ const EmailVerification = ({
         To complete your registration, please verify your email address using
         one of the options below:
       </p>
-
-      {/* OTP Section */}
-      <div className="bg-gray-200 p-4 rounded-lg text-center text-3xl font-bold tracking-widest text-gray-900 my-4">
-        {otp}
-      </div>
-      <p className="text-center text-gray-500 text-sm -mt-2">
-        Enter this OTP to verify your email.
-      </p>
-
       {/* Verification Link Section */}
       <p className="text-center text-gray-700 text-lg mt-4">
-        Or, click the button below:
+        click the button below:
       </p>
       <div className="text-center my-4">
         <a

@@ -17,8 +17,7 @@ export async function connectToDatabase() {
       dbName: "next-auth",
     });
     console.log("Connected to MongoDB");
-  } catch (error) {
-    console.error("Database connection failed:", error);
+  } catch  {
     throw new Error("Database connection failed");
   }
 }

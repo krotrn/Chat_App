@@ -43,9 +43,3 @@ export const getVerificationTokenByEmail = async (email: string) => {
     });
   }
 };
-
-export const generateOTP = (num: number) => {
-  return Math.floor(100000 + Math.random() * 900000)
-    .toString()
-    .slice(0, num);
-};

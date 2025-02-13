@@ -9,29 +9,32 @@ export interface Options {
   loginType?: boolean;
 }
 
-export const getUserByEmail = async (
-  email: string,
-  options: Options = {}
-): Promise<Partial<User> | null> => {
+/**
+ * Retrieves a user by their email address.
+ *
+ * @param email - The email address of the user to retrieve.
+ * @param options - Additional options for selecting user fields.
+ * @returns A promise that resolves to a partial user object or null if not found.
+ */
+export async function getUserByEmail(email: string): Promise<User | null> {
   try {
     const user = await db.user.findUnique({
       where: { email },
-      select: { id: true, email: true, username: true, ...options },
     });
-    if (!user) {
-      throw new ApiError({
-        statusCode: 404,
-        message: "User not found",
-      });
-    }
-    return user;
+    return user || null;
   } catch {
-    throw new ApiError({
-      statusCode: 500,
-      message: "error getting user by email",
-    });
+    return null;
   }
-};
+}
+
+/**
+ * Retrieves a user by their email or username.
+ *
+ * @param identifier - The email or username of the user to retrieve.
+ * @param options - Additional options for selecting specific fields.
+ * @returns A promise that resolves to a partial user object or null if no user is found.
+ * @throws {ApiError} If there is an error retrieving the user.
+ */
 export const getUserByIdentifier = async (
   identifier: string,
   options: Options = {}
@@ -51,6 +54,14 @@ export const getUserByIdentifier = async (
 };
 
 
+/**
+ * Retrieves a user by their unique identifier.
+ *
+ * @param id - The unique identifier of the user.
+ * @param options - Additional options for selecting specific fields of the user.
+ * @returns A promise that resolves to a partial user object or null if the user is not found.
+ * @throws {ApiError} If there is an error retrieving the user.
+ */
 export const getUserById = async (
   id: string,
   options: Options = {}

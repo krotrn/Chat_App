@@ -1,8 +1,30 @@
+/**
+ * Options for configuring an API error.
+ */
 interface ApiErrorOptions {
+  /**
+   * The HTTP status code associated with the error.
+   */
   statusCode: number;
+
+  /**
+   * An optional message describing the error.
+   */
   message?: string;
+
+  /**
+   * An optional array of errors or error messages.
+   */
   errors?: (Error | string)[];
+
+  /**
+   * An optional stack trace for the error.
+   */
   stack?: string;
+
+  /**
+   * Optional additional data related to the error.
+   */
   data?: unknown;
 }
 

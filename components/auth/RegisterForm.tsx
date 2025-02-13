@@ -15,15 +15,17 @@ import { useForm } from "react-hook-form";
 import { registerSchema } from "@/schemas/registerSchema";
 import { Input } from "@/components/ui/input";
 import { FormError } from "@/components/auth/Form-Error";
-import { FormSuccess } from "@/components/auth/Form-Success";
 import { Button } from "@/components/ui/button";
 import { useState, useTransition } from "react";
-import { register } from "@/actions/register";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { FormSuccess } from "./Form-Success";
 
 const RegisterForm = () => {
   const searchParams = useSearchParams();
-  const urlError = searchParams.get("error") == "OAuthAccountNotLinked" ? "Email already in use with different provider!" : ""
+  const urlError =
+    searchParams.get("error") == "OAuthAccountNotLinked"
+      ? "Email already in use with different provider!"
+      : "";
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -32,23 +34,29 @@ const RegisterForm = () => {
       password: "",
     },
   });
+  const router = useRouter()
 
   const [error, setError] = useState<string | undefined>("");
-  const [success, setSuccess] = useState<string | undefined>("");
+  const [success, setSuccess] = useState<string |undefined>("")
   const [isPending, startTransition] = useTransition();
 
   const onSubmit = (credentials: z.infer<typeof registerSchema>) => {
     setError("");
-    setSuccess("");
     startTransition(() => {
-      register(credentials).then((data) => {
-        if ("error" in data) {
-          setError(data.error);
-        }
-        if ("success" in data) {
-          setSuccess(data.success);
-        }
-      });
+      fetch("/api/v1/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(credentials),
+      })
+        .then((data) => data.json())
+        .then((result) => {
+          if (result.success) {
+            setSuccess(result.message);
+            router.push('/auth/verify-email');
+          } else {
+            setError(result.message)
+          }
+        });
     });
   };
 
@@ -117,11 +125,9 @@ const RegisterForm = () => {
           ></FormField>
           <FormError message={error || urlError} />
           <FormSuccess message={success} />
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={isPending}
-          >Register</Button>
+          <Button type="submit" className="w-full" disabled={isPending}>
+            Register
+          </Button>
         </form>
       </Form>
     </CardWrapper>

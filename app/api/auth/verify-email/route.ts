@@ -11,9 +11,9 @@ export async function GET(request: NextRequest) {
 
   if (result.error) {
     return NextResponse.redirect(
-      `/auth/error?message=${encodeURIComponent(result.error)}`
+      `/auth/verify-email`
     );
   }
 
-  return NextResponse.redirect("/dashboard");
+  return NextResponse.redirect("/");
 }

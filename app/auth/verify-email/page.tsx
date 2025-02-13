@@ -1,38 +1,43 @@
 "use client";
 
-import InputOTPForm from "@/components/auth/VerificationForm";
-import { verifyToken } from "@/utils/token.utils";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Page({
-  searchParams: { email, token, otp },
+  searchParams,
 }: {
-  searchParams: { email: string; token?: string; otp?: string };
+  searchParams: Promise<{ email: string; token?: string }>;
 }) {
+  const [data, setData] = useState<{ email: string; token?: string }>({
+    email: "",
+    token: "",
+  });
+  useEffect(() => {
+    searchParams.then((d) => {
+      setData(d);
+    });
+  }, [searchParams]);
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string>("");
-  const [success, setSuccess] = useState<string>("");
+  const [success, setSuccess] = useState<string>("Verification Link sent to your Email.");
 
   useEffect(() => {
-    if (token) {
-      startTransition(() => {
-        verifyToken(email, token, true).then(data => {
-          if ("error" in data) {
-            setError(data.error || "An unexpected error occurred");
+    if (data.token) {
+      fetch(`/api/v1/auth/${data.email}/${data.token}`)
+        .then((data) => data.json())
+        .then((result) => {
+          if (result.success) {
+            setSuccess(result.message);
+            router.push("/login");
           } else {
-            setSuccess(data.success || "Email verified successfully!");
-            router.push("/");
+            setError(result.message || "something wrong happen.");
           }
         });
-      });
     }
-  }, [token, email, router]);
+  }, [data, router]);
 
   return (
     <div className="flex flex-col gap-4">
-      <InputOTPForm email={email} pin={otp} pending={isPending} />
       {error && <p className="text-destructive text-center">{error}</p>}
       {success && <p className="text-green-600 text-center">{success}</p>}
     </div>
