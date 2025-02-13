@@ -9,7 +9,6 @@ import { ApiError } from "./lib/api/ApiError";
 import { AccountType, UserRoles } from "@prisma/client";
 import { generateUniqueUsername } from "./utils/auth.utils";
 import { getUserById } from "./utils/user.utils";
-import { redirect } from "next/navigation";
 
 /**
  * @file This file contains the configuration for authentication using NextAuth.js.
