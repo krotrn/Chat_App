@@ -1,5 +1,3 @@
-import { ApiError } from "@/lib/api/ApiError";
-import { ApiResponse } from "@/lib/api/ApiResponse";
 import { db } from "@/prisma";
 import { decryptToken } from "@/utils/crypto.utils";
 import { NextResponse } from "next/server";
@@ -21,8 +19,7 @@ export async function POST({
 }): Promise<NextResponse> {
   const { encodedEmail, encodedToken } = params;
   const email = decodeURIComponent(encodedEmail);
-  const encryptedToken = decodeURIComponent(encodedToken);
-  const token = decryptToken(encryptedToken);
+  const token = decryptToken(decodeURIComponent(encodedToken));
   try {
     const user = await db.user.findUnique({
       where: { email },
@@ -36,25 +33,33 @@ export async function POST({
 
     if (!user) {
       return NextResponse.json(
-        new ApiError({ statusCode: 404, message: "User Not Found" }).toJSON()
+        {
+          success: false,
+          message: "User Not Found",
+        },
+        {
+          status: 404,
+        }
       );
     }
 
     if (user.emailVerified) {
       return NextResponse.json(
-        new ApiError({
-          statusCode: 404,
+        {
+          success: false,
           message: "User already verified",
-        }).toJSON()
+        },
+        { status: 404 }
       );
     }
 
     if (user.emailVerificationToken !== token) {
       return NextResponse.json(
-        new ApiError({
-          statusCode: 404,
-          message: "Invalid verification code",
-        }).toJSON()
+        {
+          success: false,
+          message: "Invalid verification Link",
+        },
+        { status: 404 }
       );
     }
     if (
@@ -62,10 +67,13 @@ export async function POST({
       user.emailVerificationExpiry < new Date()
     ) {
       return NextResponse.json(
-        new ApiError({
-          statusCode: 404,
+        {
+          success: false,
           message: "Verification code has expired",
-        }).toJSON()
+        },
+        {
+          status: 404,
+        }
       );
     }
 
@@ -80,26 +88,33 @@ export async function POST({
     });
 
     return NextResponse.json(
-      new ApiResponse({
-        statusCode: 404,
-        message: `${verifiedUser} verified.`,
-      }).toJSON()
+      {
+          success: true,
+          message: `${verifiedUser.username} verified.`,
+      },
+      {
+        status: 202,
+      }
     );
   } catch (error) {
     if (error instanceof Error && error.message.includes("decryption")) {
       return NextResponse.json(
-        new ApiError({
-          statusCode: 404,
+        {
+          success: false,
           message: "Invalid verification link",
-        }).toJSON()
+        },
+        { status: 504 }
       );
     }
 
     return NextResponse.json(
-      new ApiError({
-        statusCode: 404,
-        message: "Failed to verify email",
-      }).toJSON()
+      {
+          success: false,
+          message: "Failed to verify email",
+      },
+      {
+        status: 500,
+      }
     );
   }
 }

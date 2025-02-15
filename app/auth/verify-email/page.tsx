@@ -6,9 +6,9 @@ import { useRouter } from "next/navigation";
 export default function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ email: string; token?: string }>;
+  searchParams: Promise<{ email: string; token: string }>;
 }) {
-  const [data, setData] = useState<{ email: string; token?: string }>({
+  const [data, setData] = useState<{ email: string; token: string }>({
     email: "",
     token: "",
   });

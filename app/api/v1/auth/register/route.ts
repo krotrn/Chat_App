@@ -1,5 +1,3 @@
-import { ApiError } from "@/lib/api/ApiError";
-import { ApiResponse } from "@/lib/api/ApiResponse";
 import { sendVerificationEmail } from "@/lib/sendVerificationEmail";
 import { db } from "@/prisma";
 import { hashPassword } from "@/utils/auth.utils";
@@ -28,18 +26,30 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   if (!username) {
     return NextResponse.json(
-      new ApiError({ statusCode: 400, message: "Name is required" }).toJSON()
+      {
+        success: false,
+        message: "Username is required",
+      },
+      { status: 400 }
     );
   }
 
   if (!email) {
     NextResponse.json(
-      new ApiError({ statusCode: 400, message: "Email is required" }).toJSON()
+      {
+        success: false,
+        message: "Email is required",
+      },
+      { status: 400 }
     );
   }
   if (!password) {
     NextResponse.json(
-      new ApiError({ statusCode: 400, message: "Password is required" }).toJSON()
+      {
+        success: false,
+        message: "Password is required",
+      },
+      { status: 400 }
     );
   }
 
@@ -57,12 +67,24 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     if (existingEmail?.emailVerified) {
       return NextResponse.json(
-        new ApiResponse({ statusCode: 402, message: "Email already in use" }).toJSON()
+        {
+          success: false,
+          message: "Email already in use",
+        },
+        {
+          status: 402,
+        }
       );
     }
     if (existingUsername?.emailVerified) {
       return NextResponse.json(
-        new ApiResponse({ statusCode: 402, message: "Username already in use" }).toJSON()
+        {
+          success: false,
+          message: "Username already in use",
+        },
+        {
+          status: 402,
+        }
       );
     }
     const newUser = await db.$transaction(async (tx) => {
@@ -81,10 +103,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       });
       if (userAvailable > 0) {
         return NextResponse.json(
-          new ApiError({
-            statusCode: 409,
-            message: "Registration conflict detected",
-          }).toJSON()
+          {
+            success: false,
+            message: "Registration Conflict.",
+          },
+          { status: 409 }
         );
       }
       return await tx.user.create({
@@ -104,43 +127,58 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     });
 
     if (!newUser) {
-      return NextResponse.json(new ApiError({ statusCode: 500, message: "error creating user" }).toJSON());
+      return NextResponse.json(
+        {
+          success: false,
+          message: "error creating user",
+        },
+        {
+          status: 500,
+        }
+      );
     }
-    
 
     const { error } = await sendVerificationEmail(email);
 
     // statuscode
     if (error) {
-      return NextResponse.json(
-        new ApiError({ statusCode: 500, message: error }).toJSON()
-      );
+      return NextResponse.json({ message: error }, { status: 500 });
     }
 
     return NextResponse.json(
-      new ApiResponse({ statusCode: 201, message: "Verify your Account." }).toJSON()
+      {
+        success: true,
+        message: "Verify your Account.",
+      },
+      { status: 201 }
     );
   } catch (error) {
     if (error instanceof PrismaClientKnownRequestError) {
       // statuscode
       if (error.code === "P2002") {
         return NextResponse.json(
-          new ApiError({
-            statusCode: 500,
+          {
+            success: false,
             message: "Duplicate registration attempt detected",
-          }).toJSON()
+          },
+          {
+            status: 500,
+          }
         );
       }
     }
 
     return NextResponse.json(
-      new ApiError({
-        statusCode: 500,
+      {
+        success: false,
         message:
           error instanceof Error
             ? error.message
             : "Failed to complete registration",
-      }).toJSON()
+      },
+      {
+        status: 500,
+      }
     );
   }
 }
