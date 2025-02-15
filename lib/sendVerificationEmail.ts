@@ -7,24 +7,18 @@ import { generateVerificationToken } from "@/utils/token.utils";
 /**
  * Sends a verification email to the specified email address.
  *
- * @param to - The email address to send the verification email to.
- * @returns An object containing an error message if the email failed to send, otherwise null.
+ * @param {string} to - The email address to send the verification email to.
+ * @returns {Promise<{ error?: string }>} - A promise that resolves to an object containing an error message if the email sending fails.
  *
  * @throws Will throw an error if the email sending process fails.
  *
- * @remarks
- * This function uses the Resend API to send the verification email. It generates an OTP and an encrypted token,
- * constructs a verification link, and sends an email with the verification details.
- *
  * @example
- * ```typescript
- * const result = await sendVerificationEmail('user@example.com');
+ * const result = await sendVerificationEmail('example@example.com');
  * if (result.error) {
  *   console.error('Failed to send verification email:', result.error);
  * } else {
  *   console.log('Verification email sent successfully');
  * }
- * ```
  */
 
 export const sendVerificationEmail = async (to: string) => {
@@ -38,7 +32,7 @@ export const sendVerificationEmail = async (to: string) => {
     const encryptedToken = encryptToken(token!);
     const appName = process.env.APP_NAME || "Your App Name";
 
-    const verificationLink = `${baseurl}/auth/verify-email?${new URLSearchParams(
+    const verificationLink = `${baseurl}/auth/verify?${new URLSearchParams(
       {
         email: encodeURIComponent(to),
         token: encodeURIComponent(encryptedToken),

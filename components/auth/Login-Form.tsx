@@ -16,9 +16,28 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { FormError } from "@/components/auth/Form-Error";
 import { useState, useTransition } from "react";
-import { signin } from "@/actions/signin";
+import { useRouter } from "next/navigation";
 
-const LoginForm = () => {
+
+/**
+ * LoginForm component handles the user login process.
+ * 
+ * This component uses `useForm` from `react-hook-form` and `zodResolver` for form validation.
+ * It includes fields for the user identifier (email or username) and password.
+ * 
+ * On form submission, it sends a POST request to the `/api/v1/auth/login` endpoint with the user credentials.
+ * If the login is successful, it redirects the user to the appropriate page.
+ * If the login fails, it displays an error message.
+ * 
+ * @component
+ * @example
+ * return (
+ *   <LoginForm />
+ * )
+ * 
+ * @returns {React.ReactNode} The rendered login form component.
+ */
+const LoginForm = (): React.ReactNode => {
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -28,16 +47,23 @@ const LoginForm = () => {
   });
   const [error, setError] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const onSubmit = (credentials: z.infer<typeof signInSchema>) => {
     setError("");
     startTransition(() => {
-      signin(credentials)
-        .then((data) => {
-          if ("success" in data && data.success === false) {
-            setError("message" in data ? data.message : "An error occurred");
-          } else {
-            setError(data.error)
+      fetch("/api/v1/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(credentials),
+      })
+        .then((data) => data.json())
+        .then((result) => {
+          if (!result.success) {
+            if (result.sendEmail) {
+              router.push('/auth/verify-email')
+            }
+            setError(result.message);
           }
         })
         .catch(() => {

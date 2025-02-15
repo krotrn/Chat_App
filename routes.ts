@@ -1,7 +1,30 @@
-export const publicRoutes = ["/"];
+/**
+ * An array of public routes that do not require authentication.
+ * 
+ * @constant
+ * @type {string[]}
+ * @default ["/"]
+ */
+export const publicRoutes: string[] = ["/"];
 
-export const authRoutes = ["/login", "/register", "/error", "/verify-email"];
+/**
+ * An array of authentication-related route paths.
+ * 
+ * @constant {string[]} authRoutes
+ * @default ["/login", "/register", "/error", "/verify-email"]
+ */
+export const authRoutes = ["/login", "/register", "/error", "/auth/verify-email", '/auth/verify'];
 
-export const apiAuthPrefix = "/api/auth";
+/**
+ * The prefix used for authentication-related API routes.
+ * 
+ * @constant {string}
+ */
+export const apiAuthPrefix = "/api/v1/auth";
 
+/**
+ * The default URL to which users are redirected after a successful login.
+ * 
+ * @constant {string}
+ */
 export const DEFAULT_LOGIN_REDIRECT = "/settings";

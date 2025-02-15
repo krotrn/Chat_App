@@ -8,7 +8,7 @@ import bcrypt from "bcryptjs";
 import { ApiError } from "./lib/api/ApiError";
 import { AccountType, UserRoles } from "@prisma/client";
 import { generateUniqueUsername } from "./utils/auth.utils";
-import { getUserById } from "./utils/user.utils";
+import { sendVerificationEmail } from "./lib/sendVerificationEmail";
 
 /**
  * @file This file contains the configuration for authentication using NextAuth.js.
@@ -57,16 +57,17 @@ export default {
     async signIn({ user: { id }, account }) {
       if (account?.provider !== "credentials") return true;
       if (!id) return false;
-      const existingUser = await getUserById(id, {
-        loginType: true,
-        emailVerified: true,
-      });
-
-      if (existingUser && !existingUser.emailVerified) {
+      const existingUser = await db.user.findUnique({ where: { id }, select: {email:true, emailVerified: true } });
+      if (!existingUser) {
         return false
       }
-
-      return !!existingUser;
+      const { email, emailVerified } = existingUser;
+      if (emailVerified) {
+        return true;
+      }
+      const { error } = await sendVerificationEmail(email);
+      if (error) return false;
+      return false;
     },
     async jwt({ token, user }) {
       if (user) {

@@ -29,18 +29,28 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth;
 
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
-  const isPublicRoutes = publicRoutes.includes(nextUrl.pathname);
+  const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
 
-  if (isApiAuthRoute) return;
-  if (isAuthRoute) {
-    if (isLoggedIn)
-      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
-    return;
+  // Allow public routes and registration API
+  if (isApiAuthRoute || isPublicRoute) {
+    return response; // Return the response with security headers
   }
-  if (!isLoggedIn && !isPublicRoutes) {
+
+  // Handle auth routes
+  if (isAuthRoute) {
+    if (isLoggedIn) {
+      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
+    }
+    return response;
+  }
+
+  // Redirect unauthenticated users to login
+  if (!isLoggedIn) {
     return Response.redirect(new URL("/login", nextUrl));
   }
+
+  return response;
 });
 
 export const config = {
