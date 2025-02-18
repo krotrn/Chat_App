@@ -3,6 +3,7 @@ import React, { useCallback, useState } from "react";
 import { CardWrapper } from "./card-wrapper";
 import { Button } from "../ui/button";
 import { FormError } from "./Form-Error";
+import { FormSuccess } from "./Form-Success";
 
 /**
  * EmailVerification component is responsible for handling the email verification process.
@@ -19,6 +20,7 @@ export default function EmailVerification({
   email: string;
 }): React.ReactNode {
   const [error, setError] = useState<string | undefined>(undefined);
+  const [success, setSuccess] = useState<string | undefined>(undefined);
   const sendEmail = useCallback(async () => {
     setError("");
     await fetch("/api/v1/auth/verify-email/send-email", {
@@ -30,6 +32,8 @@ export default function EmailVerification({
       .then((result) => {
         if (!result.success) {
           setError(result.message);
+        } else {
+          setSuccess(result.message);
         }
       });
   }, [email]);
@@ -41,6 +45,7 @@ export default function EmailVerification({
       headerLabel="Verify Your Email"
     >
       <FormError message={error} />
+      <FormSuccess message={success} />
       <Button className="w-full" onClick={sendEmail}>
         Verify
       </Button>
