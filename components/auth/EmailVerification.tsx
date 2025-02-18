@@ -2,7 +2,6 @@
 import React, { useCallback, useState } from "react";
 import { CardWrapper } from "./card-wrapper";
 import { Button } from "../ui/button";
-import { sendVerificationEmail } from "@/lib/sendVerificationEmail";
 import { FormError } from "./Form-Error";
 
 /**
@@ -14,14 +13,25 @@ import { FormError } from "./Form-Error";
  *
  * @returns {React.ReactNode} The rendered EmailVerification component.
  */
-export default function EmailVerification({ email }: { email: string }): React.ReactNode {
+export default function EmailVerification({
+  email,
+}: {
+  email: string;
+}): React.ReactNode {
   const [error, setError] = useState<string | undefined>(undefined);
-  const sendEmail = useCallback(() => {
-    sendVerificationEmail(email).then((data) => {
-      if (data && data.error) {
-        setError(data.error);
-      }
-    });
+  const sendEmail = useCallback(async () => {
+    setError("");
+    await fetch("/api/v1/auth/verify-email/send-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    })
+      .then((data) => data.json())
+      .then((result) => {
+        if (!result.success) {
+          setError(result.message);
+        }
+      });
   }, [email]);
 
   return (
@@ -31,7 +41,9 @@ export default function EmailVerification({ email }: { email: string }): React.R
       headerLabel="Verify Your Email"
     >
       <FormError message={error} />
-      <Button onClick={sendEmail} />
+      <Button className="w-full" onClick={sendEmail}>
+        Verify
+      </Button>
     </CardWrapper>
   );
 }

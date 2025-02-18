@@ -1,25 +1,15 @@
 import { db } from "@/prisma";
 import { decryptToken } from "@/utils/crypto.utils";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-/**
- * Handles the POST request for email verification.
- *
- * @param {Object} params - The request parameters.
- * @param {string} params.encodedEmail - The encoded email of the user.
- * @param {string} params.encodedToken - The encoded verification token.
- * @returns {Promise<NextResponse>} The response object containing the verification result.
- *
- * @throws {ApiError} If the user is not found, already verified, the verification code is invalid or expired, or if there is a decryption error.
- */
-export async function POST({
+export async function POST(req:NextRequest,{
   params,
 }: {
-  params: { encodedEmail: string; encodedToken: string };
+  params:Promise<{ encodedEmail: string; encodedToken: string }>;
 }): Promise<NextResponse> {
-  const { encodedEmail, encodedToken } = params;
+  const { encodedEmail, encodedToken } = await params;
   const email = decodeURIComponent(encodedEmail);
-  const token = decryptToken(decodeURIComponent(encodedToken));
+  const token = await decryptToken(decodeURIComponent(encodedToken));
   try {
     const user = await db.user.findUnique({
       where: { email },
@@ -97,6 +87,7 @@ export async function POST({
       }
     );
   } catch (error) {
+    console.log(error)
     if (error instanceof Error && error.message.includes("decryption")) {
       return NextResponse.json(
         {

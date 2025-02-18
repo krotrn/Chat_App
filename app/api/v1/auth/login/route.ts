@@ -1,7 +1,6 @@
 import { signIn } from "@/auth";
 import { handleAuthError } from "@/lib/chat/Helper";
 import { db } from "@/prisma";
-import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 import { signInSchema } from "@/schemas/signinSchema";
 import { AccountType } from "@prisma/client";
 import { AuthError } from "next-auth";
@@ -38,7 +37,7 @@ export async function POST(req: NextRequest) {
 
   const existingUser = await db.user.findFirst({
     where: { OR: [{ email: identifier }, { username: identifier }] },
-    select: { loginType: true, emailVerified: true },
+    select: { loginType: true, emailVerified: true, email:true },
   });
 
   if (!existingUser) {
@@ -56,8 +55,8 @@ export async function POST(req: NextRequest) {
   }
   if (!existingUser.emailVerified) {
     return NextResponse.json(
-      { success: false, message: "User not Verified", sendEmail: true },
-      { status: 402 }
+      { success: false, message: "User not Verified", sendEmail: true, encodedEmail:encodeURIComponent(existingUser.email) },
+      { status: 404 }
     );
   }
 
@@ -65,7 +64,7 @@ export async function POST(req: NextRequest) {
     await signIn("credentials", {
       identifier,
       password,
-      redirectTo: DEFAULT_LOGIN_REDIRECT,
+      redirect:false,
     });
 
     return NextResponse.json(
@@ -73,6 +72,7 @@ export async function POST(req: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
+    console.log(error)
     if (error instanceof AuthError) {
       return NextResponse.json(handleAuthError(error), { status: 500 });
     }

@@ -8,7 +8,6 @@ import bcrypt from "bcryptjs";
 import { ApiError } from "./lib/api/ApiError";
 import { AccountType, UserRoles } from "@prisma/client";
 import { generateUniqueUsername } from "./utils/auth.utils";
-import { sendVerificationEmail } from "./lib/sendVerificationEmail";
 
 /**
  * @file This file contains the configuration for authentication using NextAuth.js.
@@ -65,8 +64,17 @@ export default {
       if (emailVerified) {
         return true;
       }
-      const { error } = await sendVerificationEmail(email);
-      if (error) return false;
+      await fetch("/api/v1/auth/send-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      })
+        .then((data) => data.json())
+        .then((result) => {
+          if (!result.success) {
+            return false;
+          }
+        });
       return false;
     },
     async jwt({ token, user }) {
@@ -170,7 +178,8 @@ export default {
             role: user.role,
             emailVerified: user.emailVerified,
           };
-        } catch {
+        } catch (error) {
+          console.log(error)
           return null;
         }
       },

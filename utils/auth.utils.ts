@@ -36,7 +36,8 @@ export const getVerificationTokenByEmail = async (email: string) => {
         message: "user not found for verification",
       });
     return user.emailVerificationToken;
-  } catch {
+  } catch (error) {
+    console.log(error)
     throw new ApiError({
       statusCode: 500,
       message: "error in getting verification token",

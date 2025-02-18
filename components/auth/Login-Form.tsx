@@ -17,24 +17,24 @@ import { Button } from "@/components/ui/button";
 import { FormError } from "@/components/auth/Form-Error";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-
+import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 
 /**
  * LoginForm component handles the user login process.
- * 
+ *
  * This component uses `useForm` from `react-hook-form` and `zodResolver` for form validation.
  * It includes fields for the user identifier (email or username) and password.
- * 
+ *
  * On form submission, it sends a POST request to the `/api/v1/auth/login` endpoint with the user credentials.
  * If the login is successful, it redirects the user to the appropriate page.
  * If the login fails, it displays an error message.
- * 
+ *
  * @component
  * @example
  * return (
  *   <LoginForm />
  * )
- * 
+ *
  * @returns {React.ReactNode} The rendered login form component.
  */
 const LoginForm = (): React.ReactNode => {
@@ -49,6 +49,7 @@ const LoginForm = (): React.ReactNode => {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
+
   const onSubmit = (credentials: z.infer<typeof signInSchema>) => {
     setError("");
     startTransition(() => {
@@ -59,10 +60,12 @@ const LoginForm = (): React.ReactNode => {
       })
         .then((data) => data.json())
         .then((result) => {
-          if (!result.success) {
-            if (result.sendEmail) {
-              router.push('/auth/verify-email')
-            }
+          console.log(result)
+          if (result.sendEmail) {
+            router.push(`/auth/verify-email/${result.encodedEmail}`);
+          } else if (result.success) {
+            window.location.href = DEFAULT_LOGIN_REDIRECT;
+          } else {
             setError(result.message);
           }
         })
@@ -126,7 +129,7 @@ const LoginForm = (): React.ReactNode => {
             className="w-full"
             aria-disabled={isPending}
           >
-            {isPending ? "Signing in..." : "Sign in"}
+            {(isPending ) ? "Signing in..." : "Sign in"}
           </Button>
         </form>
       </Form>

@@ -86,16 +86,13 @@ const RegisterForm = ():React.ReactNode => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
       })
-        .then((data) => {
-          if (data.redirected) {
-            return router.push(data.url);
-          }
-          return data.json();
-        })
+        .then((data) =>  data.json())
         .then((result) => {
-          if (result.success) {
-            setSuccess(result.message);
+          if (result.sendEmail) {
+            setError(result.message);
             router.push(`/auth/verify-email/${encodeURIComponent(credentials.email)}`);
+          } else if (result.success) {
+            setSuccess(result.message)
           } else {
             setError(result.message);
           }

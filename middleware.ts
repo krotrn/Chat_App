@@ -30,7 +30,10 @@ export default auth((req) => {
 
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
-  const isAuthRoute = authRoutes.includes(nextUrl.pathname);
+  const isAuthRoute = authRoutes.some(route => 
+    nextUrl.pathname.startsWith(route)
+  );
+  
 
   // Allow public routes and registration API
   if (isApiAuthRoute || isPublicRoute) {
@@ -42,6 +45,13 @@ export default auth((req) => {
     if (isLoggedIn) {
       return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
     }
+    return response;
+  }
+
+  const isVerifyEmailPath = nextUrl.pathname.startsWith("/auth/verify-email/");
+
+  if (isVerifyEmailPath) {
+    // Allow access to verification URLs even with encoded emails
     return response;
   }
 

@@ -19,6 +19,7 @@ export const removeLocalFile = async (localPath: string): Promise<void> => {
     await fs.unlink(localPath);
     console.info(`✅ Successfully removed file: ${localPath}`);
   } catch (error) {
+    console.log(error)
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
       console.warn(`⚠️ File not found, skipping deletion: ${localPath}`);
     } else {

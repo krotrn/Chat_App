@@ -1,24 +1,43 @@
 import { ApiError } from "@/lib/api/ApiError";
-import { db } from "@/prisma";
-import { v4 as uuidv4 } from "uuid";
 
 /**
- * Generates a verification token for the given email and updates the user's record with the token and its expiry time.
+ * Generates a verification token for the given email by making a POST request to the verification API.
  *
- * @param email - The email address of the user for whom the verification token is being generated.
- * @returns A promise that resolves to the generated verification token.
- * @throws {ApiError} If there is an error creating the verification token.
+ * @param {string} email - The email address for which to generate the verification token.
+ * @returns {Promise<string>} - A promise that resolves to the verification token.
+ * @throws {ApiError} - Throws an ApiError if the request fails or if there is an error creating the verification token.
  */
-export const generateVerificationToken = async (email: string) => {
-  const token = uuidv4();
-  const expire = new Date(new Date().getTime() + 3600 * 100 * Number(process.env.EMAIL_TOKEN_EXPIRATION_TIME || 1));
+export const generateVerificationToken = async (email: string): Promise<string> => {
   try {
-    const user = await db.user.update({
-      where: { email },
-      data: { emailVerificationToken: token, emailVerificationExpiry: expire },
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
+    const response = await fetch(`${baseUrl}/api/v1/auth/verify-email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
     });
-    return user.emailVerificationToken;
-  } catch {
+
+
+    const text = await response.text();
+    const data = text ? JSON.parse(text) : {};
+
+    if (!response.ok) {
+      throw new ApiError({
+        statusCode: response.status,
+        message: data.message || "Failed to generate verification token",
+      });
+    }
+
+    if (!data.token) {
+      throw new ApiError({
+        statusCode: 500,
+        message: "Token missing in response",
+      });
+    }
+
+    return data.token;
+
+  } catch (error) {
+    console.log(error);
     throw new ApiError({
       statusCode: 500,
       message: "Error creating Verification token",
