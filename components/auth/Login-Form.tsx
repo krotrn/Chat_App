@@ -60,7 +60,6 @@ const LoginForm = (): React.ReactNode => {
       })
         .then((data) => data.json())
         .then((result) => {
-          console.log(result)
           if (result.sendEmail) {
             router.push(`/auth/verify-email/${result.encodedEmail}`);
           } else if (result.success) {

@@ -12,22 +12,32 @@ const IV_LENGTH = 16;
  * Convert a base64 string to a Uint8Array
  */
 const base64ToUint8Array = (base64: string): Uint8Array => {
-  return new Uint8Array(Buffer.from(base64, "base64"));
+  const binaryString = atob(base64);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
 };
 
 /**
  * Convert a Uint8Array to a base64 string
  */
 const uint8ArrayToBase64 = (array: Uint8Array): string => {
-  return Buffer.from(array).toString("base64");
+  let binaryString = "";
+  for (let i = 0; i < array.byteLength; i++) {
+    binaryString += String.fromCharCode(array[i]);
+  }
+  return btoa(binaryString);
 };
 
 /**
- * Derive a crypto key from the environment key
+ * Derive a crypto key from the environment key.
  */
 const getCryptoKey = async (): Promise<CryptoKey> => {
   const keyBuffer = new TextEncoder().encode(ENCRYPTION_KEY);
-  return await crypto.subtle.importKey(
+  return crypto.subtle.importKey(
     "raw",
     keyBuffer,
     { name: "AES-CBC" },
