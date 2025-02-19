@@ -7,7 +7,6 @@ export async function POST(
   context: { params: Promise<{ encodedEmail: string; encodedToken: string }> }
 ): Promise<NextResponse> {
   try {
-    // ✅ Await params
     const params = await context.params;
     const { encodedEmail, encodedToken } = params;
 
@@ -15,7 +14,6 @@ export async function POST(
       return NextResponse.json({ success: false, message: "Missing parameters" }, { status: 400 });
     }
 
-    // ✅ Decode and decrypt safely
     const email = decodeURIComponent(encodedEmail);
     let token: string | null = null;
 
@@ -29,7 +27,6 @@ export async function POST(
       );
     }
 
-    // ✅ Find user
     const user = await db.user.findUnique({
       where: { email },
       select: {
@@ -46,28 +43,25 @@ export async function POST(
 
     if (user.emailVerified) {
       return NextResponse.json(
-        { success: false, message: "User already verified" },
+        { success: true, message: "User already verified" },
         { status: 409 }
       );
     }
 
-    // ✅ Check token validity
     if (user.emailVerificationToken !== token) {
       return NextResponse.json(
-        { success: false, message: "Invalid verification link" },
+        { success: false, message: "Invalid verification link", reverify:true },
         { status: 400 }
       );
     }
 
-    // ✅ Check expiration
     if (!user.emailVerificationExpiry || user.emailVerificationExpiry < new Date()) {
       return NextResponse.json(
-        { success: false, message: "Verification code has expired" },
+        { success: false, message: "Verification code has expired", reverify:true },
         { status: 410 }
       );
     }
 
-    // ✅ Mark user as verified
     const verifiedUser = await db.user.update({
       where: { id: user.id },
       data: {

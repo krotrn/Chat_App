@@ -63,7 +63,7 @@ const LoginForm = (): React.ReactNode => {
           if (result.sendEmail) {
             router.push(`/auth/verify-email/${result.encodedEmail}`);
           } else if (result.success) {
-            window.location.href = DEFAULT_LOGIN_REDIRECT;
+            router.push(DEFAULT_LOGIN_REDIRECT);
           } else {
             setError(result.message);
           }
@@ -128,7 +128,7 @@ const LoginForm = (): React.ReactNode => {
             className="w-full"
             aria-disabled={isPending}
           >
-            {(isPending ) ? "Signing in..." : "Sign in"}
+            {(isPending) ? "Signing in..." : "Sign in"}
           </Button>
         </form>
       </Form>
