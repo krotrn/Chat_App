@@ -105,7 +105,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
 
     return NextResponse.json(
-      { success: true, message: "Registration successful! Please verify your email." },
+      { success: true, message: "Registration successful! Please verify your email.", sendEmail:true },
       { status: 200 }
     );
   } catch (error) {

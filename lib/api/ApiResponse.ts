@@ -31,15 +31,6 @@ class ApiResponse<T = unknown> {
    */
   public readonly success: boolean;
 
-  /**
-   * Creates an instance of ApiResponse.
-   *
-   * @param {Object} params - The parameters for the response.
-   * @param {number} params.statusCode - The HTTP status code of the response.
-   * @param {T} [params.data=null] - The data returned in the response.
-   * @param {string} [params.message="Success"] - A message describing the response.
-   * @param {boolean} [params.success] - Indicates whether the request was successful.
-   */
   constructor({
     statusCode,
     data = null,

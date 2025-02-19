@@ -11,16 +11,16 @@ export const publicRoutes: string[] = ["/"];
  * An array of authentication-related route paths.
  * 
  * @constant {string[]} authRoutes
- * @default ["/login", "/register", "/error", "/verify-email"]
+ * @default ["/login", "/register", "/error", "/auth/verify-email"]
  */
 export const authRoutes = ["/login", "/register", "/error", "/auth/verify-email", '/auth/verify'];
 
 /**
  * The prefix used for authentication-related API routes.
  * 
- * @constant {string}
+ * @constant {string[]}
  */
-export const apiAuthPrefix = "/api/v1/auth";
+export const apiAuthPrefix = ["/api/v1/auth", "/api/auth"];
 
 /**
  * The default URL to which users are redirected after a successful login.

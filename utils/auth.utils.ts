@@ -1,11 +1,8 @@
-import bcrypt from "bcryptjs";
 import { db } from "@/prisma";
-import { ApiError } from "@/lib/api/ApiError";
-
+import bcrypt from "bcryptjs";
 export const hashPassword = async (password: string) => {
   return await bcrypt.hash(password, 10);
 };
-
 export const generateUniqueUsername = async (base: string) => {
   const username = base
     .toLowerCase()
@@ -22,25 +19,4 @@ export const generateUniqueUsername = async (base: string) => {
 
   const suffix = Math.random().toString(36).slice(2, 6);
   return `${username.slice(0, 10)}_${suffix}`;
-};
-
-export const getVerificationTokenByEmail = async (email: string) => {
-  try {
-    const user = await db.user.findUnique({
-      where: { email },
-      select: { emailVerificationToken: true },
-    });
-    if (!user)
-      throw new ApiError({
-        statusCode: 404,
-        message: "user not found for verification",
-      });
-    return user.emailVerificationToken;
-  } catch (error) {
-    console.log(error)
-    throw new ApiError({
-      statusCode: 500,
-      message: "error in getting verification token",
-    });
-  }
 };

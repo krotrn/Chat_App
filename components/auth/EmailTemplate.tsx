@@ -9,7 +9,7 @@ import React from "react";
  * @param {string} props.expirationHours - The number of hours until the verification link expires.
  * @returns {React.ReactNode} The rendered email verification template.
  */
-const EmailTemplet = ({
+const EmailTemplate = ({
   verificationLink,
   expirationHours,
 }: {
@@ -58,4 +58,4 @@ const EmailTemplet = ({
   );
 };
 
-export default EmailTemplet;
+export default EmailTemplate;

@@ -1,16 +1,10 @@
+import { config } from "@/config";
 import { ApiError } from "@/lib/api/ApiError";
 
-/**
- * Generates a verification token for the given email by making a POST request to the verification API.
- *
- * @param {string} email - The email address for which to generate the verification token.
- * @returns {Promise<string>} - A promise that resolves to the verification token.
- * @throws {ApiError} - Throws an ApiError if the request fails or if there is an error creating the verification token.
- */
+
 export const generateVerificationToken = async (email: string): Promise<string> => {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
-    const response = await fetch(`${baseUrl}/api/v1/auth/verify-email`, {
+    const response = await fetch(`${config.baseUrl}/api/v1/auth/verify-email`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email }),

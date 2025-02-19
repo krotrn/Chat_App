@@ -9,48 +9,6 @@ import { ApiError } from "./lib/api/ApiError";
 import { AccountType, UserRoles } from "@prisma/client";
 import { generateUniqueUsername } from "./utils/auth.utils";
 
-/**
- * @file This file contains the configuration for authentication using NextAuth.js.
- * It includes callbacks, providers, custom pages, and events.
- */
-
-/**
- * @callback signInCallback
- * @param {Object} params - The parameters for the sign-in callback.
- * @param {Object} params.user - The user object.
- * @param {string} params.user.id - The user ID.
- * @param {Object} params.account - The account object.
- * @returns {Promise<boolean>} - Returns true if sign-in is successful, otherwise false.
- */
-
-/**
- * @callback jwtCallback
- * @param {Object} params - The parameters for the JWT callback.
- * @param {Object} params.token - The token object.
- * @param {Object} params.user - The user object.
- * @returns {Promise<Object>} - Returns the modified token object.
- */
-
-/**
- * @callback sessionCallback
- * @param {Object} params - The parameters for the session callback.
- * @param {Object} params.session - The session object.
- * @param {Object} params.token - The token object.
- * @returns {Promise<Object>} - Returns the modified session object.
- */
-
-/**
- * @callback authorizeCallback
- * @param {Object} credentials - The credentials provided by the user.
- * @returns {Promise<Object|null>} - Returns the user object if authorization is successful, otherwise null.
- */
-
-/**
- * @callback linkAccountCallback
- * @param {Object} params - The parameters for the link account event.
- * @param {Object} params.user - The user object.
- * @returns {Promise<void>} - Returns a promise that resolves when the account is linked.
- */
 export default {
   callbacks: {
     async signIn({ user: { id }, account }) {
@@ -187,7 +145,6 @@ export default {
   ],
   pages: {
     signIn: "/login",
-    error: "/auth/error",
   },
   events: {
     async linkAccount({ user }) {

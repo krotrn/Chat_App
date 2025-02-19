@@ -28,12 +28,13 @@ export default auth((req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
 
-  const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
-  const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
-  const isAuthRoute = authRoutes.some(route => 
+  const isApiAuthRoute = apiAuthPrefix.some((route) =>
     nextUrl.pathname.startsWith(route)
   );
-  
+  const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
+  const isAuthRoute = authRoutes.some((route) =>
+    nextUrl.pathname.startsWith(route)
+  );
 
   // Allow public routes and registration API
   if (isApiAuthRoute || isPublicRoute) {
