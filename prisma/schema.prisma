@@ -30,11 +30,6 @@ enum FriendshipStatus {
   REJECTED
 }
 
-enum GroupMemberRole {
-  ADMIN
-  MEMBER
-}
-
 model User {
   id                      String      @id @default(cuid())
   username                String      @unique @db.VarChar(20)
@@ -52,22 +47,35 @@ model User {
   emailVerificationExpiry DateTime?
   createdAt               DateTime    @default(now())
   updatedAt               DateTime    @default(now()) @updatedAt
+  lastLogin               DateTime?
+  isOnline                Boolean     @default(false)
+  status                  String?     @db.VarChar(100)
+  passwordHistory         String[]    @default([])
+  mfaSecret               String?
+  loginAttempts           Int         @default(0)
+  accountLocked           Boolean     @default(false)
 
-  // Relationships
-  accounts           Account[]
-  sentRequests       FriendRequest[] @relation("SentRequests")
-  receivedRequests   FriendRequest[] @relation("ReceivedRequests")
-  friends            UserFriends[]   @relation("UserFriends")
-  friendOf           UserFriends[]   @relation("UserFriendsFriend")
-  administeredGroups Group[]         @relation("GroupAdmin")
-  groupMemberships   GroupMembers[]
-  sentMessages       DirectMessage[] @relation("SentMessages")
-  receivedMessages   DirectMessage[] @relation("ReceivedMessages")
+  // Relationships for user management
+  accounts         Account[]
+  sentRequests     FriendRequest[] @relation("SentRequests")
+  receivedRequests FriendRequest[] @relation("ReceivedRequests")
+  friends          UserFriends[]   @relation("UserFriends")
+  friendOf         UserFriends[]   @relation("UserFriendsFriend")
 
   @@unique([username, email])
   @@unique([emailVerificationToken])
+  @@index([updatedAt])
   @@index([email])
   @@index([username])
+  @@index([isOnline])
+  @@index([role])
+  @@index([emailVerified])
+  @@index([lastLogin])
+  @@index([status])
+  @@index([accountLocked])
+  @@index([loginAttempts])
+  @@index([forgotPasswordToken])
+  @@index([forgotPasswordExpiry])
   @@index([createdAt])
 }
 
@@ -118,49 +126,4 @@ model UserFriends {
   @@unique([userId, friendId])
   @@index([userId])
   @@index([friendId])
-}
-
-model Group {
-  id          String   @id @default(cuid())
-  avatarUrl   String?
-  name        String
-  description String?
-  adminId     String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now()) @updatedAt
-
-  admin   User           @relation("GroupAdmin", fields: [adminId], references: [id], onDelete: Restrict)
-  members GroupMembers[]
-}
-
-model GroupMembers {
-  id       String          @id @default(cuid())
-  groupId  String
-  userId   String
-  role     GroupMemberRole @default(MEMBER)
-  joinedAt DateTime        @default(now())
-
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
-
-  @@unique([groupId, userId])
-  @@index([userId])
-}
-
-model DirectMessage {
-  id         String    @id @default(cuid())
-  content    String
-  senderId   String
-  receiverId String
-  isSeen     Boolean   @default(false)
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @default(now()) @updatedAt
-  seenAt     DateTime? // Add timestamp for when message was seen
-
-  sender   User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
-  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
-
-  @@index([senderId, receiverId])
-  @@index([isSeen])
-  @@index([createdAt, updatedAt])
 }
