@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/prisma";
 import { v4 as uuidv4 } from "uuid";
+import { config } from "@/config";
 
 /**
  * This endpoint creates a new email verification token
@@ -10,7 +11,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const { email } = await request.json();
     const token = uuidv4();
-    const expirationTime = Number(process.env.EMAIL_TOKEN_EXPIRATION_TIME) || 1; // in hours
+    const expirationTime = config.emailTokenExpirationTime // in hours
     const expireDate = new Date(Date.now() + expirationTime * 3600 * 1000);
 
     // Update user record with the token and expiration time

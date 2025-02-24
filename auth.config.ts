@@ -8,15 +8,19 @@ import bcrypt from "bcryptjs";
 import { ApiError } from "./lib/api/ApiError";
 import { AccountType, UserRoles } from "@prisma/client";
 import { generateUniqueUsername } from "./utils/auth.utils";
+import jwt from "jsonwebtoken";
 
 export default {
   callbacks: {
     async signIn({ user: { id }, account }) {
       if (account?.provider !== "credentials") return true;
       if (!id) return false;
-      const existingUser = await db.user.findUnique({ where: { id }, select: {email:true, emailVerified: true } });
+      const existingUser = await db.user.findUnique({
+        where: { id },
+        select: { email: true, emailVerified: true },
+      });
       if (!existingUser) {
-        return false
+        return false;
       }
       const { email, emailVerified } = existingUser;
       if (emailVerified) {
@@ -37,22 +41,47 @@ export default {
     },
     async jwt({ token, user }) {
       if (user) {
+        const accessToken = jwt.sign(
+          {
+            id: user.id,
+            name: user.name,
+            avatarUrl:user.avatarUrl,
+            email: user.email,
+            username: user.username,
+            role: user.role,
+          },
+          process.env.ACCESS_TOKEN_SECRET!,
+          { expiresIn: "1h" }
+        );
         token.id = user.id;
         token.name = user.name;
         token.avatarUrl = user.avatarUrl;
         token.email = user.email;
         token.username = user.username;
         token.role = user.role;
+        return {
+          ...token,
+          accessToken,
+          id: user.id,
+          name: user.name,
+          avatarUrl: user.avatarUrl,
+          email: user.email,
+          username: user.username,
+          role: user.role,
+        };
       }
-      return token;
+      if (Date.now() < (token.exp as number) * 1000) {
+        return token;
+      }
+      return { ...token, exp: Math.floor(Date.now() / 1000) + 3600 };
     },
     async session({ session, token }) {
       if (token && session.user) {
         session.user = {
           ...session.user,
+          id: token.id as string,
           name: token.name,
           avatarUrl: (token.avatarUrl as string) || null,
-          id: token.id as string,
           email: token.email as string,
           username: token.username as string,
           role: token.role as UserRoles,
@@ -137,7 +166,7 @@ export default {
             emailVerified: user.emailVerified,
           };
         } catch (error) {
-          console.log(error)
+          console.log(error);
           return null;
         }
       },
