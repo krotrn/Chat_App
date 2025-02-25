@@ -22,6 +22,9 @@ export const authRoutes = ["/login", "/register", "/error", "/auth/verify-email"
  */
 export const apiAuthPrefix = ["/api/v1/auth", "/api/auth"];
 
+export const internalRoutes = ["/api/v1/internal"];
+
+
 /**
  * The default URL to which users are redirected after a successful login.
  * 
