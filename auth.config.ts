@@ -2,12 +2,12 @@ import GitHub, { GitHubProfile } from "next-auth/providers/github";
 import Google, { GoogleProfile } from "next-auth/providers/google";
 import type { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { signInSchema } from "./schemas/signinSchema";
-import { db } from "./prisma";
+import { signInSchema } from "@/schemas/signinSchema";
+import { db } from "@/prisma";
 import bcrypt from "bcryptjs";
-import { ApiError } from "./lib/api/ApiError";
+import { ApiError } from "@/lib/api/ApiError";
 import { AccountType, UserRoles } from "@prisma/client";
-import { generateUniqueUsername } from "./utils/auth.utils";
+import { generateUniqueUsername } from "@/lib/utils/auth.utils";
 import jwt from "jsonwebtoken";
 
 export default {

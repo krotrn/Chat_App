@@ -1,5 +1,5 @@
 import { db } from "@/prisma";
-import { decryptToken } from "@/utils/crypto.utils";
+import { decryptToken } from "@/lib/utils/crypto.utils";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(
@@ -11,7 +11,10 @@ export async function POST(
     const { encodedEmail, encodedToken } = params;
 
     if (!encodedEmail || !encodedToken) {
-      return NextResponse.json({ success: false, message: "Missing parameters" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: "Missing parameters" },
+        { status: 400 }
+      );
     }
 
     const email = decodeURIComponent(encodedEmail);
@@ -38,7 +41,10 @@ export async function POST(
     });
 
     if (!user) {
-      return NextResponse.json({ success: false, message: "User Not Found" }, { status: 404 });
+      return NextResponse.json(
+        { success: false, message: "User Not Found" },
+        { status: 404 }
+      );
     }
 
     if (user.emailVerified) {
@@ -50,14 +56,25 @@ export async function POST(
 
     if (user.emailVerificationToken !== token) {
       return NextResponse.json(
-        { success: false, message: "Invalid verification link", reverify:true },
+        {
+          success: false,
+          message: "Invalid verification link",
+          reverify: true,
+        },
         { status: 400 }
       );
     }
 
-    if (!user.emailVerificationExpiry || user.emailVerificationExpiry < new Date()) {
+    if (
+      !user.emailVerificationExpiry ||
+      user.emailVerificationExpiry < new Date()
+    ) {
       return NextResponse.json(
-        { success: false, message: "Verification code has expired", reverify:true },
+        {
+          success: false,
+          message: "Verification code has expired",
+          reverify: true,
+        },
         { status: 410 }
       );
     }
@@ -76,7 +93,6 @@ export async function POST(
       { success: true, message: `${verifiedUser.username} verified.` },
       { status: 200 }
     );
-
   } catch (error) {
     console.error("Verification Error:", error);
     return NextResponse.json(

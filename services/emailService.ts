@@ -1,5 +1,5 @@
-import { generateVerificationToken } from "@/utils/token.utils";
-import { encryptToken } from "@/utils/crypto.utils";
+import { generateVerificationToken } from "@/lib/utils/token.utils";
+import { encryptToken } from "@/lib/utils/crypto.utils";
 import { config } from "@/config";
 import EmailTemplate from "@/components/auth/EmailTemplate";
 import { Resend } from "resend";
@@ -10,7 +10,9 @@ export const sendVerificationEmail = async (to: string): Promise<void> => {
   const encryptedToken = await encryptToken(token);
 
   // Create verification link
-  const verificationLink = `${config.baseUrl}/auth/verify/${encodeURIComponent(to)}/${encodeURIComponent(encryptedToken)}`;
+  const verificationLink = `${config.baseUrl}/auth/verify/${encodeURIComponent(
+    to
+  )}/${encodeURIComponent(encryptedToken)}`;
 
   // Initialize email provider (Resend)
   const resend = new Resend(config.resendApiKey);
@@ -18,7 +20,10 @@ export const sendVerificationEmail = async (to: string): Promise<void> => {
     from: config.resendFromEmail,
     to,
     subject: `Verify Your Email - ${config.appName}`,
-    react: EmailTemplate({ verificationLink, expirationHours: String(config.emailTokenExpirationTime) }),
+    react: EmailTemplate({
+      verificationLink,
+      expirationHours: String(config.emailTokenExpirationTime),
+    }),
   });
 
   if (error) {

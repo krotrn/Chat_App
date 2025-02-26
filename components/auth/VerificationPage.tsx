@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FormError } from "./Form-Error";
-import { FormSuccess } from "./Form-Success";
+import { FormError } from "@/components/auth/Form-Error";
+import { FormSuccess } from "@/components/auth/Form-Success";
 
 interface Props {
   encodedEmail: string;

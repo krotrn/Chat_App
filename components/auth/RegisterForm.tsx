@@ -18,7 +18,7 @@ import { FormError } from "@/components/auth/Form-Error";
 import { Button } from "@/components/ui/button";
 import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FormSuccess } from "./Form-Success";
+import { FormSuccess } from "@/components/auth/Form-Success";
 
 /**
  * RegisterForm component handles the user registration process.

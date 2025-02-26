@@ -1,6 +1,6 @@
 import { db } from "@/prisma";
 import { registerSchema } from "@/schemas/registerSchema";
-import { hashPassword } from "@/utils/auth.utils";
+import { hashPassword } from "@/lib/utils/auth.utils";
 import { UserRoles, AccountType } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { NextRequest, NextResponse } from "next/server";
@@ -89,8 +89,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       });
     });
 
-
-
     if (!newUser) {
       return NextResponse.json(
         {
@@ -103,13 +101,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
     }
 
-
     return NextResponse.json(
-      { success: true, message: "Registration successful! Please verify your email.", sendEmail:true },
+      {
+        success: true,
+        message: "Registration successful! Please verify your email.",
+        sendEmail: true,
+      },
       { status: 200 }
     );
   } catch (error) {
-    console.log(error)
+    console.log(error);
     if (error instanceof PrismaClientKnownRequestError) {
       if (error.code === "P2002") {
         return NextResponse.json(

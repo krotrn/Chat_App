@@ -1,9 +1,9 @@
 "use client";
 import React, { useCallback, useState, useTransition } from "react";
-import { CardWrapper } from "./card-wrapper";
-import { Button } from "../ui/button";
-import { FormError } from "./Form-Error";
-import { FormSuccess } from "./Form-Success";
+import { CardWrapper } from "@/components/auth/card-wrapper";
+import { Button } from "@/components/ui/button";
+import { FormError } from "@/components/auth//Form-Error";
+import { FormSuccess } from "@/components/auth/Form-Success";
 import useCountdown from "@/hooks/useCountdown";
 
 export default function EmailVerification({

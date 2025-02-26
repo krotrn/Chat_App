@@ -4,14 +4,14 @@ import { NextRequest } from "next/server";
 export async function proxyToChatAPI(
   req: NextRequest,
   endpoint: string,
-  methord: string,
+  method: string,
   accessToken: string,
   params?: Record<string, string>,
   body?: unknown
 ) {
   const url = `${process.env.CHAT_API_URL}${endpoint}`;
   const config = {
-    methord,
+    method,
     url,
     headers: {
       Authorization: `Bearer ${accessToken}`,

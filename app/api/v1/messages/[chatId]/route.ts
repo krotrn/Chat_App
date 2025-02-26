@@ -1,6 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { proxyToChatAPI } from "@/lib/utils/proxy";
+import { IncomingForm } from "formidable";
+import { createReadStream } from "fs";
+import { FormData as NodeFormData } from "formdata-node";
+import axios from "axios";
+import { IncomingMessage } from "http";
+import { FileAttachment } from "@/types/FilesAttachment.type";
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 
 export async function GET(
   req: NextRequest,
@@ -36,16 +48,36 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const body = await req.json();
-    const data = await proxyToChatAPI(
-      req,
-      `/api/v1/messages/${params.chatId}`,
-      "POST",
-      session.accessToken,
-      undefined,
-      body
-    );
-    return NextResponse.json(data, { status: 201 });
+    // Parse multipart/form-data
+    const form = new IncomingForm({ multiples: true });
+    const [fields, files] = await new Promise<[any, any]>((resolve, reject) => {
+      form.parse(req as unknown as IncomingMessage, (err, fields, files) => {
+        if (err) reject(err);
+        resolve([fields, files]);
+      });
+    });
+
+    const formData = new NodeFormData();
+    if (fields.content) formData.append("content", fields.content);
+    const fileArray = Array.isArray(files.attachments)
+      ? files.attachments
+      : files.attachments
+      ? [files.attachments]
+      : [];
+    fileArray.forEach((file: FileAttachment) => {
+      const stream = createReadStream(file.filepath);
+      formData.append("attachments", stream, file.originalFilename);
+    });
+
+    const url = `${process.env.CHAT_API_URL}/api/v1/messages/${params.chatId}`;
+    const response = await axios.post(url, formData, {
+      headers: {
+        Authorization: `Bearer ${session.accessToken}`,
+      },
+      timeout: 10000,
+    });
+
+    return NextResponse.json(response.data, { status: 201 });
   } catch (error) {
     console.error("Error sending message:", error);
     return NextResponse.json(
