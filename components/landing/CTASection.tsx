@@ -1,10 +1,11 @@
-"use client"
+"use client";
+
 import { motion } from "framer-motion";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-const CTASection = () => {
+export default function CTASection() {
   return (
     <section className="py-16 text-center bg-blue-600 dark:bg-blue-800 text-white">
       <motion.h2
@@ -23,6 +24,4 @@ const CTASection = () => {
       </Button>
     </section>
   );
-};
-
-export default CTASection;
+}

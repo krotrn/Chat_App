@@ -1,21 +1,13 @@
-"use client"
+"use client";
 import { motion } from "framer-motion";
 import heroVariants from "@/animations/landing/heroVariants";
 import { Button } from "../ui/button";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
-const HeroSection = () => {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return null;
+export default function HeroSection() {
   return (
     <motion.section
-      className={`flex flex-col items-center justify-center text-center py-24 px-6`}
+      className="flex flex-col items-center justify-center text-center py-24 px-6"
       initial="hidden"
       animate="visible"
       variants={heroVariants}
@@ -53,5 +45,4 @@ const HeroSection = () => {
       </motion.div>
     </motion.section>
   );
-};
-export default HeroSection;
+}

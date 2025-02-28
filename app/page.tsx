@@ -1,18 +1,17 @@
-"use client"
-import HeroSection from '@/components/landing/HeroSection';
-import FeaturesSection from '@/components/landing/FeaturesSection';
-import CTASection from '@/components/landing/CTASection';
-import Footer from '@/components/landing/Footer';
+import HeroSection from "@/components/landing/HeroSection";
+import FeaturesSection from "@/components/landing/FeaturesSection";
+import CTASection from "@/components/landing/CTASection";
+import Footer from "@/components/landing/Footer";
 
-const LandingPage = () => {
+export default function LandingPage() {
   return (
-    <div>
-      <HeroSection />
-      <FeaturesSection />
-      <CTASection />
+    <>
+      <main>
+        <HeroSection />
+        <FeaturesSection />
+        <CTASection />
+      </main>
       <Footer />
-    </div>
+    </>
   );
-};
-
-export default LandingPage;
+}
