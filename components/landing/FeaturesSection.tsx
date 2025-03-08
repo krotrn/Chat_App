@@ -1,34 +1,29 @@
-"use client";
-
-import featureVariants from "@/animations/landing/featureVariants";
-import { features } from "@/lib/landing/features";
-import { motion, useScroll, useTransform } from "framer-motion";
-import FeatureCard from "./FeatureCard";
+import FeatureGrid from "@/components/landing/FeatureGrid";
+import React from "react";
 
 export default function FeaturesSection() {
-  const { scrollY } = useScroll();
-  const yText = useTransform(scrollY, [0, 500], [0, -50]);
   return (
-    <section className="max-w-6xl mx-auto py-20 px-6">
-      <motion.h2
-        style={{ y: yText }}
-        className="text-4xl font-semibold text-center mb-16 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600"
-      >
-        Features That Shine
-      </motion.h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {features.map((feature, index) => (
-          <motion.div
-            key={feature.title}
-            custom={index}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={featureVariants}
-          >
-            <FeatureCard feature={feature} />
-          </motion.div>
-        ))}
+    <section
+      id="features"
+      className="py-20 bg-zinc-100 dark:bg-zinc-900 flex justify-center items-center"
+    >
+      <div className="container px-4 md:px-6">
+        <div className="flex flex-col items-center justify-center space-y-4 text-center">
+          <div className="space-y-2">
+            <div className="inline-block rounded-lg bg-primary/10 px-3 py-1 text-sm text-primary">
+              Features
+            </div>
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
+              Everything you need to stay connected
+            </h2>
+            <p className="max-w-[900px] text-zinc-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-zinc-400">
+              ChatApp combines the best features of messaging apps with
+              innovative new tools to make communication easier and more
+              enjoyable.
+            </p>
+          </div>
+        </div>
+        <FeatureGrid />
       </div>
     </section>
   );

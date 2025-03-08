@@ -1,8 +1,7 @@
 "use client";
 import { motion } from "framer-motion";
 import heroVariants from "@/animations/landing/heroVariants";
-import { Button } from "../ui/button";
-import Link from "next/link";
+import HeroContent from "./HeroContent";
 
 export default function HeroSection() {
   return (
@@ -12,37 +11,12 @@ export default function HeroSection() {
       animate="visible"
       variants={heroVariants}
     >
-      <motion.h1
-        className="text-5xl md:text-7xl font-extrabold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600"
-        initial={{ scale: 0.8 }}
-        animate={{ scale: 1 }}
-        transition={{ duration: 1 }}
-      >
-        Welcome to Chat App
-      </motion.h1>
-      <motion.p
-        className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl"
-        variants={heroVariants}
-      >
-        Your hub for seamless conversations and secure connections.
-      </motion.p>
-      <motion.div className="space-x-4" variants={heroVariants}>
-        <Button
-          asChild
-          size="lg"
-          className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500"
-        >
-          <Link href="/login">Log In</Link>
-        </Button>
-        <Button
-          asChild
-          variant="outline"
-          size="lg"
-          className="dark:border-gray-600 dark:text-gray-300"
-        >
-          <Link href="/register">Sign Up</Link>
-        </Button>
-      </motion.div>
+      <div className="container px-4 md:px-6">
+        <HeroContent />
+      </div>
+      <div className="absolute inset-0 -z-20 h-full w-full bg-white dark:bg-zinc-950">
+        <div className="absolute bottom-auto left-auto right-0 top-0 h-[500px] w-[500px] -translate-x-[30%] translate-y-[20%] rounded-full bg-zinc-800 dark:bg-zinc-300 opacity-5 blur-[80px]"></div>
+      </div>
     </motion.section>
   );
 }
