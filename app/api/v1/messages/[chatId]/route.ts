@@ -48,12 +48,11 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    // Parse multipart/form-data
     const form = new IncomingForm({ multiples: true });
-    const [fields, files] = await new Promise<[any, any]>((resolve, reject) => {
+    const [fields, files] = await new Promise<[Record<string, string | string[] | undefined>, Record<string, FileAttachment | FileAttachment[]>]>((resolve, reject) => {
       form.parse(req as unknown as IncomingMessage, (err, fields, files) => {
         if (err) reject(err);
-        resolve([fields, files]);
+        resolve([fields, files as Record<string, FileAttachment | FileAttachment[]>]);
       });
     });
 
