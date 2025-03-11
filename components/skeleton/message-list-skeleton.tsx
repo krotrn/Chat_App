@@ -1,7 +1,7 @@
-import { Skeleton } from "@/components/ui/skeleton"
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface MessageListSkeletonProps {
-  messageCount?: number
+  messageCount?: number;
 }
 
 export default function MessageListSkeleton({ messageCount = 6 }: MessageListSkeletonProps) {
@@ -10,7 +10,6 @@ export default function MessageListSkeleton({ messageCount = 6 }: MessageListSke
       <div className="flex justify-center my-4">
         <Skeleton className="h-6 w-32 rounded-full" />
       </div>
-
       <div className="space-y-4">
         {Array.from({ length: messageCount }).map((_, i) => (
           <div key={i} className={`flex ${i % 2 === 0 ? "justify-start" : "justify-end"}`}>
@@ -28,6 +27,5 @@ export default function MessageListSkeleton({ messageCount = 6 }: MessageListSke
         ))}
       </div>
     </div>
-  )
+  );
 }
-

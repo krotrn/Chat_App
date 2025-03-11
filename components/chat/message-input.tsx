@@ -2,7 +2,7 @@
 import { mockUsers } from "@/lib/mock-data";
 import { Message } from "@/types/ChatType";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import { Paperclip, Send, X } from "lucide-react";
 import AttachmentPreview from "./attachment-previews";
@@ -13,11 +13,7 @@ import EmojiPicker from "./emoji-picker";
 import CameraCapture from "./camera-capture";
 
 interface MessageInputProps {
-  onSendMessage: (
-    content: string,
-    attachments?: File[],
-    replyToId?: string
-  ) => void;
+  onSendMessage: (content: string, attachments?: File[], replyToId?: string) => void;
   replyToMessage: Message | null;
   onCancelReply: () => void;
 }
@@ -34,60 +30,55 @@ export default function MessageInput({
 
   useEffect(() => {
     if (replyToMessage && textareaRef.current) {
-      setMessage(replyToMessage.content);
+      textareaRef.current.focus();
     } else {
       setMessage("");
     }
   }, [replyToMessage]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
-
     if (!message.trim() && !attachments.length) return;
     onSendMessage(message, attachments, replyToMessage?.id);
     setMessage("");
     setAttachments([]);
     onCancelReply();
-  };
+  }, [message, attachments, replyToMessage, onSendMessage, onCancelReply]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit(e);
     } else if (e.key === "Escape" && replyToMessage) {
       onCancelReply();
     }
-  };
+  }, [handleSubmit, replyToMessage, onCancelReply]);
 
-  const handleEmojiSelect = (emoji: { native: string }) => {
+  const handleEmojiSelect = useCallback((emoji: { native: string }) => {
     const textarea = textareaRef.current;
     if (!textarea) return;
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-
-    const newMessage =
-      message.slice(0, start) + emoji.native + message.slice(end);
+    const newMessage = message.slice(0, start) + emoji.native + message.slice(end);
     setMessage(newMessage);
-
     setTimeout(() => {
-      textarea.selectionStart = textarea.selectionEnd =
-        start + emoji.native.length;
+      textarea.selectionStart = textarea.selectionEnd = start + emoji.native.length;
       textarea.focus();
     }, 0);
-  };
+  }, [message]);
 
-  const handleFileSelect = (file: File[]) => {
-    setAttachments((prev) => [...prev, ...file]);
+  const handleFileSelect = useCallback((files: File[]) => {
+    setAttachments((prev) => [...prev, ...files]);
     setIsAttaching(false);
-  };
+  }, []);
 
-  const handleCameraCapture = (file: File) => {
+  const handleCameraCapture = useCallback((file: File) => {
     setAttachments((prev) => [...prev, file]);
-  };
+  }, []);
 
-  const removeAttachment = (index: number) => {
+  const removeAttachment = useCallback((index: number) => {
     setAttachments((prev) => prev.filter((_, i) => i !== index));
-  };
+  }, []);
 
   const replyToUser = replyToMessage
     ? mockUsers.find((user) => user.id === replyToMessage.senderId)
@@ -96,32 +87,28 @@ export default function MessageInput({
   return (
     <div className="border-t p-4">
       <AnimatePresence>
-        {replyToMessage ? (
+        {replyToMessage && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{opacity:1, height:0}}
-            exit={{opacity:0, height:0}}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mb-2 flex items-center justify-between bg-muted p-2 rounded"
           >
-            <Button
-              variant='ghost'
-              size='icon'
-              className="absolute"
-              onClick={onCancelReply}
-            >
+            <div>
+              <p className="text-xs font-medium">Replying to {replyToUser?.name}</p>
+              <p className="text-xs text-muted-foreground truncate">{replyToMessage.content}</p>
+            </div>
+            <Button variant="ghost" size="icon" onClick={onCancelReply}>
               <X className="h-4 w-4" />
             </Button>
-            <p className="text-xs font-medium">Replying to {replyToUser?.name}</p>
-            <p className="text-xs text-muted-foreground truncate">{replyToMessage.content}</p>
           </motion.div>
-        ) : (
-          <></>
         )}
-        {attachments.length > 0 ? (
+        {attachments.length > 0 && (
           <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          exit={{ opacity: 0, height: 0 }}
-          className="mb-4 grid gap-2"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mb-4 grid gap-2"
           >
             {attachments.map((file, index) => (
               <AttachmentPreview
@@ -131,42 +118,30 @@ export default function MessageInput({
               />
             ))}
           </motion.div>
-        ) : (
-          <></>
         )}
       </AnimatePresence>
-
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="flex items-end gap-2">
         <Popover open={isAttaching} onOpenChange={setIsAttaching}>
           <PopoverTrigger asChild>
-            <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9"
-            >
-              <Paperclip className="h-5 w-5"/>
+            <Button type="button" variant="ghost" size="icon" className="h-9 w-9">
+              <Paperclip className="h-5 w-5" />
             </Button>
           </PopoverTrigger>
           <PopoverContent side="top" align="start" className="w-96">
             <FileUploader onFileSelect={handleFileSelect} />
           </PopoverContent>
         </Popover>
-
         <div className="flex-1">
           <Textarea
             ref={textareaRef}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={
-              replyToMessage ? "Type your reply..." : "Type a message..."
-            }
+            placeholder={replyToMessage ? "Type your reply..." : "Type a message..."}
             className="min-h-10 resize-none"
             rows={1}
           />
         </div>
-
         <div className="flex items-center gap-1">
           <EmojiPicker onEmojiSelect={handleEmojiSelect} />
           <CameraCapture onCapture={handleCameraCapture} />

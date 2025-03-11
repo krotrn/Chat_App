@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { Button } from "../ui/button";
 import { Info, MoreVertical, Trash2 } from "lucide-react";
 import {
@@ -14,6 +14,7 @@ interface HeaderActionsProps {
   onToggleDetails: () => void;
   onDeleteChat: () => void;
 }
+
 export default function HeaderActions({
   isAdmin,
   onToggleDetails,
@@ -29,7 +30,6 @@ export default function HeaderActions({
       >
         <Info className="h-5 w-5" />
       </Button>
-
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" aria-label="More options">

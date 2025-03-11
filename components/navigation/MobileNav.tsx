@@ -1,24 +1,31 @@
-import { Menu, MessageSquare, Settings } from "lucide-react";
-import {
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "../ui/sheet";
+import { MessageSquare, Settings } from "lucide-react";
+import { SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { menuItems } from "@/lib/navigation/menuItem";
 import { cn } from "@/lib/utils";
-import { useMemo } from "react";
+
 interface MobileNavProps {
   pathname: string;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 function MobileNav({ pathname, setIsOpen }: MobileNavProps) {
-  const mobileItems = useMemo(() => {
-    return (
+  return (
+    <SheetContent side="left" className="p-4"> {/* Changed from pr-0 to p-4 */}
+      <SheetHeader>
+        <div className="flex items-center justify-between mb-4">
+          <Link
+            href="/"
+            className="flex items-center space-x-2"
+            onClick={() => setIsOpen(false)}
+          >
+            <MessageSquare className="text-primary" />
+            <SheetTitle className="font-bold">Chat App</SheetTitle>
+          </Link>
+        </div>
+      </SheetHeader>
       <nav className="flex flex-col pt-4">
         <div className="flex flex-col space-y-3">
           {menuItems.map((item) => (
@@ -28,12 +35,10 @@ function MobileNav({ pathname, setIsOpen }: MobileNavProps) {
               onClick={() => setIsOpen(false)}
               className={cn(
                 "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent",
-                pathname === item.href
-                  ? "bg-accent text-accent-foreground"
-                  : "text-muted-foreground"
+                pathname === item.href ? "bg-accent text-accent-foreground" : "text-muted-foreground"
               )}
             >
-              <item.icon className="mr-2">{item.name}</item.icon>
+              <item.icon className="mr-2 h-4 w-4" />
               <span>{item.name}</span>
             </Link>
           ))}
@@ -46,7 +51,7 @@ function MobileNav({ pathname, setIsOpen }: MobileNavProps) {
               className="mr-2"
               aria-label="Settings"
             >
-              <Settings className="" />
+              <Settings className="h-4 w-4" />
             </Button>
           </Link>
           <Avatar className="h-8 w-8">
@@ -56,32 +61,7 @@ function MobileNav({ pathname, setIsOpen }: MobileNavProps) {
           <span className="ml-2 text-sm font-medium">User Account</span>
         </div>
       </nav>
-    );
-  }, [pathname, setIsOpen]);
-  return (
-    <>
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="md:hidden">
-          <Menu className="h-4 w-4" />
-          <span className="sr-only">Toggle menu</span>
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="left" className="pr-0">
-        <SheetHeader>
-          <div className="flex items-center justify-between mb-4">
-            <Link
-              href="/"
-              className="flex items-center space-x-2"
-              onClick={() => setIsOpen(false)}
-            >
-              <MessageSquare className="text-primary" />
-              <SheetTitle className="font-bold">Chat App</SheetTitle>
-            </Link>
-          </div>
-        </SheetHeader>
-        {mobileItems}
-      </SheetContent>
-    </>
+    </SheetContent>
   );
 }
 

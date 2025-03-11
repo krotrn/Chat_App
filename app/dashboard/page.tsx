@@ -18,7 +18,7 @@ export default async function DashboardPage() {
     },
   ];
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-y-hidden">
       <WelcomeCard userName={session.user.username} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <RecentChats chats={chats} />

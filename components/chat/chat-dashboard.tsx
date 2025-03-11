@@ -3,7 +3,7 @@ import { mockChats } from "@/lib/mock-data";
 import type { Chat } from "@/types/ChatType";
 import { User } from "next-auth";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import useSearchQuery from "@/hooks/useSearchQuery";
 import ChatSidebar from "./chat-sidebar";
@@ -14,74 +14,80 @@ export default function ChatDashboard() {
   const [chats, setChats] = useState<Chat[]>(mockChats);
   const [selectedChatId, setSelectedChatId] = useSearchQuery(
     "chat",
-    mockChats[0]?.id || null
+    mockChats[0]?.id || ""
   );
-  const currentUser: User = session.data?.user as User;
+  const currentUser = session.data?.user as User;
+  const [isMobileView, setIsMobileView] = useState(false);
+  const [showChatList, setShowChatList] = useState(true);
   const [showDetails, setShowDetails] = useState(false);
 
-  // select Chat
-  const handleChatSelect = (chatId: string) => {
+  const handleChatSelect = useCallback((chatId: string) => {
     setSelectedChatId(chatId);
-  };
+    if (isMobileView) {
+      setShowChatList(false); // Hide chat list on mobile when chat is selected
+    }
+  }, [setSelectedChatId, isMobileView]);
+
+  const handleBackToChats = useCallback(() => {
+    setShowChatList(true); // Show chat list again
+  }, []);
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileView(window.innerWidth < 768); // 768px as mobile breakpoint
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const selectedChat = chats.find((chat) => chat.id === selectedChatId) || null;
 
-  // chat Searching
-  const handleSearchChats = (query: string) => {
+  const handleSearchChats = useCallback((query: string) => {
     if (!query.trim()) {
       setChats(mockChats);
       return;
     }
-
     const filtered = mockChats.filter(
       (chat) =>
         chat.name.toLowerCase().includes(query.toLowerCase()) ||
         chat.lastMessage?.content.toLowerCase().includes(query.toLowerCase())
     );
-
     setChats(filtered);
-  };
+  }, []);
 
-  // Delete Chat
-  const handleDeleteChat = (chatId: string) => {
-    setChats(chats.filter((chat) => chat.id !== chatId));
+  const handleDeleteChat = useCallback((chatId: string) => {
+    setChats((prev) => prev.filter((chat) => chat.id !== chatId));
     if (selectedChatId === chatId) {
-      setSelectedChatId(chats[0]?.id);
+      setSelectedChatId(chats[0]?.id || "");
     }
-  };
+  }, [selectedChatId, chats, setSelectedChatId]);
 
-  // Delete Chat
-  const handleDeleteMessage = (messageId: string, forEveryone: boolean) => {
+  const handleDeleteMessage = useCallback((messageId: string, forEveryone: boolean) => {
     if (!selectedChat) return;
-    void forEveryone;
-
-    const updatedChats = chats.map((chat) => {
-      if (chat.id === selectedChat.id) {
-        return {
-          ...chat,
-          messages: chat.messages.filter((msg) => msg.id !== messageId),
-        };
-      }
-      return chat;
-    });
-
+    const updatedChats = chats.map((chat) =>
+      chat.id === selectedChat.id
+        ? { ...chat, messages: chat.messages.filter((msg) => msg.id !== messageId) }
+        : chat
+    );
+    void forEveryone
     setChats(updatedChats);
-  };
+  }, [chats, selectedChat]);
 
-  const toggleDetails = () => {
-    setShowDetails(!showDetails);
-  };
+  const toggleDetails = useCallback(() => {
+    setShowDetails((prev) => !prev);
+  }, []);
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background">
+      {(!isMobileView || showChatList) && (
       <ChatSidebar
         chats={chats}
         selectedChatId={selectedChatId}
         onChatSelect={handleChatSelect}
         onSearch={handleSearchChats}
-      />
-
-      {selectedChat ? (
+        />
+      )}
+     {selectedChat && (!isMobileView || !showChatList) && (
         <ChatMain
           chat={selectedChat}
           currentUser={currentUser}
@@ -89,17 +95,17 @@ export default function ChatDashboard() {
           onToggleDetails={toggleDetails}
           onDeleteChat={handleDeleteChat}
           onDeleteMessage={handleDeleteMessage}
+          onBack={isMobileView ? handleBackToChats : undefined}
         />
-      ) : (
+      )}
+      {!selectedChat && (
         <motion.div
           className="flex flex-1 items-center justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          <p className="text-muted-foreground">
-            Select a chat to start messaging
-          </p>
+          <p className="text-muted-foreground">Select a chat to start messaging</p>
         </motion.div>
       )}
     </div>

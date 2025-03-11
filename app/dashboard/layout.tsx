@@ -10,7 +10,7 @@ export default function DashboardLayout({
     <SessionProvider>
       <div className="flex flex-col min-h-screen">
         <NavMenu />
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1">{children}</main>
       </div>
     </SessionProvider>
   );

@@ -1,8 +1,8 @@
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 interface DateDividerProps {
-  date: string
-  className?: string
+  date: string;
+  className?: string;
 }
 
 export default function DateDivider({ date, className }: DateDividerProps) {
@@ -15,6 +15,5 @@ export default function DateDivider({ date, className }: DateDividerProps) {
         <span className="bg-background px-2 text-xs text-muted-foreground">{date}</span>
       </div>
     </div>
-  )
+  );
 }
-
