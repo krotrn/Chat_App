@@ -2,6 +2,10 @@ import { Chat, Message, MessageReaction } from "@/types/ChatType";
 import { User } from "next-auth";
 import { useState } from "react";
 import {AnimatePresence, motion} from 'framer-motion'
+import ChatHeader from "./chat-header";
+import MessageList from "./message-list";
+import MessageInput from "./message-input";
+import ChatDetails from "./chat-details";
 
 interface ChatMainProps {
   chat: Chat;
@@ -19,8 +23,13 @@ export default function ChatMain({
   onDeleteChat,
   onDeleteMessage,
 }: ChatMainProps) {
+  // messages
   const [messages, setMessages] = useState<Message[]>(chat.messages);
+
+  // setReply to message
   const [replyToMessage, setReplyToMessage] = useState<Message | null>(null);
+
+  // handle Sending Message
   const handleSendMessage = (
     content: string,
     attachments?: File[],
@@ -44,16 +53,20 @@ export default function ChatMain({
     setMessages([...messages, newMessage]);
   };
 
+  // handle Reply to message
   const handleReplyToMessage = (messageId: string) => {
     const message = messages.find((msg) => msg.id === messageId);
     if (message) {
       setReplyToMessage(message);
     }
   };
+
+  // handle Cancel Reply
   const handleCancelReply = () => {
     setReplyToMessage(null);
   };
 
+  // handle Delete Message
   const handleDeleteMessage = (messageId: string, forEveryone: boolean) => {
     //TODO:Handle Delete message
     if (replyToMessage?.id === messageId) {
@@ -64,6 +77,8 @@ export default function ChatMain({
 
     onDeleteMessage(messageId, forEveryone);
   };
+
+  // handle React to message
   const handleReactToMessage = (messageId: string, emoji: string) => {
     const newReaction: MessageReaction = {
       emoji,
@@ -111,10 +126,9 @@ export default function ChatMain({
         chat={chat}
         onToggleDetails={onToggleDetails}
         onDeleteChat={() => onDeleteChat(chat.id)}
-        currentUser={currentUser}
       />
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 h-full">
         <div className="flex flex-1 flex-col">
           <MessageList
             messages={messages}
@@ -131,13 +145,11 @@ export default function ChatMain({
         </div>
 
         <AnimatePresence>
-          {showDetails && (
+          {showDetails ? (
             <ChatDetails
-              chat={chat}
-              currentUser={currentUser}
               onClose={onToggleDetails}
             />
-          )}
+          ):<></>}
         </AnimatePresence>
       </div>
     </motion.div>

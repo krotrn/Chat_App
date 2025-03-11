@@ -1,5 +1,4 @@
 "use client";
-
 import { mockChats } from "@/lib/mock-data";
 import type { Chat } from "@/types/ChatType";
 import { User } from "next-auth";
@@ -19,10 +18,15 @@ export default function ChatDashboard() {
   );
   const currentUser: User = session.data?.user as User;
   const [showDetails, setShowDetails] = useState(false);
+
   const selectedChat = chats.find((chat) => chat.id === selectedChatId) || null;
+
+  // select Chat
   const handleChatSelect = (chatId: string) => {
     setSelectedChatId(chatId);
   };
+
+  // chat Searching
   const handleSearchChats = (query: string) => {
     if (!query.trim()) {
       setChats(mockChats);
@@ -37,6 +41,8 @@ export default function ChatDashboard() {
 
     setChats(filtered);
   };
+
+  // Delete Chat
   const handleDeleteChat = (chatId: string) => {
     setChats(chats.filter((chat) => chat.id !== chatId));
     if (selectedChatId === chatId) {
@@ -44,6 +50,7 @@ export default function ChatDashboard() {
     }
   };
 
+  // Delete Chat
   const handleDeleteMessage = (messageId: string, forEveryone: boolean) => {
     if (!selectedChat) return;
     void forEveryone;

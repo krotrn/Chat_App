@@ -1,12 +1,14 @@
+"use client";
 import useSearchQuery from "@/hooks/useSearchQuery";
 import { AIModel, Chat } from "@/types/ChatType";
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
 import { Input } from "../ui/input";
-import { ChangeEvent } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { ScrollArea } from "../ui/scroll-area";
 import ChatItem from "./chat-item";
 import AIChatItem from "./ai-chat-item";
+import ChatListSkeleton from "../skeleton/chat-list-skeleton";
 
 interface ChatSidebarProps {
   chats: Chat[];
@@ -27,7 +29,16 @@ export default function ChatSidebar({
   onAIModelSelect,
   selectedAIModelId,
 }: ChatSidebarProps) {
-  const [searchQuery, setSearchQuery] = useSearchQuery("query", "");
+  const [searchQuery, setSearchQuery] = useSearchQuery("q", "");
+
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsInitialLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
     onSearch(e.target.value);
@@ -39,9 +50,10 @@ export default function ChatSidebar({
       animate={{ x: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
+      {/* Search */}
       <div className="p-4">
         <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"/>
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
             placeholder="SearchChat..."
@@ -50,10 +62,14 @@ export default function ChatSidebar({
           />
         </div>
       </div>
+
+      {/* Loading area */}
       <ScrollArea className="flex-1">
         <div className="px-2">
           <div className="space-y-1">
-            {chats.length > 0 ? (
+            {isInitialLoading ? (
+              <ChatListSkeleton />
+            ) : chats.length > 0 ? (
               chats.map((chat) => (
                 <ChatItem
                   key={chat.id}
@@ -74,11 +90,11 @@ export default function ChatSidebar({
                 </div>
                 {aiModels.map((model) => (
                   <AIChatItem
-                  key={model.id}
-                  model={model}
-                  isSelected={model.id === selectedAIModelId}
-                  onClick={() => onAIModelSelect && onAIModelSelect(model.id)}
-                />
+                    key={model.id}
+                    model={model}
+                    isSelected={model.id === selectedAIModelId}
+                    onClick={() => onAIModelSelect && onAIModelSelect(model.id)}
+                  />
                 ))}
               </>
             ) : (
