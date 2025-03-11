@@ -19,12 +19,12 @@ export default function ChatDashboard() {
   const currentUser: User = session.data?.user as User;
   const [showDetails, setShowDetails] = useState(false);
 
-  const selectedChat = chats.find((chat) => chat.id === selectedChatId) || null;
-
   // select Chat
   const handleChatSelect = (chatId: string) => {
     setSelectedChatId(chatId);
   };
+
+  const selectedChat = chats.find((chat) => chat.id === selectedChatId) || null;
 
   // chat Searching
   const handleSearchChats = (query: string) => {

@@ -103,18 +103,26 @@ export default function MessageInput({
             exit={{opacity:0, height:0}}
           >
             <Button
-              
+              variant='ghost'
+              size='icon'
+              className="absolute"
+              onClick={onCancelReply}
             >
-              <X />
+              <X className="h-4 w-4" />
             </Button>
-            <p>Replying to {replyToUser?.name}</p>
-            <p>{replyToMessage.content}</p>
+            <p className="text-xs font-medium">Replying to {replyToUser?.name}</p>
+            <p className="text-xs text-muted-foreground truncate">{replyToMessage.content}</p>
           </motion.div>
         ) : (
           <></>
         )}
         {attachments.length > 0 ? (
-          <motion.div>
+          <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          className="mb-4 grid gap-2"
+          >
             {attachments.map((file, index) => (
               <AttachmentPreview
                 key={file.name}
@@ -131,16 +139,21 @@ export default function MessageInput({
       <form onSubmit={handleSubmit}>
         <Popover open={isAttaching} onOpenChange={setIsAttaching}>
           <PopoverTrigger asChild>
-            <Button>
-              <Paperclip />
+            <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9"
+            >
+              <Paperclip className="h-5 w-5"/>
             </Button>
           </PopoverTrigger>
-          <PopoverContent>
+          <PopoverContent side="top" align="start" className="w-96">
             <FileUploader onFileSelect={handleFileSelect} />
           </PopoverContent>
         </Popover>
 
-        <div>
+        <div className="flex-1">
           <Textarea
             ref={textareaRef}
             value={message}
@@ -149,10 +162,12 @@ export default function MessageInput({
             placeholder={
               replyToMessage ? "Type your reply..." : "Type a message..."
             }
+            className="min-h-10 resize-none"
+            rows={1}
           />
         </div>
 
-        <div>
+        <div className="flex items-center gap-1">
           <EmojiPicker onEmojiSelect={handleEmojiSelect} />
           <CameraCapture onCapture={handleCameraCapture} />
           <Button

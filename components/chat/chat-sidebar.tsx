@@ -56,7 +56,8 @@ export default function ChatSidebar({
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="SearchChat..."
+            placeholder="Search chats..."
+            className="pl-8"
             value={searchQuery}
             onChange={handleSearch}
           />
