@@ -1,5 +1,5 @@
 import { User } from "next-auth";
-import type { Chat } from "@/types/testTypes"
+import type { Chat } from "@/types/ChatType"
 
 export const mockUsers: User[] = [
   {
@@ -43,7 +43,7 @@ export const mockChats: Chat[] = [
   {
     id: "chat-1",
     name: "Team Project",
-    avatarUrl: "/placeholder.svg?height=40&width=40",
+    avatar: "/placeholder.svg?height=40&width=40",
     isGroup: true,
     lastMessage: {
       content: "Let's discuss the new features",
@@ -79,7 +79,7 @@ export const mockChats: Chat[] = [
   {
     id: "chat-2",
     name: "Jane Smith",
-    avatarUrl: "/placeholder.svg?height=40&width=40",
+    avatar: "/placeholder.svg?height=40&width=40",
     isGroup: false,
     lastMessage: {
       content: "Can we meet tomorrow?",
@@ -114,7 +114,7 @@ export const mockChats: Chat[] = [
   {
     id: "chat-3",
     name: "Marketing Group",
-    avatarUrl: "/placeholder.svg?height=40&width=40",
+    avatar: "/placeholder.svg?height=40&width=40",
     isGroup: true,
     lastMessage: {
       content: "The campaign is live now",
@@ -150,7 +150,7 @@ export const mockChats: Chat[] = [
   {
     id: "chat-4",
     name: "Bob Johnson",
-    avatarUrl: "/placeholder.svg?height=40&width=40",
+    avatar: "/placeholder.svg?height=40&width=40",
     isGroup: false,
     lastMessage: {
       content: "Did you check the latest report?",
@@ -171,7 +171,7 @@ export const mockChats: Chat[] = [
   {
     id: "chat-5",
     name: "Support Team",
-    avatarUrl: "/placeholder.svg?height=40&width=40",
+    avatar: "/placeholder.svg?height=40&width=40",
     isGroup: true,
     lastMessage: {
       content: "New ticket assigned to you",

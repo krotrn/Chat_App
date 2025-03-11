@@ -13,7 +13,7 @@ interface MobileNavProps {
 
 function MobileNav({ pathname, setIsOpen }: MobileNavProps) {
   return (
-    <SheetContent side="left" className="p-4"> {/* Changed from pr-0 to p-4 */}
+    <SheetContent side="left" className="h-full w-64 p-4">
       <SheetHeader>
         <div className="flex items-center justify-between mb-4">
           <Link

@@ -2,7 +2,7 @@
 import { groupMessagesByDate } from "@/lib/utils/groupMessageByDate";
 import { Message } from "@/types/ChatType";
 import { User } from "next-auth";
-import { Fragment } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { ScrollArea } from "../ui/scroll-area";
 import DateDivider from "./date-divider";
 import MessageItem from "./message-item";
@@ -25,8 +25,13 @@ export default function MessageList({
   onReactToMessage,
   isLoading = false,
 }: MessageListProps) {
+  const [groupedMessages, setGroupedMessages] = useState<Record<string, Message[]>>({});
+  useEffect(() => {
+    const grouped = groupMessagesByDate(messages);
+    setGroupedMessages(grouped);
+    
+  }, [messages]);
   if (isLoading) return <MessageListSkeleton />;
-  const groupedMessages = groupMessagesByDate(messages);
 
   const findMessageById = (messageId: string): Message | undefined =>
     messages.find((msg) => msg.id === messageId);

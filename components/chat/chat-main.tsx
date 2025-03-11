@@ -1,7 +1,7 @@
 "use client";
 import { Chat, Message, MessageReaction } from "@/types/ChatType";
 import { User } from "next-auth";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import ChatHeader from "./chat-header";
 import MessageList from "./message-list";
@@ -29,6 +29,10 @@ export default function ChatMain({
 }: ChatMainProps) {
   const [messages, setMessages] = useState<Message[]>(chat.messages);
   const [replyToMessage, setReplyToMessage] = useState<Message | null>(null);
+  useEffect(() => {
+    setMessages(chat.messages);
+  }, [chat]);
+  
 
   const handleSendMessage = useCallback((content: string, attachments?: File[], replyToId?: string) => {
     const newMessage: Message = {
@@ -86,7 +90,7 @@ export default function ChatMain({
 
   return (
     <motion.div
-      className="flex flex-1 flex-col overflow-hidden"
+      className="flex flex-1 flex-col h-full bg-background"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -99,7 +103,7 @@ export default function ChatMain({
         onDeleteChat={() => onDeleteChat(chat.id)}
         onBack={onBack}
       />
-      <div className="flex flex-1 h-full">
+      <div className="flex flex-1 h-screen overflow-hidden">
         <div className="flex flex-1 flex-col">
           <MessageList
             messages={messages}

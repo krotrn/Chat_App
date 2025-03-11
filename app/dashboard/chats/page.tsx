@@ -4,7 +4,7 @@ import { Suspense } from "react";
 
 export default function Home() {
   return (
-    <main className="min-h-screen">
+    <main className="h-full overflow-hidden bg-background">
       <Suspense
         fallback={
           <div className="flex h-screen items-center justify-center">

@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import useSearchQuery from "@/hooks/useSearchQuery";
 import ChatSidebar from "./chat-sidebar";
 import ChatMain from "./chat-main";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function ChatDashboard() {
   const session = useSession();
@@ -17,30 +18,25 @@ export default function ChatDashboard() {
     mockChats[0]?.id || ""
   );
   const currentUser = session.data?.user as User;
-  const [isMobileView, setIsMobileView] = useState(false);
+  const isMobileView = useIsMobile();
   const [showChatList, setShowChatList] = useState(true);
   const [showDetails, setShowDetails] = useState(false);
+  const [selectedChat, setSelectedChat] = useState<Chat | null>(chats.find((chat) => chat.id === selectedChatId) || null);
 
-  const handleChatSelect = useCallback((chatId: string) => {
+  useEffect(() => {
+    setSelectedChat(chats.find((chat) => chat.id === selectedChatId) || null);
+  }, [selectedChatId, chats]);
+  const handleChatSelect = (chatId: string) => {
     setSelectedChatId(chatId);
     if (isMobileView) {
       setShowChatList(false); // Hide chat list on mobile when chat is selected
     }
-  }, [setSelectedChatId, isMobileView]);
+  };
 
   const handleBackToChats = useCallback(() => {
     setShowChatList(true); // Show chat list again
   }, []);
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobileView(window.innerWidth < 768); // 768px as mobile breakpoint
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
-  const selectedChat = chats.find((chat) => chat.id === selectedChatId) || null;
 
   const handleSearchChats = useCallback((query: string) => {
     if (!query.trim()) {
@@ -65,7 +61,7 @@ export default function ChatDashboard() {
   const handleDeleteMessage = useCallback((messageId: string, forEveryone: boolean) => {
     if (!selectedChat) return;
     const updatedChats = chats.map((chat) =>
-      chat.id === selectedChat.id
+      chat.id === selectedChat?.id
         ? { ...chat, messages: chat.messages.filter((msg) => msg.id !== messageId) }
         : chat
     );
@@ -78,7 +74,7 @@ export default function ChatDashboard() {
   }, []);
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background">
+    <div className="flex h-screen  w-full overflow-hidden bg-background">
       {(!isMobileView || showChatList) && (
       <ChatSidebar
         chats={chats}

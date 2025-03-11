@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Sheet, SheetTrigger } from "../ui/sheet";
@@ -16,13 +15,13 @@ const NavMenu = () => {
   return (
     <>
       {/* Desktop Menu */}
-      <NavigationMenu className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur hidden md:block">
+      <NavigationMenu className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 hidden md:block">
         <DesktopNav pathname={pathname} />
       </NavigationMenu>
       {/* Mobile Menu Trigger */}
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="md:hidden sticky z-50">
+          <Button variant="ghost" size="icon" className="md:hidden fixed top-4 left-4 z-50">
             <Menu className="h-4 w-4" />
             <span className="sr-only">Toggle menu</span>
           </Button>

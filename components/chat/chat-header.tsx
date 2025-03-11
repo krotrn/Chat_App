@@ -22,7 +22,7 @@ export default function ChatHeader({
 }: ChatHeaderProps) {
   if (isLoading) {
     return (
-      <div className="flex h-16 items-center justify-between border-b px-4">
+      <div className="flex fixed h-16 items-center justify-between border-b px-4">
         <div className="flex items-center gap-3">
           {onBack && (
             <Button

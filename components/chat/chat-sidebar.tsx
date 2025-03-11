@@ -4,10 +4,11 @@ import { AIModel, Chat } from "@/types/ChatType";
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
 import { Input } from "../ui/input";
-import { ChangeEvent, useCallback } from "react";
+import { ChangeEvent, useCallback, useEffect, useState } from "react";
 import { ScrollArea } from "../ui/scroll-area";
 import ChatItem from "./chat-item";
 import AIChatItem from "./ai-chat-item";
+import ChatListSkeleton from "../skeleton/chat-list-skeleton";
 
 interface ChatSidebarProps {
   chats: Chat[];
@@ -29,11 +30,23 @@ export default function ChatSidebar({
   selectedAIModelId,
 }: ChatSidebarProps) {
   const [searchQuery, setSearchQuery] = useSearchQuery("q", "");
-  const handleSearch = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchQuery(value);
-    onSearch(value);
-  }, [setSearchQuery, onSearch]);
+  const handleSearch = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setSearchQuery(value);
+      onSearch(value);
+    },
+    [setSearchQuery, onSearch]
+  );
+
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsInitialLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <motion.div
@@ -57,7 +70,9 @@ export default function ChatSidebar({
       <ScrollArea className="flex-1">
         <div className="px-2">
           <div className="space-y-1">
-            {chats.length > 0 ? (
+            {isInitialLoading ? (
+              <ChatListSkeleton />
+            ) : chats.length > 0 ? (
               chats.map((chat) => (
                 <ChatItem
                   key={chat.id}

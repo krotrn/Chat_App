@@ -13,7 +13,6 @@ export function formatMessageDate(date: Date): string {
 
 export function groupMessagesByDate(messages: Message[]): Record<string, Message[]> {
   const grouped: Record<string, Message[]> = {}
-
   messages.forEach((message) => {
     const date = new Date(message.timestamp)
     const dateKey = formatMessageDate(date)

@@ -6,7 +6,7 @@ import { NavigationMenuList } from "../ui/navigation-menu";
 
 function DesktopNav({ pathname }: { pathname: string }) {
   return (
-    <NavigationMenuList className="w-screen justify-evenly"  role="navigation">
+    <NavigationMenuList className="w-screen justify-evenly" role="navigation">
       {menuItems.map((item, index) => (
         <motion.div
           key={item.href}

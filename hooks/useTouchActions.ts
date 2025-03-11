@@ -1,4 +1,4 @@
-import { Dispatch, RefObject, SetStateAction } from "react";
+import { Dispatch, RefObject, SetStateAction, useCallback, useEffect } from "react";
 
 interface TouchActions {
   handleMouseDown: () => void;
@@ -8,39 +8,50 @@ interface TouchActions {
 }
 
 export default function useTouchActions(
-  handleCopyToClipboard: () => void,
+  action: () => void,
   longPressTimeoutRef: RefObject<NodeJS.Timeout | null>,
   setIsLongPressed: Dispatch<SetStateAction<boolean>>,
 ): TouchActions {
-  const handleMouseDown = (): void => {
+
+  const handleMouseDown = useCallback((): void => {
     longPressTimeoutRef.current = setTimeout(() => {
       setIsLongPressed(true);
-      handleCopyToClipboard();
-    }, 500); // 500ms for long press
-  };
+      action();
+    }, 500);
+  }, [action, longPressTimeoutRef, setIsLongPressed]);
 
-  const handleMouseUp = (): void => {
+
+  const handleMouseUp = useCallback((): void => {
     if (longPressTimeoutRef.current) {
       clearTimeout(longPressTimeoutRef.current);
       longPressTimeoutRef.current = null;
     }
     setIsLongPressed(false);
-  };
+  }, [longPressTimeoutRef, setIsLongPressed]);
 
-  const handleTouchStart = (): void => {
+
+  const handleTouchStart = useCallback((): void => {
     longPressTimeoutRef.current = setTimeout(() => {
       setIsLongPressed(true);
-      handleCopyToClipboard();
-    }, 500); // 500ms for long press
-  };
+      action();
+    }, 500);
+  }, [action, longPressTimeoutRef, setIsLongPressed]);
 
-  const handleTouchEnd = (): void => {
+  const handleTouchEnd = useCallback((): void => {
     if (longPressTimeoutRef.current) {
       clearTimeout(longPressTimeoutRef.current);
       longPressTimeoutRef.current = null;
     }
     setIsLongPressed(false);
-  };
+  }, [longPressTimeoutRef, setIsLongPressed]);
+
+  useEffect(() => {
+    return () => {
+      if (longPressTimeoutRef.current) {
+        clearTimeout(longPressTimeoutRef.current);
+      }
+    };
+  }, [longPressTimeoutRef]);
 
   return {
     handleMouseDown,
