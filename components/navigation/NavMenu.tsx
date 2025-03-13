@@ -21,7 +21,11 @@ const NavMenu = () => {
       {/* Mobile Menu Trigger */}
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="md:hidden fixed top-4 left-4 z-50">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden top-4 left-4"
+          >
             <Menu className="h-4 w-4" />
             <span className="sr-only">Toggle menu</span>
           </Button>
