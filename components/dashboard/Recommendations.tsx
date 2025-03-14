@@ -9,7 +9,9 @@ interface RecommendationsProps {
   recommendations: Recommendation[];
 }
 
-export default function Recommendations({ recommendations }: RecommendationsProps) {
+export default function Recommendations({
+  recommendations,
+}: RecommendationsProps) {
   const getRecommendationIcon = (type: Recommendation["type"]) => {
     switch (type) {
       case "friend":

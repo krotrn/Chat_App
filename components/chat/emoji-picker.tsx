@@ -5,7 +5,11 @@ import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import { Smile } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface EmojiPickerProps {
   onEmojiSelect: (emoji: { native: string }) => void;
@@ -35,8 +39,16 @@ export default function EmojiPicker({ onEmojiSelect }: EmojiPickerProps) {
           <span className="sr-only">Pick emoji</span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent side="top" className="w-full border-none bg-transparent shadow-none">
-        <Picker data={data} onEmojiSelect={onEmojiSelect} theme="light" set="native" />
+      <PopoverContent
+        side="top"
+        className="w-full border-none bg-transparent shadow-none"
+      >
+        <Picker
+          data={data}
+          onEmojiSelect={onEmojiSelect}
+          theme="light"
+          set="native"
+        />
       </PopoverContent>
     </Popover>
   );

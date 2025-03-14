@@ -13,7 +13,11 @@ import EmojiPicker from "./emoji-picker";
 import CameraCapture from "./camera-capture";
 
 interface MessageInputProps {
-  onSendMessage: (content: string, attachments?: File[], replyToId?: string) => void;
+  onSendMessage: (
+    content: string,
+    attachments?: File[],
+    replyToId?: string
+  ) => void;
   replyToMessage: Message | null;
   onCancelReply: () => void;
 }
@@ -36,36 +40,47 @@ export default function MessageInput({
     }
   }, [replyToMessage]);
 
-  const handleSubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    if (!message.trim() && !attachments.length) return;
-    onSendMessage(message, attachments, replyToMessage?.id);
-    setMessage("");
-    setAttachments([]);
-    onCancelReply();
-  }, [message, attachments, replyToMessage, onSendMessage, onCancelReply]);
-
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
       e.preventDefault();
-      handleSubmit(e);
-    } else if (e.key === "Escape" && replyToMessage) {
+      if (!message.trim() && !attachments.length) return;
+      onSendMessage(message, attachments, replyToMessage?.id);
+      setMessage("");
+      setAttachments([]);
       onCancelReply();
-    }
-  }, [handleSubmit, replyToMessage, onCancelReply]);
+    },
+    [message, attachments, replyToMessage, onSendMessage, onCancelReply]
+  );
 
-  const handleEmojiSelect = useCallback((emoji: { native: string }) => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const newMessage = message.slice(0, start) + emoji.native + message.slice(end);
-    setMessage(newMessage);
-    setTimeout(() => {
-      textarea.selectionStart = textarea.selectionEnd = start + emoji.native.length;
-      textarea.focus();
-    }, 0);
-  }, [message]);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        handleSubmit(e);
+      } else if (e.key === "Escape" && replyToMessage) {
+        onCancelReply();
+      }
+    },
+    [handleSubmit, replyToMessage, onCancelReply]
+  );
+
+  const handleEmojiSelect = useCallback(
+    (emoji: { native: string }) => {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const newMessage =
+        message.slice(0, start) + emoji.native + message.slice(end);
+      setMessage(newMessage);
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd =
+          start + emoji.native.length;
+        textarea.focus();
+      }, 0);
+    },
+    [message]
+  );
 
   const handleFileSelect = useCallback((files: File[]) => {
     setAttachments((prev) => [...prev, ...files]);
@@ -95,8 +110,13 @@ export default function MessageInput({
             className="mb-2 flex items-center justify-between bg-muted p-2 rounded"
           >
             <div>
-              <p className="text-xs font-medium">Replying to {replyToUser?.name}</p>
-              <p className="text-xs text-muted-foreground truncate">{replyToMessage.content}</p>
+              
+              <p className="text-xs font-medium">
+                Replying to {replyToUser?.name}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">
+                {replyToMessage.content}
+              </p>
             </div>
             <Button variant="ghost" size="icon" onClick={onCancelReply}>
               <X className="h-4 w-4" />
@@ -123,7 +143,12 @@ export default function MessageInput({
       <form onSubmit={handleSubmit} className="flex items-end gap-2">
         <Popover open={isAttaching} onOpenChange={setIsAttaching}>
           <PopoverTrigger asChild>
-            <Button type="button" variant="ghost" size="icon" className="h-9 w-9">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9"
+            >
               <Paperclip className="h-5 w-5" />
             </Button>
           </PopoverTrigger>
@@ -137,7 +162,9 @@ export default function MessageInput({
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={replyToMessage ? "Type your reply..." : "Type a message..."}
+            placeholder={
+              replyToMessage ? "Type your reply..." : "Type a message..."
+            }
             className="min-h-10 resize-none"
             rows={1}
           />

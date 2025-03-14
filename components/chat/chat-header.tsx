@@ -29,7 +29,7 @@ export default function ChatHeader({
               variant="ghost"
               size="icon"
               onClick={onBack}
-              className="md:hidden" // Hide on desktop (md and up)
+              className="md:hidden"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -56,7 +56,7 @@ export default function ChatHeader({
             variant="ghost"
             size="icon"
             onClick={onBack}
-            className="md:hidden" // Hide on desktop (md and up)
+            className="md:hidden"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>

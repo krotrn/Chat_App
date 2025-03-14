@@ -7,7 +7,10 @@ interface ChatDetailsProps {
   isLoading?: boolean;
 }
 
-export default function ChatDetails({ onClose, isLoading = false }: ChatDetailsProps) {
+export default function ChatDetails({
+  onClose,
+  isLoading = false,
+}: ChatDetailsProps) {
   if (isLoading) return null; // Handle loading elsewhere if needed
   return (
     <motion.div
@@ -19,7 +22,12 @@ export default function ChatDetails({ onClose, isLoading = false }: ChatDetailsP
     >
       <div className="flex h-16 items-center justify-between border-b px-4">
         <h3 className="font-semibold">Chat Details</h3>
-        <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close details">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClose}
+          aria-label="Close details"
+        >
           <X className="h-5 w-5" />
         </Button>
       </div>

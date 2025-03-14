@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/prisma";
-import redisClient from "@/lib/redis";
 
 export async function GET(
   req: NextRequest,
@@ -15,10 +14,6 @@ export async function GET(
   }
 
   try {
-    const cached = await redisClient.get(`user:${params.userId}`);
-    if (cached) {
-      return NextResponse.json({ success: true, valid: true });
-    }
 
     const user = await db.user.findUnique({
       where: { id: params.userId },
@@ -27,10 +22,6 @@ export async function GET(
 
     if (!user) {
       return NextResponse.json({ success: true, valid: false });
-    }
-
-    if (user.emailVerified) {
-      await redisClient.set(`user:${params.userId}`, "1", { EX: 300 });
     }
 
     return NextResponse.json({ 

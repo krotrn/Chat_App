@@ -20,7 +20,12 @@ import { cn } from "@/lib/utils";
 import { messageVariants } from "@/animations/chat/messageVariants";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Check, CheckCheck, Copy, Reply, Smile, Trash2 } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import AttachmentPreview from "./attachment-previews";
@@ -65,7 +70,11 @@ export default function MessageItem({
   };
 
   const { handleMouseDown, handleMouseUp, handleTouchEnd, handleTouchStart } =
-    useTouchActions(handleCopyToClipboard, longPressTimeoutRef, setIsLongPressed);
+    useTouchActions(
+      handleCopyToClipboard,
+      longPressTimeoutRef,
+      setIsLongPressed
+    );
 
   const groupedReactions: Record<string, MessageReaction[]> = {};
   message.reactions?.forEach((reaction) => {
@@ -90,13 +99,26 @@ export default function MessageItem({
             onMouseLeave={handleMouseUp}
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
-            style={{ transform: isLongPressed ? "scale(0.98)" : "scale(1)", transition: "transform 0.2s" }}
+            style={{
+              transform: isLongPressed ? "scale(0.98)" : "scale(1)",
+              transition: "transform 0.2s",
+            }}
           >
-            <div className={cn("flex max-w-[80%] gap-2", isOwn ? "flex-row-reverse" : "flex-row")}>
+            <div
+              className={cn(
+                "flex max-w-[80%] gap-2",
+                isOwn ? "flex-row-reverse" : "flex-row"
+              )}
+            >
               {showAvatar && !isOwn ? (
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={sender?.avatarUrl || ""} alt={sender?.name || ""} />
-                  <AvatarFallback>{sender?.name?.slice(0, 2).toUpperCase() || "U"}</AvatarFallback>
+                  <AvatarImage
+                    src={sender?.avatarUrl || ""}
+                    alt={sender?.name || ""}
+                  />
+                  <AvatarFallback>
+                    {sender?.name?.slice(0, 2).toUpperCase() || "U"}
+                  </AvatarFallback>
                 </Avatar>
               ) : (
                 <div className="w-8" />
@@ -105,25 +127,38 @@ export default function MessageItem({
                 {showAvatar && !isOwn && sender && (
                   <p className="mb-1 text-xs font-medium">{sender.name}</p>
                 )}
-                <div className={cn("space-y-2", isOwn ? "items-end" : "items-start")}>
+                <div
+                  className={cn(
+                    "space-y-2",
+                    isOwn ? "items-end" : "items-start"
+                  )}
+                >
                   {replyMessage && (
                     <div
                       className={cn(
                         "rounded-lg px-3 py-1.5 text-xs border-l-2",
-                        isOwn ? "bg-primary/10 border-primary/30" : "bg-muted/70 border-muted-foreground/30"
+                        isOwn
+                          ? "bg-primary/10 border-primary/30"
+                          : "bg-muted/70 border-muted-foreground/30"
                       )}
                     >
                       <p className="font-medium text-xs">
-                        {replySender?.id === sender?.id ? "Replying to themselves" : `Replying to ${replySender?.name}`}
+                        {replySender?.id === sender?.id
+                          ? "Replying to themselves"
+                          : `Replying to ${replySender?.name}`}
                       </p>
-                      <p className="truncate opacity-80">{replyMessage.content}</p>
+                      <p className="truncate opacity-80">
+                        {replyMessage.content}
+                      </p>
                     </div>
                   )}
                   {message.content && (
                     <div
                       className={cn(
                         "relative rounded-lg px-3 py-2 group",
-                        isOwn ? "bg-primary text-primary-foreground" : "bg-muted"
+                        isOwn
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted"
                       )}
                     >
                       <p className="text-sm">{message.content}</p>
@@ -147,13 +182,23 @@ export default function MessageItem({
                         </TooltipProvider>
                       </div>
                       <div className="absolute -left-2 -top-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Popover open={showReactions} onOpenChange={setShowReactions}>
+                        <Popover
+                          open={showReactions}
+                          onOpenChange={setShowReactions}
+                        >
                           <PopoverTrigger asChild>
-                            <Button size="icon" variant="secondary" className="h-6 w-6 rounded-full shadow-sm">
+                            <Button
+                              size="icon"
+                              variant="secondary"
+                              className="h-6 w-6 rounded-full shadow-sm"
+                            >
                               <Smile className="h-3 w-3" />
                             </Button>
                           </PopoverTrigger>
-                          <PopoverContent className="w-auto p-2" align={isOwn ? "end" : "start"}>
+                          <PopoverContent
+                            className="w-auto p-2"
+                            align={isOwn ? "end" : "start"}
+                          >
                             <div className="flex gap-1">
                               {reactionEmoji.map((emoji) => (
                                 <button
@@ -174,27 +219,44 @@ export default function MessageItem({
                     </div>
                   )}
                   {message.attachments && message.attachments.length > 0 && (
-                    <div className={cn("grid gap-2", message.content ? "mt-2" : "")}>
+                    <div
+                      className={cn(
+                        "grid gap-2",
+                        message.content ? "mt-2" : ""
+                      )}
+                    >
                       {message.attachments.map((attachment, index) => (
                         <AttachmentPreview
                           key={index}
                           file={attachment}
-                          className={cn("max-w-sm", isOwn ? "bg-primary/10" : "bg-muted/50")}
+                          className={cn(
+                            "max-w-sm",
+                            isOwn ? "bg-primary/10" : "bg-muted/50"
+                          )}
                         />
                       ))}
                     </div>
                   )}
                   {message.reactions && message.reactions.length > 0 && (
-                    <div className={cn("flex flex-wrap gap-1", isOwn ? "justify-end" : "justify-start")}>
-                      {Object.entries(groupedReactions).map(([emoji, reactions]) => (
-                        <div
-                          key={emoji}
-                          className="flex items-center bg-background rounded-full border px-2 py-0.5 text-xs shadow-sm"
-                        >
-                          <span className="mr-1">{emoji}</span>
-                          <span className="text-muted-foreground">{reactions.length}</span>
-                        </div>
-                      ))}
+                    <div
+                      className={cn(
+                        "flex flex-wrap gap-1",
+                        isOwn ? "justify-end" : "justify-start"
+                      )}
+                    >
+                      {Object.entries(groupedReactions).map(
+                        ([emoji, reactions]) => (
+                          <div
+                            key={emoji}
+                            className="flex items-center bg-background rounded-full border px-2 py-0.5 text-xs shadow-sm"
+                          >
+                            <span className="mr-1">{emoji}</span>
+                            <span className="text-muted-foreground">
+                              {reactions.length}
+                            </span>
+                          </div>
+                        )
+                      )}
                     </div>
                   )}
                   <div
@@ -204,7 +266,12 @@ export default function MessageItem({
                     )}
                   >
                     <span>{format(new Date(message.timestamp), "HH:mm")}</span>
-                    {isOwn && (message.status === "read" ? <CheckCheck className="h-3 w-3" /> : <Check className="h-3 w-3" />)}
+                    {isOwn &&
+                      (message.status === "read" ? (
+                        <CheckCheck className="h-3 w-3" />
+                      ) : (
+                        <Check className="h-3 w-3" />
+                      ))}
                   </div>
                 </div>
               </div>

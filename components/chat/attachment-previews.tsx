@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { File as FileIcon, FileText, Film, ImageIcon, Music, X } from "lucide-react";
+import {
+  File as FileIcon,
+  FileText,
+  Film,
+  ImageIcon,
+  Music,
+  X,
+} from "lucide-react";
 import { Button } from "../ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
 import Image from "next/image";
@@ -13,7 +20,11 @@ interface AttachmentPreviewProps {
   className?: string;
 }
 
-export default function AttachmentPreview({ file, onRemove, className }: AttachmentPreviewProps) {
+export default function AttachmentPreview({
+  file,
+  onRemove,
+  className,
+}: AttachmentPreviewProps) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const isFile = file instanceof File;
   const url = isFile ? URL.createObjectURL(file) : file.url;
@@ -44,7 +55,9 @@ export default function AttachmentPreview({ file, onRemove, className }: Attachm
           className
         )}
       >
-        <div className="flex h-10 w-10 items-center justify-center rounded bg-muted">{getIcon()}</div>
+        <div className="flex h-10 w-10 items-center justify-center rounded bg-muted">
+          {getIcon()}
+        </div>
         <div className="flex-1 overflow-hidden">
           <p className="truncate text-sm font-medium">{name}</p>
           {isFile && (
@@ -82,7 +95,12 @@ export default function AttachmentPreview({ file, onRemove, className }: Attachm
             <SheetTitle>{name}</SheetTitle>
           </SheetHeader>
           <div className="relative aspect-video w-full overflow-hidden rounded-lg">
-            <Image src={url || "/placeholder.svg"} alt={name} fill className="object-contain" />
+            <Image
+              src={url || "/placeholder.svg"}
+              alt={name}
+              fill
+              className="object-contain"
+            />
           </div>
         </SheetContent>
       </Sheet>

@@ -71,7 +71,6 @@ ChatApp is built with a thoughtfully selected set of technologies to ensure perf
 
 - **Databases**:
   - **PostgreSQL (via [Prisma ORM](https://www.prisma.io/))**: Manages user authentication, profiles, and relationships with a robust relational structure.
-  - **MongoDB (via [Mongoose](https://mongoosejs.com/))**: Handles chat messages and group data with a flexible, document-based approach.
 
 - **Languages**:
   - **[TypeScript](https://www.typescriptlang.org/)**: Adds type safety and enhances code quality, making development smoother and more reliable.
@@ -106,7 +105,6 @@ Follow these steps to set up ChatApp on your local machine.
 Ensure you have the following installed:
 - **[Node.js](https://nodejs.org/)** (v14 or later)
 - **[PostgreSQL](https://www.postgresql.org/)** – A running instance (local or remote).
-- **[MongoDB](https://www.mongodb.com/)** – A running instance (local or remote).
 
 ### Installation
 
@@ -122,7 +120,7 @@ Ensure you have the following installed:
    Using npm:
 
    ```bash
-   npm install
+   npm install --force
    ```
 
 3. **Configure Environment Variables**
@@ -131,7 +129,6 @@ Ensure you have the following installed:
 
    ```env
    DATABASE_URL=your_postgresql_connection_string
-   MONGODB_URI=your_mongodb_connection_string
    AUTH_SECRET=your_random_auth_secret
    GOOGLE_CLIENT_ID=your_google_client_id
    GOOGLE_CLIENT_SECRET=your_google_client_secret
@@ -157,8 +154,6 @@ Ensure you have the following installed:
      ```bash
      npx prisma migrate dev
      ```
-
-   - **MongoDB**: Ensure your instance is running. Mongoose will handle schema creation dynamically.
 
 ---
 

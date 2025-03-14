@@ -25,11 +25,12 @@ export default function MessageList({
   onReactToMessage,
   isLoading = false,
 }: MessageListProps) {
-  const [groupedMessages, setGroupedMessages] = useState<Record<string, Message[]>>({});
+  const [groupedMessages, setGroupedMessages] = useState<
+    Record<string, Message[]>
+  >({});
   useEffect(() => {
     const grouped = groupMessagesByDate(messages);
     setGroupedMessages(grouped);
-    
   }, [messages]);
   if (isLoading) return <MessageListSkeleton />;
 
@@ -42,8 +43,12 @@ export default function MessageList({
         <Fragment key={date}>
           <DateDivider date={date} />
           {dateMessages.map((message, index) => {
-            const replyMessage = message.replyToId ? findMessageById(message.replyToId) : null;
-            const showAvatar = index === 0 || dateMessages[index - 1]?.senderId !== message.senderId;
+            const replyMessage = message.replyToId
+              ? findMessageById(message.replyToId)
+              : null;
+            const showAvatar =
+              index === 0 ||
+              dateMessages[index - 1]?.senderId !== message.senderId;
             return (
               <MessageItem
                 key={message.id}

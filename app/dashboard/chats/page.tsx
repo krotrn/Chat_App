@@ -1,8 +1,13 @@
+import { auth } from "@/auth";
 import ChatDashboard from "@/components/chat/chat-dashboard";
+import { mockChats } from "@/lib/mock-data";
 import { Loader2 } from "lucide-react";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth();
+  if (!session) redirect("/login");
   return (
     <main className="h-full overflow-hidden bg-background">
       <Suspense
@@ -12,7 +17,7 @@ export default function Home() {
           </div>
         }
       >
-        <ChatDashboard />
+        <ChatDashboard currentUser={session.user} fetchedChat={mockChats} />
       </Suspense>
     </main>
   );
