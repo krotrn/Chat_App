@@ -1,4 +1,3 @@
-import type { ReactNode } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { AlertCircle, FileQuestion, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -6,8 +5,8 @@ import { cn } from "@/lib/utils"
 interface EmptyStateProps {
   title: string
   description?: string
-  icon?: ReactNode
-  action?: ReactNode
+  icon?: React.ReactNode
+  action?: React.ReactNode
   className?: string
   type?: "error" | "empty" | "loading"
 }

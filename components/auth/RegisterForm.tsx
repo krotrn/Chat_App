@@ -70,6 +70,7 @@ const RegisterForm = ():React.ReactNode => {
       email: "",
       username: "",
       password: "",
+      confirmpassword:""
     },
   });
   const router = useRouter();
@@ -129,7 +130,7 @@ const RegisterForm = ():React.ReactNode => {
                 <FormMessage />
               </FormItem>
             )}
-          ></FormField>
+          />
           <FormField
             control={form.control}
             name="username"
@@ -147,7 +148,7 @@ const RegisterForm = ():React.ReactNode => {
                 <FormMessage />
               </FormItem>
             )}
-          ></FormField>
+          />
           <FormField
             control={form.control}
             name="password"
@@ -165,7 +166,25 @@ const RegisterForm = ():React.ReactNode => {
                 <FormMessage />
               </FormItem>
             )}
-          ></FormField>
+          />
+          <FormField
+            control={form.control}
+            name="confirmpassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Confirm Password</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder="Confirm Password"
+                    type="confirmpassword"
+                    disabled={isPending}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <FormError message={error || urlError} />
           <FormSuccess message={success} />
           <Button type="submit" className="w-full" disabled={isPending}>

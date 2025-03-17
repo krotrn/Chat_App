@@ -14,6 +14,7 @@ import {
   notificationSwitches,
   privacySwitches,
 } from "@/lib/settings/options";
+import { config } from "@/config";
 
 export default function SettingsForm() {
   const { theme, fontSize, setTheme, setFontSize } = useSettings();
@@ -58,7 +59,7 @@ export default function SettingsForm() {
         <TabsContent value="appearance">
           <SettingsCard
             title="Appearance"
-            description="Customize how Chat App looks and feels."
+            description={`Customize how ${config.appName} looks and feels.`}
             footer={footer}
           >
             <ThemeSelector value={theme} onValueChange={setTheme} />

@@ -4,6 +4,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Sun, Moon, Monitor } from "lucide-react";
 import { Theme } from "../ThemeProvider";
+import { config } from "@/config";
 
 interface ThemeSelectorProps {
   value: Theme;
@@ -18,7 +19,7 @@ export function ThemeSelector({ value, onValueChange }: ThemeSelectorProps) {
           Theme
         </Label>
         <span className="text-sm text-muted-foreground">
-          Choose how Chat App looks
+          Choose how {config.appName} looks
         </span>
       </div>
       <RadioGroup

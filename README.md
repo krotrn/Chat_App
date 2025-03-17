@@ -28,24 +28,29 @@ This project is perfect for developers looking to explore a full-stack applicati
 ChatApp is packed with functionality to enhance user experience and provide flexibility for future growth. Here’s what it offers:
 
 - **Authentication & Authorization**
+
   - **Credential Authentication**: Securely log in with an email and password combination.
   - **Social Authentication**: Sign in effortlessly using Google or GitHub accounts.
   - **Email Verification**: Powered by [Resend](https://resend.com/), ensuring only verified users gain access.
 
 - **Chat Functionality**
+
   - **Group Chats**: Create and participate in multi-user conversations for teams or communities.
   - **One-on-One Chats**: Enjoy private messaging with friends in a clean, distraction-free interface.
   - **Friend Requests**: Build your network by sending, accepting, or declining friend requests.
 
 - **User Interface**
+
   - **Modern and Responsive**: Built with [shadcn/ui](https://ui.shadcn.com/) components, delivering a polished and adaptive design across devices.
   - **Real-Time Updates**: Stay connected with instant message delivery and notifications (planned for future releases).
 
 - **User Profiles**
+
   - **Personalization**: Edit your name, avatar, and status to reflect your identity.
   - **Online Status**: See when your friends are available to chat.
 
 - **Scalable & Modular Design**
+
   - **User Management**: PostgreSQL and Prisma ensure efficient handling of user data and relationships.
   - **Chat Storage**: MongoDB with Mongoose provides a flexible, scalable solution for storing messages and group data.
   - **API-Driven**: A clear separation of concerns makes it easy to extend or integrate with other systems.
@@ -62,14 +67,17 @@ ChatApp is packed with functionality to enhance user experience and provide flex
 ChatApp is built with a thoughtfully selected set of technologies to ensure performance, maintainability, and developer-friendliness:
 
 - **Frontend**:
+
   - **[Next.js (App Router)](https://nextjs.org/docs/app)**: Powers server-side rendering, routing, and API endpoints for a fast, SEO-friendly experience.
   - **[React](https://reactjs.org/)**: Drives dynamic, component-based UI development.
   - **[shadcn/ui](https://ui.shadcn.com/)**: Provides customizable, accessible UI components for a consistent look and feel.
 
 - **Authentication**:
+
   - **[Auth.js v5](https://authjs.dev/)**: A versatile library supporting credential-based logins and social providers like Google and GitHub.
 
 - **Databases**:
+
   - **PostgreSQL (via [Prisma ORM](https://www.prisma.io/))**: Manages user authentication, profiles, and relationships with a robust relational structure.
 
 - **Languages**:
@@ -103,6 +111,7 @@ Follow these steps to set up ChatApp on your local machine.
 ### Prerequisites
 
 Ensure you have the following installed:
+
 - **[Node.js](https://nodejs.org/)** (v14 or later)
 - **[PostgreSQL](https://www.postgresql.org/)** – A running instance (local or remote).
 
@@ -136,7 +145,7 @@ Ensure you have the following installed:
    GITHUB_CLIENT_SECRET=your_github_client_secret
    RESEND_API_KEY=your_resend_api_key
    RESEND_FROM_EMAI =****************
-   APP_NAME=app_name
+   NEXT_PUBLIC_APP_NAME=app_name
    ENCRYPTION_KEY = "your_encryption_key_here"
    EMAIL_TOKEN_EXPIRATION_TIME = "in_HOURS"
    CHAT_API_URL="your_chat_api_url_here"
@@ -203,7 +212,6 @@ Consider using a platform like Vercel for Next.js hosting or a custom server wit
 
 ---
 
-
 ## API Documentation
 
 Developers can explore and integrate with ChatApp via our upcoming [API Documentation](https://github.com/krotrn/ChatApp-backend/blob/main/API_DOC.md). It will detail endpoints, payloads, and authentication flows for extending the platform.
@@ -250,11 +258,12 @@ ChatApp is licensed under the [MIT License](LICENSE), granting you the freedom t
 ## Contact
 
 Have questions or ideas? Reach out by:
+
 - Opening an issue on GitHub.
 - Emailing [krotrn.ks@gmail.com](mailto:krotrn.ks@gmail.com).
 
 We’re excited to hear from you!
 
 ---
-**Happy coding!**
----
+
+## **Happy coding!**

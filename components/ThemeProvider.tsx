@@ -1,17 +1,19 @@
-"use client"
+"use client";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
-import type React from "react"
-
-import { createContext, useContext, useEffect, useState } from "react"
-
-export type Theme = "dark" | "light" | "system"
-export type FontSize = "small" | "medium" | "large"
+export type Theme = "dark" | "light" | "system";
+export type FontSize = "small" | "medium" | "large";
 
 interface SettingsContextType {
-  theme: Theme
-  fontSize: FontSize
-  setTheme: (theme: Theme) => void
-  setFontSize: (size: FontSize) => void
+  theme: Theme;
+  fontSize: FontSize;
+  setTheme: (theme: Theme) => void;
+  setFontSize: (size: FontSize) => void;
 }
 
 const initialSettings: SettingsContextType = {
@@ -19,78 +21,83 @@ const initialSettings: SettingsContextType = {
   fontSize: "medium",
   setTheme: () => null,
   setFontSize: () => null,
-}
+};
 
-const SettingsContext = createContext<SettingsContextType>(initialSettings)
+const SettingsContext = createContext<SettingsContextType>(initialSettings);
 
 export function useSettings() {
-  return useContext(SettingsContext)
+  return useContext(SettingsContext);
 }
 
 interface SettingsProviderProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export function SettingsProvider({ children }: SettingsProviderProps) {
-  const [theme, setTheme] = useState<Theme>("system")
-  const [fontSize, setFontSize] = useState<FontSize>("medium")
-  const [mounted, setMounted] = useState(false)
+  const [theme, setTheme] = useState<Theme>("system");
+  const [fontSize, setFontSize] = useState<FontSize>("medium");
+  const [mounted, setMounted] = useState(false);
 
   // Load settings from localStorage on mount
   useEffect(() => {
-    setMounted(true)
-    const storedTheme = localStorage.getItem("theme") as Theme
-    const storedFontSize = localStorage.getItem("fontSize") as FontSize
+    setMounted(true);
+    const storedTheme = localStorage.getItem("theme") as Theme;
+    const storedFontSize = localStorage.getItem("fontSize") as FontSize;
 
     if (storedTheme) {
-      setTheme(storedTheme)
+      setTheme(storedTheme);
     }
 
     if (storedFontSize) {
-      setFontSize(storedFontSize)
+      setFontSize(storedFontSize);
     }
-  }, [])
+  }, []);
 
   // Update localStorage when settings change
   useEffect(() => {
-    if (!mounted) return
+    if (!mounted) return;
 
-    localStorage.setItem("theme", theme)
-    localStorage.setItem("fontSize", fontSize)
+    localStorage.setItem("theme", theme);
+    localStorage.setItem("fontSize", fontSize);
 
     // Apply theme to document
-    const root = window.document.documentElement
-    root.classList.remove("light", "dark")
+    const root = window.document.documentElement;
+    root.classList.remove("light", "dark");
 
     if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
-      root.classList.add(systemTheme)
+      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
+        .matches
+        ? "dark"
+        : "light";
+      root.classList.add(systemTheme);
     } else {
-      root.classList.add(theme)
+      root.classList.add(theme);
     }
 
     // Apply font size to document
-    root.classList.remove("text-sm", "text-base", "text-lg")
+    root.classList.remove("text-sm", "text-base", "text-lg");
     switch (fontSize) {
       case "small":
-        root.classList.add("text-sm")
-        break
+        root.classList.add("text-sm");
+        break;
       case "medium":
-        root.classList.add("text-base")
-        break
+        root.classList.add("text-base");
+        break;
       case "large":
-        root.classList.add("text-lg")
-        break
+        root.classList.add("text-lg");
+        break;
     }
-  }, [theme, fontSize, mounted])
+  }, [theme, fontSize, mounted]);
 
-  // Prevent flash of incorrect theme
   if (!mounted) {
-    return null
+    return null;
   }
 
   return (
-    <SettingsContext.Provider value={{ theme, fontSize, setTheme, setFontSize }}>{children}</SettingsContext.Provider>
-  )
+    <SettingsContext.Provider
+      value={{ theme, fontSize, setTheme, setFontSize }}
+    >
+      {children}
+    </SettingsContext.Provider>
+  );
 }
-

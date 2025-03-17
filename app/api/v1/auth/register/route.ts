@@ -11,7 +11,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   if (!parsedData.success) {
     return NextResponse.json({ success: false, message: "Invalid fields" });
   }
-  const { email, username, password } = parsedData.data;
+  const { email, username, password, confirmpassword } = parsedData.data;
 
   if (!username) {
     return NextResponse.json(
@@ -30,6 +30,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   if (!password) {
     return NextResponse.json(
       { success: false, message: "Password is required" },
+      { status: 400 }
+    );
+  }
+
+  if (password !== confirmpassword) {
+    return NextResponse.json(
+      { success: false, message: "Confirm Password does not match" },
       { status: 400 }
     );
   }

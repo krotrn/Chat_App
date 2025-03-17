@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { menuItems } from "@/lib/navigation/menuItem";
 import { cn } from "@/lib/utils";
+import { config } from "@/config";
 
 interface MobileNavProps {
   pathname: string;
@@ -22,7 +23,7 @@ function MobileNav({ pathname, setIsOpen }: MobileNavProps) {
             onClick={() => setIsOpen(false)}
           >
             <MessageSquare className="text-primary" />
-            <SheetTitle className="font-bold">Chat App</SheetTitle>
+            <SheetTitle className="font-bold">{config.appName}</SheetTitle>
           </Link>
         </div>
       </SheetHeader>

@@ -106,7 +106,7 @@ export default function ChatMain({
 
   return (
     <motion.div
-      className="flex flex-1 flex-col h-full bg-background"
+      className="flex flex-1 w-full flex-col h-full bg-background"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}

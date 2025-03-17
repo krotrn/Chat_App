@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { getUser, getIncomingFriendRequests } from "@/lib/user-service";
 import { RequestsList } from "@/components/request/request-list";
+import { config } from "@/config";
 
 export const metadata: Metadata = {
-  title: "Friend Requests | Chat App",
+  title: `Friend Requests | ${config.appName}`,
   description: "Manage your friend requests",
 };
 
