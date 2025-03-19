@@ -1,159 +1,154 @@
 "use client";
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { profileSchema } from "@/schemas/profileSchema";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { User } from "next-auth";
 import {
-  ChangeEvent,
-  FormEvent,
-  useEffect,
-  useState,
-  useTransition,
-} from "react";
-import ProfileUpdateSkeleton from "../skeleton/profile-update-skeleton";
-import { Button } from "../ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "../ui/card";
-import { Avatar } from "@radix-ui/react-avatar";
-import { AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Label } from "../ui/label";
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../ui/form";
 import { Input } from "../ui/input";
-import { Textarea } from "../ui/textarea";
-import { motion } from "framer-motion";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { toast } from "sonner";
-import { updateUserProfile } from "@/lib/user-service";
+import { useTransition } from "react";
+import { FormError } from "../auth/Form-Error";
+import { FormSuccess } from "../auth/Form-Success";
+import { Button } from "../ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+
 
 export default function ProfileForm({ user }: { user: User }) {
-  const [isLoading, startTransition] = useTransition();
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [formData, setFormData] = useState({
-    name: user.name || "User",
-    bio: user.bio,
-    avatar: user.avatarUrl || "",
+  const [isPending, setTransition] = useTransition();
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [error, setError] = useState<string>("");
+  const [success, setSuccess] = useState<string>("");
+
+  const form = useForm<z.infer<typeof profileSchema>>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      name: user.name || "",
+      password: "",
+      bio: user.bio || "",
+      avatar: undefined,
+    },
   });
+
+  const avatarFile = form.watch("avatar");
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsInitialLoading(false);
-    }, 1500);
+    if (avatarFile instanceof File) {
+      const url = URL.createObjectURL(avatarFile);
+      setAvatarPreview(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setAvatarPreview(null);
+    }
+  }, [avatarFile]);
 
-    return () => clearTimeout(timer);
-  }, []);
-
-  const handleChange = (
-    e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
-  ) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    startTransition(async () => {
+  const onSubmit = (data: z.infer<typeof profileSchema>) => {
+    setError("");
+    setSuccess("");
+    setTransition(async () => {
       try {
-        await updateUserProfile(user.id!, formData);
+        console.log("Form data:", data);
+        setSuccess("Profile updated successfully");
       } catch (error) {
-        console.log(error);
-        toast.error("Failed to Update Profile.");
+        console.log(error)
+        setError("Failed to update profile");
       }
     });
   };
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // TODO: Update with Real Logic
-    const url = URL.createObjectURL(file);
-    setFormData((prev) => ({ ...prev, avatar: url }));
-  };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-1">
-          <TabsTrigger value="general">General</TabsTrigger>
-        </TabsList>
-        {!isInitialLoading ? (
-          <TabsContent value="general">
-            <Card>
-              <CardHeader>
-                <CardTitle>General Information</CardTitle>
-                <CardDescription>
-                  Update your personal information.
-                </CardDescription>
-              </CardHeader>
-              <form onSubmit={handleSubmit}>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="flex flex-col items-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
-                      <Avatar className="h-24 w-24">
-                        <AvatarImage
-                          src={formData.avatar}
-                          alt={formData.name}
-                        />
-                        <AvatarFallback>
-                          {formData.name.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex flex-col space-y-2">
-                        <Label htmlFor="avatar" className="text-sm font-medium">
-                          Profile Picture
-                        </Label>
-                        <Input
-                          id="avatar"
-                          type="file"
-                          accept="image/*"
-                          onChange={handleAvatarChange}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          Recommended size: 256x256px. Max size: 5MB.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Name</Label>
-                      <Input
-                        id="name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        className="h-10 px-3"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="bio">Bio</Label>
-                      <Textarea
-                        id="bio"
-                        name="bio"
-                        value={formData.bio}
-                        onChange={handleChange}
-                        rows={4}
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-end">
-                  <Button
-                    type="submit"
-                    disabled={isLoading}
-                    className="h-10 px-4"
-                  >
-                    {isLoading ? "Saving..." : "Save Changes"}
-                  </Button>
-                </CardFooter>
-              </form>
-            </Card>
-          </TabsContent>
-        ) : (
-          <ProfileUpdateSkeleton />
-        )}
-      </Tabs>
-    </motion.div>
+
+      <div className="space-y-4">
+        <div className="flex flex-col justify-center items-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
+          <Avatar className="h-36 w-36">
+            <AvatarImage
+              src={avatarPreview || user.avatarUrl || ""}
+              alt={form.watch("name") || user.username}
+            />
+            <AvatarFallback>
+              {form.watch("name")?.[0]?.toUpperCase() || "U"}
+            </AvatarFallback>
+          </Avatar>
+        </div>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="avatar"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Choose Avatar</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="file"
+                      accept="image/png, image/jpeg, image/jpg, image/svg+xml, image/gif"
+                      onChange={(e) =>
+                        field.onChange(e.target.files ? e.target.files[0] : null)
+                      }
+                      disabled={isPending}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input type="text" {...field} disabled={isPending} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="bio"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Bio</FormLabel>
+                  <FormControl>
+                    <Input type="text" {...field} disabled={isPending} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Current Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      {...field}
+                      placeholder="Enter your current password"
+                      disabled={isPending}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormError message={error} />
+            <FormSuccess message={success} />
+            <Button type="submit" className="w-full" disabled={isPending}>
+              Submit
+            </Button>
+          </form>
+        </Form>
+      </div>
   );
 }

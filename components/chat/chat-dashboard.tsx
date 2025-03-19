@@ -34,12 +34,12 @@ export default function ChatDashboard({
   const handleChatSelect = (chatId: string) => {
     setSelectedChatId(chatId);
     if (isMobileView) {
-      setShowChatList(false); // Hide chat list on mobile when chat is selected
+      setShowChatList(false);
     }
   };
 
   const handleBackToChats = useCallback(() => {
-    setShowChatList(true); // Show chat list again
+    setShowChatList(true);
   }, []);
 
   const handleSearchChats = useCallback(

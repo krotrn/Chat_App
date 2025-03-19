@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import ProfileForm from "@/components/profile/profile-form";
+import   ProfileWrapper from "@/components/profile/profile";
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -14,7 +14,7 @@ export default async function ProfilePage() {
             Manage your account settings and profile information.
           </p>
         </div>
-        <ProfileForm user={session.user} />
+        <ProfileWrapper user={session.user} />
       </div>
     </div>
   );

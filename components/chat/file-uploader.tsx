@@ -19,7 +19,7 @@ interface FileUploaderProps {
 export default function FileUploader({
   onFileSelect,
   maxFiles = 5,
-  maxSize = 10 * 1024 * 1024, // 10MB default
+  maxSize = 10 * 1024 * 1024,
   accept = "*",
   multiple = true,
 }: FileUploaderProps) {

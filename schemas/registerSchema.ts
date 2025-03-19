@@ -4,10 +4,12 @@ export const registerSchema = z.object({
   email: z
     .string({ required_error: "Email is required" })
     .nonempty("Email is required")
-    .email("Invalid email").toLowerCase(),
+    .email("Invalid email")
+    .toLowerCase(),
   username: z
     .string({ required_error: "username is required" })
-    .nonempty({ message: "username is required." }),
+    .nonempty({ message: "username is required." })
+    .regex(/^[a-zA-Z0-9_]{3,30}$/, "Invalid username format"),
   password: z
     .string({ required_error: "Password is required" })
     .min(1, "Password is required")

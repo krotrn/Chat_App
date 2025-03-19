@@ -19,24 +19,6 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 
-/**
- * LoginForm component handles the user login process.
- *
- * This component uses `useForm` from `react-hook-form` and `zodResolver` for form validation.
- * It includes fields for the user identifier (email or username) and password.
- *
- * On form submission, it sends a POST request to the `/api/v1/auth/login` endpoint with the user credentials.
- * If the login is successful, it redirects the user to the appropriate page.
- * If the login fails, it displays an error message.
- *
- * @component
- * @example
- * return (
- *   <LoginForm />
- * )
- *
- * @returns {React.ReactNode} The rendered login form component.
- */
 const LoginForm = (): React.ReactNode => {
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),

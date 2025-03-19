@@ -1,14 +1,5 @@
 import React from "react";
 
-/**
- * EmailVerification component renders an email verification template.
- * It displays an OTP, a verification link, and an expiration notice.
- *
- * @param {Object} props - The properties object.
- * @param {string} props.verificationLink - The link to verify the email address.
- * @param {string} props.expirationHours - The number of hours until the verification link expires.
- * @returns {React.ReactNode} The rendered email verification template.
- */
 const EmailTemplate = ({
   verificationLink,
   expirationHours,

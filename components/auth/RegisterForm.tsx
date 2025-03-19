@@ -20,44 +20,6 @@ import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormSuccess } from "@/components/auth/Form-Success";
 
-/**
- * RegisterForm component handles the user registration process.
- * It uses `useForm` from `react-hook-form` and `zodResolver` for form validation.
- * The form includes fields for email, username, and password.
- * 
- * @returns {React.ReactNode} The rendered RegisterForm component.
- * 
- * @component
- * 
- * @example
- * return (
- *   <RegisterForm />
- * )
- * 
- * @remarks
- * - The form submission is handled by the `onSubmit` function which sends a POST request to the `/api/v1/auth/register` endpoint.
- * - If the registration is successful, the user is redirected to the `/auth/verify-email` page.
- * - If there is an error, it is displayed to the user.
- * - The component also handles OAuth errors by displaying a specific message if the email is already in use with a different provider.
- * 
- * @hook
- * - `useSearchParams` to get URL search parameters.
- * - `useForm` from `react-hook-form` to manage form state and validation.
- * - `useRouter` from `next/router` to handle navigation.
- * - `useState` to manage local state for error and success messages.
- * - `useTransition` to handle the pending state of the form submission.
- * 
- * @dependencies
- * - `react-hook-form`
- * - `zod`
- * - `next/router`
- * 
- * @param {Object} props - The props object.
- * @param {string} props.backButtonHref - The href for the back button.
- * @param {string} props.backButtonLabel - The label for the back button.
- * @param {string} props.headerLabel - The label for the header.
- * @param {boolean} props.showSocial - Whether to show social login options.
- */
 const RegisterForm = ():React.ReactNode => {
   const searchParams = useSearchParams();
   const urlError =
