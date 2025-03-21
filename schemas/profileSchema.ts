@@ -2,7 +2,6 @@ import { z } from "zod";
 
 export const profileSchema = z.object({
   name: z.string().nonempty("Set the name."),
-  password: z.string().nonempty("Password is required"),
   bio: z.string().optional(),
   avatar: z
     .instanceof(File)

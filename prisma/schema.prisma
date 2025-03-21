@@ -36,6 +36,7 @@ model User {
   avatarUrl               String?     @db.Text
   name                    String?
   email                   String      @unique @db.Text
+  bio                     String?
   role                    UserRoles   @default(USER)
   emailVerified           DateTime?
   password                String?
@@ -65,8 +66,6 @@ model User {
   @@unique([username, email])
   @@unique([emailVerificationToken])
   @@index([updatedAt])
-  @@index([email])
-  @@index([username])
   @@index([isOnline])
   @@index([role])
   @@index([emailVerified])
@@ -111,7 +110,6 @@ model FriendRequest {
   receiver User @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
 
   @@unique([senderId, receiverId])
-  @@index([senderId, receiverId])
 }
 
 model UserFriends {
