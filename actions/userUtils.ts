@@ -1,236 +1,117 @@
 "use server";
 
-import { auth, unstable_update } from "@/auth";
+import { auth } from "@/auth";
+import { handleError, handleSuccess } from "@/lib/helper";
 import { db } from "@/prisma";
 import { profileSchema } from "@/schemas/profileSchema";
 import { User } from "@prisma/client";
 import { z } from "zod";
 
+
 export const getRecommendations = async () => {
   const session = await auth();
-  if (!session)
-    return {
-      error: true,
-      success: false,
-      message: "Unautherized Access",
-      data: [],
-    };
+  if (!session) return handleError("Unauthorized Access");
 
   try {
-    const response = await db.user.findUnique({
-      where: { id: session.user.id },
-      select: {
-        recommendations: true,
-      },
+    const recommendations = await db.recommendations.findMany({
+      where: { userId: session.user.id },
     });
-    if (!response)
-      return {
-        error: true,
-        success: false,
-        message: "Error getting Response",
-        data: [],
-      };
-    return {
-      success: true,
-      error: false,
-      data: response.recommendations,
-      message: "successfull getting Data.",
-    };
+    return handleSuccess(recommendations, "Successfully fetched recommendations.");
   } catch (error) {
-    console.log("Error on Recommendations:", (error as Error).message);
-    return {
-      success: false,
-      error: true,
-      message: "An error occurred while getting Recommendations.",
-      data: [],
-    };
+    console.log("Error fetching recommendations:", error);
+    return handleError("An error occurred while fetching recommendations.");
   }
 };
+
 export const getActivities = async () => {
   const session = await auth();
-  if (!session)
-    return {
-      error: true,
-      success: false,
-      message: "Unautherized Access",
-      data: [],
-    };
+  if (!session) return handleError("Unauthorized Access");
 
   try {
-    const response = await db.user.findUnique({
-      where: { id: session.user.id },
-      select: {
-        recentActivities: true,
-      },
+    const activities = await db.activity.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: "desc" },
     });
-    if (!response)
-      return {
-        error: true,
-        success: false,
-        message: "Error getting Response",
-        data: [],
-      };
-    return {
-      success: true,
-      error: false,
-      data: response.recentActivities,
-      message: "successfull getting Data.",
-    };
+    return handleSuccess(activities, "Successfully fetched activities.");
   } catch (error) {
-    console.log("Error on Activity:", (error as Error).message);
-    return {
-      success: false,
-      error: true,
-      message: "An error occurred while getting Activity.",
-      data: [],
-    };
+    console.log("Error fetching activities:", error);
+    return handleError("An error occurred while fetching activities.");
   }
 };
 
-export const getUserStats = async () => {
+export const getUserStats = async (
+  fields: (keyof User)[] = ["username", "email", "avatarUrl", "name", "bio", "lastLogin"]
+) => {
   const session = await auth();
-  if (!session)
-    return {
-      error: true,
-      success: false,
-      message: "Unautherized Access",
-    };
+  if (!session) return handleError("Unauthorized Access");
 
   try {
-    const response = await db.user.findUnique({
+    const select = fields.reduce((acc, field) => {
+      acc[field] = true;
+      return acc;
+    }, {} as Record<string, boolean>);
+
+    const user = await db.user.findUnique({
       where: { id: session.user.id },
-      select: {
-        username: true,
-        email: true,
-        avatarUrl: true,
-        name: true,
-        bio: true,
-        lastLogin: true,
-        friends: true,
-        sentRequests: true,
-        receivedRequests: true,
-      },
+      select,
     });
-    if (!response)
-      return {
-        error: true,
-        success: false,
-        message: "Error getting Response",
-      };
-    return {
-      success: true,
-      error: false,
-      data: response,
-      message: "successfull getting Data.",
-    };
+
+    if (!user) return handleError("User not found.");
+    return handleSuccess(user, "Successfully fetched user stats.");
   } catch (error) {
-    console.log("Error on User Stats:", (error as Error).message);
-    return {
-      success: false,
-      error: true,
-      message: "An error occurred while getting User Stats.",
-    };
+    console.log("Error fetching user stats:", error);
+    return handleError("An error occurred while fetching user stats.");
   }
 };
 
 export const updateProfile = async (data: z.infer<typeof profileSchema>) => {
-  const { name, avatar, bio } = data;
-  void avatar;
-
   const session = await auth();
-  if (!session || !session.user.id) {
-    return { success: false, error: true, message: "User not authenticated." };
-  }
+  if (!session || !session.user.id) return handleError("User not authenticated.");
 
   try {
+    const { name, bio, avatar } = data;
+    const avatarUrl = avatar ? await uploadAvatar(avatar) : undefined;
+
     await db.user.update({
       where: { id: session.user.id },
-      data: {
-        name,
-        bio,
-        // avatarUrl: // TODO: Upload Image and add its link
-      },
+      data: { name, bio, avatarUrl },
     });
 
-    const updatedUser = await db.user.findUnique({
-      where: { id: session.user.id },
-      select: {
-        id: true,
-        name: true,
-        bio: true,
-        avatarUrl: true,
-        email: true,
-        username: true,
-        role: true,
-      },
-    });
-
-    if (!updatedUser) {
-      throw new Error("Failed to retrieve updated user data.");
-    }
-    await unstable_update({
-      user: {
-        ...updatedUser,
-        bio: updatedUser.bio ?? undefined,
-      },
-    });
-
-    return {
-      success: true,
-      error: false,
-      message: "Profile updated successfully.",
-    };
+    return handleSuccess(null, "Profile updated successfully.");
   } catch (error) {
-    console.log("Error updating profile:", (error as Error).message);
-    return {
-      success: false,
-      error: true,
-      message: "An error occurred while updating the profile.",
-    };
+    console.log("Error updating profile:", error);
+    return handleError("An error occurred while updating the profile.");
   }
 };
 
+async function uploadAvatar(avatar: File): Promise<string> {
+  // TODO: Implement upload logic 
+  void avatar
+  return "https://example.com/avatar.jpg";
+}
 
 export const getFriendRequests = async () => {
   const session = await auth();
-  if (!session || !session.user?.id) {
-    return {
-      error: true,
-      success: false,
-      message: "Unauthorized Access",
-    };
-  }
+  if (!session || !session.user.id) return handleError("Unauthorized Access");
 
   try {
-    const response = await db.user.findUnique({
-      where: { id: session.user.id },
-      select: { receivedRequests: true },
+    const friendRequests = await db.friendRequest.findMany({
+      where: { receiverId: session.user.id, status: "PENDING" },
+      select: {
+        id: true,
+        sender: { select: { id: true, username: true, avatarUrl: true } },
+        createdAt: true,
+      },
     });
 
-    if (!response) {
-      return {
-        error: true,
-        success: false,
-        message: "Error getting response",
-      };
-    }
-
-    return { error: false, success: true, data: response.receivedRequests };
+    return handleSuccess(friendRequests, "Successfully fetched friend requests.");
   } catch (error) {
-    console.log("Error getting friend requests:", (error as Error).message);
-    return {
-      error: true,
-      success: false,
-      message: "An error occurred while getting friend requests.",
-    };
+    console.log("Error fetching friend requests:", error);
+    return handleError("An error occurred while fetching friend requests.");
   }
 };
 
-
-export const getUserDataById = async (
-  id: string,
-  reqData: (keyof User)[]
-): Promise<Partial<User> | null> => {
+export const getUserDataById = async (id: string, reqData: (keyof User)[]): Promise<Partial<User> | null> => {
   try {
     const select = reqData.reduce((acc, key) => {
       acc[key] = true;
@@ -248,7 +129,7 @@ export const getUserDataById = async (
     }
     return user;
   } catch (error) {
-    console.log(`Error fetching user data: ${String(error)}`);
+    console.log("Error fetching user data:", error);
     return null;
   }
 };
