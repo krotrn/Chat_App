@@ -10,52 +10,46 @@ interface ProfileGlanceProps {
 }
 
 const ProfileGlance = ({ user }: ProfileGlanceProps) => {
-  const initials = user.name
-    ?.split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
+  const initials =
+    user.name
+      ?.split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase() || user.username[0].toUpperCase();
+
   return (
-    <Card className="min-w-2xl">
-      <CardHeader className="flex w-full items-center gap-4 pb-2">
+    <Card className="w-full max-w-md">
+      <CardHeader className="flex flex-row items-center gap-4 pb-2">
         <Avatar className="h-20 w-20">
           <AvatarImage
             src={user.avatarUrl || "/avatars/default.jpg"}
-            alt={user.name || user.username || "User"}
+            alt={user.name || user.username || "User avatar"}
           />
-          <AvatarFallback>{initials || user.username[0]}</AvatarFallback>
+          <AvatarFallback>{initials}</AvatarFallback>
         </Avatar>
-        <div>
-          <div className="flex flex-col">
-            <h2 className="text-2xl font-bold">
-              {user.name || user.username}{" "}
-            </h2>
-            <span className="text-2xl text-muted-foreground">
-              ({user.username})
-            </span>
-          </div>
+        <div className="flex-1">
+          <h2 className="text-2xl font-bold">{user.name || user.username}</h2>
+          <p className="text-sm text-muted-foreground">@{user.username}</p>
           <p className="text-sm text-muted-foreground">
             {user.email || "No Email Available"}
           </p>
         </div>
       </CardHeader>
-      <CardContent className="flex items-center flex-col justify-center space-x-4 ">
-        <p className="text-sm mb-4">{user.bio || "No bio available"}</p>
-        <div>
-          <div className="flex gap-2">
-            <Link href="/dashboard/profile">
-              <Button variant="outline" size="sm" className="flex-1">
-                <Edit className="h-4 w-4 mr-2" />
-                <span>Edit Profile</span>
-              </Button>
-            </Link>
-            <Link href="/dashboard/chats">
-              <Button variant="outline" size="sm" className="flex-1">
-                <MessageSquareMoreIcon className="h-4 w-4 mr-2" />
-                <span>Messages</span>
-              </Button>
-            </Link>
-          </div>
+      <CardContent className="space-y-4">
+        <p className="text-sm">{user.bio || "No bio available"}</p>
+        <div className="flex gap-2">
+          <Link href="/dashboard/profile">
+            <Button variant="outline" size="sm" className="flex-1">
+              <Edit className="h-4 w-4 mr-2" />
+              Edit Profile
+            </Button>
+          </Link>
+          <Link href="/dashboard/chats">
+            <Button variant="outline" size="sm" className="flex-1">
+              <MessageSquareMoreIcon className="h-4 w-4 mr-2" />
+              Messages
+            </Button>
+          </Link>
         </div>
       </CardContent>
     </Card>

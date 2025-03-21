@@ -23,6 +23,11 @@ export default function Recommendations({
     }
   };
 
+  // TODO
+  const handleAction = (type: RecommendationType, id: string) => {
+    console.log(`Action: ${type} for ID ${id}`);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -42,8 +47,10 @@ export default function Recommendations({
                 <div className="h-32 bg-muted">
                   <Image
                     src={recommendation.avatarUrl || "/placeholder.svg"}
-                    alt=""
+                    alt={recommendation.title}
                     className="w-full h-full object-cover"
+                    width={128}
+                    height={128}
                   />
                 </div>
                 <CardContent className="p-4">
@@ -56,7 +63,14 @@ export default function Recommendations({
                   <p className="text-xs text-muted-foreground mb-3">
                     {recommendation.description}
                   </p>
-                  <Button size="sm" variant="outline" className="w-full">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() =>
+                      handleAction(recommendation.type, recommendation.id)
+                    }
+                  >
                     {recommendation.type === "FRIENDREQUEST"
                       ? "Add Friend"
                       : "Join Group"}

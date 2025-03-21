@@ -1,3 +1,5 @@
+import { UserFriends } from "@prisma/client";
+
 export interface MessageReaction {
   emoji: string;
   userId: string;
@@ -96,4 +98,15 @@ export interface Recommendation {
   title: string;
   description: string;
   avatarUrl: string;
+}
+export interface statsProps {
+  username: string;
+  email: string;
+  avatarUrl: string | null;
+  name: string | null;
+  bio: string | null;
+  lastLogin: Date | null;
+  friends: UserFriends[];
+  sentRequests: FriendRequest[];
+  receivedRequests: FriendRequest[];
 }

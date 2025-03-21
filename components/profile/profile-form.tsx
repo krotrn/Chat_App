@@ -20,7 +20,7 @@ import { FormError } from "../auth/Form-Error";
 import { FormSuccess } from "../auth/Form-Success";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import updateProfile from "@/actions/updateProfile";
+import { updateProfile } from "@/actions/userUtils";
 
 export default function ProfileForm({ user }: { user: User }) {
   const { update } = useSession();

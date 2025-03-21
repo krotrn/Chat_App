@@ -1,16 +1,16 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MessageSquare, User, UserPlus } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Activity, ActivityType } from "@prisma/client";
+import { format } from "date-fns";
 
 interface RecentActivityProps {
   activities: Activity[];
 }
 
 export function RecentActivity({ activities }: RecentActivityProps) {
-  const getActivityIcon = (type:ActivityType) => {
+  const getActivityIcon = (type: ActivityType) => {
     switch (type) {
       case "MESSAGE":
         return <MessageSquare className="h-4 w-4" />;
@@ -42,11 +42,11 @@ export function RecentActivity({ activities }: RecentActivityProps) {
                 {activity.userId ? (
                   <Avatar>
                     <AvatarImage
-                      src={activity.userAvatarUrl}
+                      src={activity.userAvatarUrl || ""}
                       alt={activity.userName || "User"}
                     />
                     <AvatarFallback>
-                      {activity.userName ? activity.userName[0].toUpperCase() : "U"}
+                      {activity.userName?.[0].toUpperCase() ?? "U"}
                     </AvatarFallback>
                   </Avatar>
                 ) : (
@@ -57,7 +57,7 @@ export function RecentActivity({ activities }: RecentActivityProps) {
                 <div className="flex-1">
                   <p className="text-sm">{activity.content}</p>
                   <p className="text-xs text-muted-foreground">
-                    {activity.updatedAt.toLocaleDateString()}
+                    {format(new Date(activity.updatedAt), "PPP")}
                   </p>
                 </div>
               </div>

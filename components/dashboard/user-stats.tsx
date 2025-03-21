@@ -19,13 +19,22 @@ export function UserStats({
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col items-center p-3 bg-muted rounded-lg">
-            <Users className="h-8 w-8 mb-2 text-primary" />
+          <div
+            className="flex flex-col items-center p-3 bg-muted rounded-lg"
+            aria-label={`${friendCount} friends`}
+          >
+            <Users className="h-8 w-8 mb-2 text-primary" aria-hidden="true" />
             <span className="text-2xl font-bold">{friendCount}</span>
             <span className="text-sm text-muted-foreground">Friends</span>
           </div>
-          <div className="flex flex-col items-center p-3 bg-muted rounded-lg">
-            <MessageSquareText className="h-8 w-8 mb-2 text-primary" />
+          <div
+            className="flex flex-col items-center p-3 bg-muted rounded-lg"
+            aria-label={`${groupChatCount} group chats`}
+          >
+            <MessageSquareText
+              className="h-8 w-8 mb-2 text-primary"
+              aria-hidden="true"
+            />
             <span className="text-2xl font-bold">{groupChatCount}</span>
             <span className="text-sm text-muted-foreground">Group Chats</span>
           </div>

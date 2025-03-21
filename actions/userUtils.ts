@@ -7,8 +7,14 @@ import { profileSchema } from "@/schemas/profileSchema";
 import { User } from "@prisma/client";
 import { z } from "zod";
 
+interface ResponseType {
+  success: boolean;
+  error: boolean;
+  data?: unknown;
+  message: string;
+}
 
-export const getRecommendations = async () => {
+export const getRecommendations = async (): Promise<ResponseType> => {
   const session = await auth();
   if (!session) return handleError("Unauthorized Access");
 
@@ -16,14 +22,17 @@ export const getRecommendations = async () => {
     const recommendations = await db.recommendations.findMany({
       where: { userId: session.user.id },
     });
-    return handleSuccess(recommendations, "Successfully fetched recommendations.");
+    return handleSuccess(
+      recommendations,
+      "Successfully fetched recommendations."
+    );
   } catch (error) {
     console.log("Error fetching recommendations:", error);
     return handleError("An error occurred while fetching recommendations.");
   }
 };
 
-export const getActivities = async () => {
+export const getActivities = async (): Promise<ResponseType> => {
   const session = await auth();
   if (!session) return handleError("Unauthorized Access");
 
@@ -40,16 +49,26 @@ export const getActivities = async () => {
 };
 
 export const getUserStats = async (
-  fields: (keyof User)[] = ["username", "email", "avatarUrl", "name", "bio", "lastLogin"]
-) => {
+  fields: (keyof User)[] = [
+    "username",
+    "email",
+    "avatarUrl",
+    "name",
+    "bio",
+    "lastLogin",
+  ]
+): Promise<ResponseType> => {
   const session = await auth();
   if (!session) return handleError("Unauthorized Access");
 
   try {
-    const select = fields.reduce((acc, field) => {
-      acc[field] = true;
-      return acc;
-    }, {} as Record<string, boolean>);
+    const select: Record<string, boolean> = {
+      ...fields.reduce((acc, field) => {
+        acc[field] = true;
+        return acc;
+      }, {} as Record<string, boolean>),
+      friends: true,
+    };
 
     const user = await db.user.findUnique({
       where: { id: session.user.id },
@@ -64,9 +83,12 @@ export const getUserStats = async (
   }
 };
 
-export const updateProfile = async (data: z.infer<typeof profileSchema>) => {
+export const updateProfile = async (
+  data: z.infer<typeof profileSchema>
+): Promise<ResponseType> => {
   const session = await auth();
-  if (!session || !session.user.id) return handleError("User not authenticated.");
+  if (!session || !session.user.id)
+    return handleError("User not authenticated.");
 
   try {
     const { name, bio, avatar } = data;
@@ -85,12 +107,12 @@ export const updateProfile = async (data: z.infer<typeof profileSchema>) => {
 };
 
 async function uploadAvatar(avatar: File): Promise<string> {
-  // TODO: Implement upload logic 
-  void avatar
+  void avatar;
+  // TODO: Implement upload logic
   return "https://example.com/avatar.jpg";
 }
 
-export const getFriendRequests = async () => {
+export const getFriendRequests = async (): Promise<ResponseType> => {
   const session = await auth();
   if (!session || !session.user.id) return handleError("Unauthorized Access");
 
@@ -104,14 +126,20 @@ export const getFriendRequests = async () => {
       },
     });
 
-    return handleSuccess(friendRequests, "Successfully fetched friend requests.");
+    return handleSuccess(
+      friendRequests,
+      "Successfully fetched friend requests."
+    );
   } catch (error) {
     console.log("Error fetching friend requests:", error);
     return handleError("An error occurred while fetching friend requests.");
   }
 };
 
-export const getUserDataById = async (id: string, reqData: (keyof User)[]): Promise<Partial<User> | null> => {
+export const getUserDataById = async (
+  id: string,
+  reqData: (keyof User)[]
+): Promise<Partial<User> | null> => {
   try {
     const select = reqData.reduce((acc, key) => {
       acc[key] = true;
@@ -124,7 +152,7 @@ export const getUserDataById = async (id: string, reqData: (keyof User)[]): Prom
     });
 
     if (!user) {
-      console.log(`User with ID ${id} not found.`);
+      console.warn(`User with ID ${id} not found.`);
       return null;
     }
     return user;

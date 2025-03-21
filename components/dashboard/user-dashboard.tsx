@@ -7,22 +7,9 @@ import Authorized from "../authorized";
 import { User } from "next-auth";
 import {
   Activity,
-  FriendRequest,
   Recommendations as RecType,
-  UserFriends,
 } from "@prisma/client";
-
-interface statsProps {
-  username: string;
-  email: string;
-  avatarUrl: string | null;
-  name: string | null;
-  bio: string | null;
-  lastLogin: Date | null;
-  friends: UserFriends[];
-  sentRequests: FriendRequest[];
-  receivedRequests: FriendRequest[];
-}
+import { statsProps } from "@/types/ChatType";
 interface UserDashboardProps {
   user: User;
   recommendations: RecType[];
@@ -36,7 +23,7 @@ export function UserDashboard({
   activity,
   stats,
 }: UserDashboardProps) {
-  const friendCount = stats ? stats.friends.length : 0;
+  const friendCount = stats?.friends?.length ?? 0;
   // TODO: Group Count
   return (
     <Authorized user={user}>
