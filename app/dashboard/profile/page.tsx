@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import   ProfileWrapper from "@/components/profile/profile";
+import ProfileWrapper from "@/components/profile/profile";
+import { SessionProvider } from "next-auth/react";
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -14,7 +15,9 @@ export default async function ProfilePage() {
             Manage your account settings and profile information.
           </p>
         </div>
-        <ProfileWrapper user={session.user} />
+        <SessionProvider>
+          <ProfileWrapper user={session.user} />
+        </SessionProvider>
       </div>
     </div>
   );

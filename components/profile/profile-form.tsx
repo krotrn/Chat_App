@@ -5,6 +5,7 @@ import { z } from "zod";
 import { profileSchema } from "@/schemas/profileSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { User } from "next-auth";
+import { useSession } from "next-auth/react";
 import {
   Form,
   FormControl,
@@ -22,6 +23,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import updateProfile from "@/actions/updateProfile";
 
 export default function ProfileForm({ user }: { user: User }) {
+  const { update } = useSession();
   const [isPending, startTransition] = useTransition();
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -37,7 +39,7 @@ export default function ProfileForm({ user }: { user: User }) {
   });
 
   const avatarFile = form.watch("avatar");
-  
+
   useEffect(() => {
     if (avatarFile instanceof File) {
       const url = URL.createObjectURL(avatarFile);
@@ -56,13 +58,14 @@ export default function ProfileForm({ user }: { user: User }) {
         const response = await updateProfile(data);
         if (response.success) {
           setSuccess(response.message);
+          await update();
         } else if (response.error) {
           setError(response.message);
         } else {
           setError("Something went wrong.");
         }
       } catch (error) {
-        console.error(error);
+        console.log("Error updating profile:", (error as Error).message);
         setError("Failed to update profile");
       }
     });

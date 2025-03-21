@@ -80,7 +80,7 @@ export interface User {
 
 export interface Activity {
   id: string;
-  type: "message" | "friend_request" | "group_invite" | "post_like";
+  type: "message" | "friend_request" | "new_friend";
   content: string;
   timestamp: string;
   user?: {
@@ -95,5 +95,5 @@ export interface Recommendation {
   type: "friend" | "group";
   title: string;
   description: string;
-  imageUrl: string;
+  avatarUrl: string;
 }

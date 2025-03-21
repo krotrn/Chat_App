@@ -1,22 +1,22 @@
-import type { Recommendation } from "@/types/ChatType";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { UserPlus, Users } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import Image from "next/image";
+import { Recommendations as RecType, RecommendationType } from "@prisma/client";
 
 interface RecommendationsProps {
-  recommendations: Recommendation[];
+  recommendations: RecType[];
 }
 
 export default function Recommendations({
   recommendations,
 }: RecommendationsProps) {
-  const getRecommendationIcon = (type: Recommendation["type"]) => {
+  const getRecommendationIcon = (type: RecommendationType) => {
     switch (type) {
-      case "friend":
+      case "FRIENDREQUEST":
         return <UserPlus className="h-4 w-4" />;
-      case "group":
+      case "GROUP":
         return <Users className="h-4 w-4" />;
       default:
         return null;
@@ -41,7 +41,7 @@ export default function Recommendations({
               <Card key={recommendation.id} className="overflow-hidden">
                 <div className="h-32 bg-muted">
                   <Image
-                    src={recommendation.imageUrl || "/placeholder.svg"}
+                    src={recommendation.avatarUrl || "/placeholder.svg"}
                     alt=""
                     className="w-full h-full object-cover"
                   />
@@ -57,7 +57,7 @@ export default function Recommendations({
                     {recommendation.description}
                   </p>
                   <Button size="sm" variant="outline" className="w-full">
-                    {recommendation.type === "friend"
+                    {recommendation.type === "FRIENDREQUEST"
                       ? "Add Friend"
                       : "Join Group"}
                   </Button>

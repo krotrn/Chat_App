@@ -30,6 +30,17 @@ enum FriendshipStatus {
   REJECTED
 }
 
+enum ActivityType {
+  MESSAGE
+  FRIENDREQUEST
+  NEWFRIEND
+}
+
+enum RecommendationType {
+  FRIENDREQUEST
+  GROUP
+}
+
 model User {
   id                      String      @id @default(cuid())
   username                String      @unique @db.VarChar(20)
@@ -41,7 +52,6 @@ model User {
   emailVerified           DateTime?
   password                String?
   loginType               AccountType @default(EMAIL)
-  refreshToken            String?
   forgotPasswordToken     String?
   forgotPasswordExpiry    DateTime?
   emailVerificationToken  String?
@@ -52,16 +62,17 @@ model User {
   isOnline                Boolean     @default(false)
   status                  String?     @db.VarChar(100)
   passwordHistory         String[]    @default([])
-  mfaSecret               String?
   loginAttempts           Int         @default(0)
   accountLocked           Boolean     @default(false)
 
   // Relationships for user management
   accounts         Account[]
-  sentRequests     FriendRequest[] @relation("SentRequests")
-  receivedRequests FriendRequest[] @relation("ReceivedRequests")
-  friends          UserFriends[]   @relation("UserFriends")
-  friendOf         UserFriends[]   @relation("UserFriendsFriend")
+  sentRequests     FriendRequest[]   @relation("SentRequests")
+  receivedRequests FriendRequest[]   @relation("ReceivedRequests")
+  friends          UserFriends[]     @relation("UserFriends")
+  friendOf         UserFriends[]     @relation("UserFriendsFriend")
+  recentActivities Activity[]
+  recommendations  Recommendations[]
 
   @@unique([username, email])
   @@unique([emailVerificationToken])
@@ -124,4 +135,26 @@ model UserFriends {
   @@unique([userId, friendId])
   @@index([userId])
   @@index([friendId])
+}
+
+model Recommendations {
+  id          String             @id @default(cuid())
+  userId      String
+  type        RecommendationType
+  title       String
+  description String
+  avatarUrl   String
+  user        User               @relation(onDelete: Cascade, fields: [userId], references: [id])
+}
+
+model Activity {
+  id            String       @id @default(cuid())
+  userId        String
+  userAvatarUrl String
+  userName      String?
+  type          ActivityType
+  content       String
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @default(now()) @updatedAt
+  user          User         @relation(onDelete: Cascade, fields: [userId], references: [id])
 }

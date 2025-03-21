@@ -30,7 +30,6 @@ export const CardWrapper = ({
         <CardTitle>
           <Header label={headerLabel} />
         </CardTitle>
-        ()
       </CardHeader>
       {children && <CardContent className="space-y-6">
         {children}

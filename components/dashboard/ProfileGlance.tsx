@@ -16,8 +16,8 @@ const ProfileGlance = ({ user }: ProfileGlanceProps) => {
     .join("")
     .toUpperCase();
   return (
-    <Card>
-      <CardHeader className="flex w-full md:flex-row items-center gap-4 pb-2">
+    <Card className="min-w-2xl">
+      <CardHeader className="flex w-full items-center gap-4 pb-2">
         <Avatar className="h-20 w-20">
           <AvatarImage
             src={user.avatarUrl || "/avatars/default.jpg"}

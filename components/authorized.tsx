@@ -1,0 +1,39 @@
+import { RefreshCw } from "lucide-react";
+import { Button } from "./ui/button";
+import { EmptyState } from "./ui/empty-state";
+import { User } from "next-auth";
+
+interface AuthorizedProps {
+  children: React.ReactNode;
+  user?: User;
+}
+
+export default function Authorized({ children, user }: AuthorizedProps) {
+  if (user) {
+    return <>{children}</>;
+  }
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="md:col-span-1">
+        <EmptyState
+          title="No user data available"
+          description="We couldn't find any user data. Please try again later or contact support."
+          type="empty"
+          action={
+            <Button variant="outline" size="sm">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Refresh
+            </Button>
+          }
+        />
+      </div>
+      <div className="md:col-span-2">
+        <EmptyState
+          title="No activity data"
+          description="Once you start using the platform, your activity will appear here."
+          type="empty"
+        />
+      </div>
+    </div>
+  );
+}

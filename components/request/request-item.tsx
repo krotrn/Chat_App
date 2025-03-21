@@ -3,16 +3,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { CheckIcon, XIcon, BanIcon } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { FormattedFriendRequest } from "@/types/formattedDataTypes";
+
+
 
 interface RequestItemProps {
-  request: {
-    id: string;
-    createdAt: string;
-    sender: { name: string; avatar?: string };
-  };
+  request: FormattedFriendRequest;
   isPending: boolean;
   onAction: (requestId: string, action: "accept" | "reject" | "block") => void;
 }
+
 export default function RequestItem({
   request,
   isPending,
@@ -28,17 +28,18 @@ export default function RequestItem({
     >
       <div className="flex items-center space-x-3">
         <Avatar>
-          <AvatarImage src={request.sender.avatar} alt={request.sender.name} />
+          <AvatarImage
+            src={request.senderAvatar || ""}
+            alt={request.senderName || request.senderUsername || "User"}
+          />
           <AvatarFallback>
-            {request.sender.name.charAt(0).toUpperCase()}
+            {(request.senderName || request.senderUsername || "U")[0].toUpperCase()}
           </AvatarFallback>
         </Avatar>
         <div>
-          <p className="font-medium">{request.sender.name}</p>
+          <p className="font-medium">{request.senderUsername}</p>
           <p className="text-xs text-muted-foreground">
-            {formatDistanceToNow(new Date(request.createdAt), {
-              addSuffix: true,
-            })}
+            {request.requestCreatedAt ? formatDistanceToNow(request.requestCreatedAt, { addSuffix: true }) : ""}
           </p>
         </div>
       </div>

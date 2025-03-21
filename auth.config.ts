@@ -26,17 +26,21 @@ export default {
       if (emailVerified) {
         return true;
       }
-      await fetch("/api/v1/auth/send-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      })
-        .then((data) => data.json())
-        .then((result) => {
-          if (!result.success) {
-            return false;
-          }
+      try {
+        const res = await fetch("/api/v1/auth/send-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
         });
+        const result = await res.json();
+        if (!result.success) {
+          return false;
+        }
+      } catch (error) {
+        console.error("Error sending email verification:", error);
+        return false;
+      }
+
       return false;
     },
     async jwt({ token, user }) {
@@ -45,7 +49,7 @@ export default {
           {
             id: user.id,
             name: user.name,
-            avatarUrl:user.avatarUrl,
+            avatarUrl: user.avatarUrl,
             email: user.email,
             username: user.username,
             role: user.role,
@@ -53,12 +57,7 @@ export default {
           process.env.ACCESS_TOKEN_SECRET!,
           { expiresIn: "1h" }
         );
-        token.id = user.id;
-        token.name = user.name;
-        token.avatarUrl = user.avatarUrl;
-        token.email = user.email;
-        token.username = user.username;
-        token.role = user.role;
+
         return {
           ...token,
           accessToken,
@@ -68,6 +67,7 @@ export default {
           email: user.email,
           username: user.username,
           role: user.role,
+          bio: user.bio,
         };
       }
       if (Date.now() < (token.exp as number) * 1000) {
@@ -85,6 +85,7 @@ export default {
           email: token.email as string,
           username: token.username as string,
           role: token.role as UserRoles,
+          bio: token.bio as string,
         };
       }
       return session;
@@ -138,7 +139,6 @@ export default {
               message: "Invalid credentials format",
             });
           }
-
           const { identifier, password } = parsed.data;
 
           const user = await db.user.findFirst({
@@ -148,12 +148,12 @@ export default {
             },
           });
 
-          if (!user?.password) return null;
+          if (!user || !user.password) return null;
 
           const passwordValid = await bcrypt.compare(password, user.password);
           if (!passwordValid) return null;
 
-          if (!user.emailVerified && user.loginType !== AccountType.EMAIL) {
+          if (!user.emailVerified && user.loginType === AccountType.EMAIL) {
             return null;
           }
 
@@ -166,7 +166,7 @@ export default {
             emailVerified: user.emailVerified,
           };
         } catch (error) {
-          console.log(error);
+          console.error("Error in credentials authorization:", error);
           return null;
         }
       },
@@ -177,12 +177,16 @@ export default {
   },
   events: {
     async linkAccount({ user }) {
-      await db.user.update({
-        where: { id: user.id },
-        data: {
-          emailVerified: new Date(),
-        },
-      });
+      try {
+        await db.user.update({
+          where: { id: user.id },
+          data: {
+            emailVerified: new Date(),
+          },
+        });
+      } catch (error) {
+        console.error("Error linking account:", error);
+      }
     },
   },
 } satisfies NextAuthConfig;
