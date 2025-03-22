@@ -1,4 +1,3 @@
-import { getUserDataById } from "@/actions/userUtils";
 import type { FriendRequest, User } from "@/types/ChatType"
 import { v4 as uuidv4 } from "uuid"
 
