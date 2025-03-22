@@ -4,7 +4,7 @@ import { proxyToChatAPI } from "@/lib/utils/proxy";
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { chatId: string } }
+  context: { params: Promise<{ chatId: string }> }
 ) {
   const session = await auth();
   if (!session)
@@ -13,7 +13,7 @@ export async function DELETE(
   try {
     const data = await proxyToChatAPI(
       req,
-      `/api/v1/chats/group/${params.chatId}/leave`,
+      `/api/v1/chats/group/${(await context.params).chatId}/leave`,
       "DELETE",
       session.accessToken
     );

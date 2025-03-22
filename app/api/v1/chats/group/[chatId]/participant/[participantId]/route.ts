@@ -4,16 +4,18 @@ import { proxyToChatAPI } from "@/lib/utils/proxy";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { chatId: string; participantId: string } }
+  context: { params: Promise<{ chatId: string; participantId: string }> }
 ) {
   const session = await auth();
   if (!session)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const {chatId, participantId} = await context.params
+
   try {
     const data = await proxyToChatAPI(
       req,
-      `/api/v1/chats/group/${params.chatId}/participant/${params.participantId}`,
+      `/api/v1/chats/group/${chatId}/participant/${participantId}`,
       "POST",
       session.accessToken
     );
@@ -29,16 +31,19 @@ export async function POST(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { chatId: string; participantId: string } }
+  context: { params: Promise<{ chatId: string; participantId: string }> }
 ) {
   const session = await auth();
   if (!session)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  
+  const {chatId, participantId} = await context.params
+
 
   try {
     const data = await proxyToChatAPI(
       req,
-      `/api/v1/chats/group/${params.chatId}/participant/${params.participantId}`,
+      `/api/v1/chats/group/${chatId}/participant/${participantId}`,
       "DELETE",
       session.accessToken
     );

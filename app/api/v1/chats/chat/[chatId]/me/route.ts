@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { chatId: string } }
+  context: { params: Promise<{ chatId: string }> }
 ) {
   const session = await auth();
   if (!session)
@@ -13,7 +13,7 @@ export async function DELETE(
   try {
     const data = await proxyToChatAPI(
       req,
-      `/api/v1/chats/chat/${params.chatId}/me`,
+      `/api/v1/chats/chat/${(await context.params).chatId}/me`,
       "DELETE",
       session.accessToken
     );

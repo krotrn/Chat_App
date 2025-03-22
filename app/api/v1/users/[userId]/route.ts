@@ -3,11 +3,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { userId: string } }
+  context: { params: Promise<{ userId: string }> }
 ) {
   try {
     const user = await db.user.findUnique({
-      where: { id: params.userId },
+      where: { id: (await context.params).userId },
       select: {
         id: true,
         username: true,

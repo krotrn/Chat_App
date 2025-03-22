@@ -16,7 +16,7 @@ export const config = {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { chatId: string } }
+  context: { params: Promise<{ chatId: string }> }
 ) {
   const session = await auth();
   if (!session)
@@ -25,7 +25,7 @@ export async function GET(
   try {
     const data = await proxyToChatAPI(
       req,
-      `/api/v1/messages/${params.chatId}`,
+      `/api/v1/messages/${(await context.params).chatId}`,
       "GET",
       session.accessToken
     );
@@ -41,7 +41,7 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { chatId: string } }
+  context: { params: Promise<{ chatId: string }> }
 ) {
   const session = await auth();
   if (!session)
@@ -49,10 +49,18 @@ export async function POST(
 
   try {
     const form = new IncomingForm({ multiples: true });
-    const [fields, files] = await new Promise<[Record<string, string | string[] | undefined>, Record<string, FileAttachment | FileAttachment[]>]>((resolve, reject) => {
+    const [fields, files] = await new Promise<
+      [
+        Record<string, string | string[] | undefined>,
+        Record<string, FileAttachment | FileAttachment[]>
+      ]
+    >((resolve, reject) => {
       form.parse(req as unknown as IncomingMessage, (err, fields, files) => {
         if (err) reject(err);
-        resolve([fields, files as Record<string, FileAttachment | FileAttachment[]>]);
+        resolve([
+          fields,
+          files as Record<string, FileAttachment | FileAttachment[]>,
+        ]);
       });
     });
 
@@ -68,7 +76,7 @@ export async function POST(
       formData.append("attachments", stream, file.originalFilename);
     });
 
-    const url = `${process.env.CHAT_API_URL}/api/v1/messages/${params.chatId}`;
+    const url = `${process.env.CHAT_API_URL}/api/v1/messages/${(await context.params).chatId}`;
     const response = await axios.post(url, formData, {
       headers: {
         Authorization: `Bearer ${session.accessToken}`,

@@ -3,7 +3,7 @@ import { db } from "@/prisma";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { userId: string } }
+  context: { params: Promise<{ userId: string }> }
 ) {
   const apiKey = req.headers.get("x-internal-api-key");
   if (apiKey !== process.env.INTERNAL_API_KEY) {
@@ -14,19 +14,18 @@ export async function GET(
   }
 
   try {
-
     const user = await db.user.findUnique({
-      where: { id: params.userId },
-      select: { id: true, emailVerified: true }
+      where: { id: (await context.params).userId },
+      select: { id: true, emailVerified: true },
     });
 
     if (!user) {
       return NextResponse.json({ success: true, valid: false });
     }
 
-    return NextResponse.json({ 
-      success: true, 
-      valid: !!user?.emailVerified 
+    return NextResponse.json({
+      success: true,
+      valid: !!user?.emailVerified,
     });
   } catch (error) {
     console.error("Validation error:", error);

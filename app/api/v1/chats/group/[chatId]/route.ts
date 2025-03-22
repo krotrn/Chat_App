@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { chatId: string } }
+  context: { params: Promise<{ chatId: string }> }
 ) {
   const session = await auth();
   if (!session)
@@ -12,7 +12,7 @@ export async function GET(
   try {
     const data = await proxyToChatAPI(
       req,
-      `/api/v1/chats/group/${params.chatId}`,
+      `/api/v1/chats/group/${(await context.params).chatId}`,
       "GET",
       session.accessToken
     );
@@ -28,7 +28,7 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { chatId: string } }
+  context: { params: Promise<{ chatId: string }> }
 ) {
   const session = await auth();
   if (!session)
@@ -37,7 +37,7 @@ export async function PATCH(
     const body = await req.json();
     const data = await proxyToChatAPI(
       req,
-      `/api/v1/chats/group/${params.chatId}`,
+      `/api/v1/chats/group/${(await context.params).chatId}`,
       "PATCH",
       session.accessToken,
       undefined,
@@ -53,14 +53,14 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { chatId: string } }) {
+export async function DELETE(req: NextRequest, context: { params: Promise<{ chatId: string }> }) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const data = await proxyToChatAPI(
       req,
-      `/api/v1/chats/group/${params.chatId}`,
+      `/api/v1/chats/group/${(await context.params).chatId}`,
       "DELETE",
       session.accessToken
     );
