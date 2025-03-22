@@ -6,3 +6,12 @@ export interface FormattedFriendRequest extends FriendRequest {
   senderUsername: string;
   requestCreatedAt: Date;
 }
+
+export interface FormattedFriend {
+  id: string;
+  name?: string
+  username: string;
+  avatarUrl?: string;
+  bio?: string;
+  isOnline: boolean;
+}

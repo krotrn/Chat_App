@@ -1,3 +1,4 @@
+import { getUserDataById } from "@/actions/userUtils";
 import type { FriendRequest, User } from "@/types/ChatType"
 import { v4 as uuidv4 } from "uuid"
 
@@ -152,21 +153,6 @@ export async function searchUsers(query: string): Promise<User[]> {
   )
 }
 
-/**
- * Get user's friends
- */
-export async function getUserFriends(userId: string): Promise<User[]> {
-  // In a real app, you'd fetch from a database
-  const user = await getUserById(userId)
-  if (!user || !user.friends) return []
-
-  return Promise.all(
-    user.friends.map(async (friendId) => {
-      const friend = await getUserById(friendId)
-      return friend as User
-    }),
-  )
-}
 
 /**
  * Get user's incoming friend requests

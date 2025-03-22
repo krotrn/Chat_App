@@ -1,10 +1,10 @@
-import { User } from "@/types/ChatType";
 import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { MessageSquareMore, UserMinus } from "lucide-react";
+import { FormattedFriend } from "@/types/formattedDataTypes";
 interface FriendCardProps {
-  friend: User;
+  friend: FormattedFriend;
 }
 
 const friendCardVariant = {
@@ -36,8 +36,12 @@ export default function FriendCard({ friend }: FriendCardProps) {
     >
       <div className="flex items-center space-x-3">
         <Avatar>
-          <AvatarImage src={friend.avatar} alt={friend.name} />
-          <AvatarFallback>{friend.name[0].toUpperCase()}</AvatarFallback>
+          <AvatarImage src={friend.avatarUrl} alt={friend.name} />
+          <AvatarFallback>
+            {friend.name
+              ? friend.name[0].toUpperCase()
+              : friend.username[0].toUpperCase()}
+          </AvatarFallback>
         </Avatar>
       </div>
       <div className="flex space-x-2">

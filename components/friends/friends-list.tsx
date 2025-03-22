@@ -1,5 +1,4 @@
 "use client";
-import { User } from "@/types/ChatType";
 import {
   Card,
   CardContent,
@@ -14,8 +13,9 @@ import { AnimatePresence } from "framer-motion";
 import FriendCard from "./friend-card";
 import { useEffect, useState } from "react";
 import FriendsListSkeleton from "../skeleton/friend-list-skeleton";
+import { FormattedFriend } from "@/types/formattedDataTypes";
 interface FriendsListProps {
-  friends: User[];
+  friends: FormattedFriend[];
 }
 
 export default function FriendsList({ friends }: FriendsListProps) {
@@ -32,7 +32,9 @@ export default function FriendsList({ friends }: FriendsListProps) {
   }, []);
 
   const filteredFriends = friends.filter((friend) =>
-    friend.name.toLowerCase().includes(searchQuery.toLowerCase())
+    (friend.name ? friend.name + friend.username : friend.username)
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase())
   );
 
   return (
