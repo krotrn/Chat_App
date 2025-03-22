@@ -5,7 +5,6 @@ import { getFriendRequests } from "@/actions/userUtils";
 import { auth } from "@/auth";
 import Authorized from "@/components/authorized";
 import { formatRequests } from "@/lib/utils/dataFormating";
-import { FormattedFriendRequest } from "@/types/formattedDataTypes";
 
 export const metadata: Metadata = {
   title: `Friend Requests | ${config.appName}`,
@@ -18,10 +17,16 @@ export default async function RequestsPage() {
     throw new Error("User is not authenticated");
   }
 
-  const friendRequestResponse = await getFriendRequests();
-  const requests: FormattedFriendRequest[] = await formatRequests(
-    friendRequestResponse.data || []
-  );
+  const friendRequestResponse = await getFriendRequests([
+    "id",
+    "senderId",
+    "receiverId",
+    "status",
+    "createdAt",
+    "updatedAt",
+    "expiresAt",
+  ]);
+  const requests = await formatRequests(friendRequestResponse);
 
   return (
     <Authorized user={session.user}>

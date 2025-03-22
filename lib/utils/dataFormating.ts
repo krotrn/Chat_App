@@ -3,8 +3,9 @@ import { FormattedFriendRequest } from "@/types/formattedDataTypes";
 import { FriendRequest } from "@prisma/client";
 
 export const formatRequests = async (
-  unFormattedData: FriendRequest[]
-): Promise<FormattedFriendRequest[]> => {
+  unFormattedData: FriendRequest[] | null
+): Promise<FormattedFriendRequest[] | null> => {
+  if (!unFormattedData) return null;
   const formattedDataPromises = unFormattedData.map(async (req) => {
     const { senderId } = req;
     const data = await getUserDataById(senderId, [
@@ -15,13 +16,7 @@ export const formatRequests = async (
     ]);
 
     if (!data) {
-      return {
-        ...req,
-        senderAvatar: null,
-        senderName: null,
-        senderUsername: null,
-        requestCreatedAt: null,
-      } as FormattedFriendRequest;
+      return null;
     }
 
     const { avatarUrl, name, username, createdAt } = data;
@@ -31,8 +26,10 @@ export const formatRequests = async (
       senderName: name,
       senderUsername: username,
       requestCreatedAt: createdAt,
-    } as FormattedFriendRequest;
+    };
   });
 
-  return await Promise.all(formattedDataPromises);
+  const result = await Promise.all(formattedDataPromises);
+
+  return result.filter((req) => req!== null);
 };
