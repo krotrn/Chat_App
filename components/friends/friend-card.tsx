@@ -3,29 +3,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { MessageSquareMore, UserMinus } from "lucide-react";
 import { FormattedFriend } from "@/types/formattedDataTypes";
+import { friendCardVariant } from "@/animations/friends/friend-card-variant";
 interface FriendCardProps {
   friend: FormattedFriend;
 }
 
-const friendCardVariant = {
-  hidden: { opacity: 0, y: 10 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.2,
-    },
-  },
-  leave: {
-    opacity: 0,
-    y: -10,
-    transition: {
-      duration: 0.2,
-    },
-  },
-};
-
 export default function FriendCard({ friend }: FriendCardProps) {
+  //TODO
   return (
     <motion.div
       variants={friendCardVariant}
