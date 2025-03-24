@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SearchUserType } from "@/types/formattedDataTypes";
-import { searchUserByQuery, sendFriendRequest } from "@/actions/userUtils";
+import { getUserByQuery, sendFriendRequest } from "@/actions/userUtils";
 import { toast } from "sonner";
 
 interface FriendSearchProps {
@@ -38,14 +38,14 @@ export default function FriendSearch({ userId, pending }: FriendSearchProps) {
     if (!searchQuery.trim()) return;
     startTransition(async () => {
       try {
-        const results = await searchUserByQuery(searchQuery, [
+        const results = await getUserByQuery(searchQuery, [
           "id",
           "email",
           "username",
           "name",
           "avatarUrl",
         ]);
-        setSearchResult(results || []);
+        setSearchResult(results);
       } catch (error) {
         console.log(error);
         toast.error("Faild to search user");

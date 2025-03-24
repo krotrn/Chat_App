@@ -21,21 +21,21 @@ interface ResponseType {
 
 export const getRecommendations = async () => {
   const session = await auth();
-  if (!session) return null;
+  if (!session) throw new Error("Unauthenticated");
 
   try {
     const recommendations = await db.recommendations.findMany({
       where: { userId: session.user.id },
     });
     return recommendations;
-  } catch {
-    return null;
+  } catch (error) {
+    throw error;
   }
 };
 
 export const getActivities = async () => {
   const session = await auth();
-  if (!session) return null;
+  if (!session) throw new Error("Unauthotized");
 
   try {
     const activities = await db.activity.findMany({
@@ -43,14 +43,14 @@ export const getActivities = async () => {
       orderBy: { createdAt: "desc" },
     });
     return activities;
-  } catch {
-    return null;
+  } catch (error) {
+    throw error;
   }
 };
 
 export const getUserStats = async <T extends keyof StatsProps>(fields: T[]) => {
   const session = await auth();
-  if (!session) return null;
+  if (!session) throw new Error("Unauthotized");
 
   try {
     const select: Partial<Record<keyof StatsProps, boolean>> = fields.reduce(
@@ -68,10 +68,10 @@ export const getUserStats = async <T extends keyof StatsProps>(fields: T[]) => {
         ...select,
       },
     });
-    if (!user) return null;
+    if (!user) throw new Error("User not found");
     return user;
-  } catch {
-    return null;
+  } catch (error) {
+    throw error;
   }
 };
 
@@ -156,13 +156,13 @@ export const getUserDataById = async <T extends keyof User>(
 
 export const getUserFriends = async (
   id: string
-): Promise<FormattedFriendType[] | null> => {
+): Promise<FormattedFriendType[]> => {
   try {
     const user = await db.user.findUnique({
       where: { id },
       select: { friends: { select: { id: true } } },
     });
-    if (!user || !user.friends) return null;
+    if (!user || !user.friends) throw new Error("something went wrong");
     const friends = await Promise.all(
       user.friends.map(async (f) => {
         const friend = await db.user.findUnique({
@@ -178,22 +178,22 @@ export const getUserFriends = async (
         if (!friend) return null;
         return {
           id: f.id,
-          avatarUrl: friend.avatarUrl === null ? undefined : friend.avatarUrl,
-          name: friend.name === null ? undefined : friend.name,
+          avatarUrl: friend.avatarUrl ?? undefined,
+          name: friend.name ?? undefined,
           username: friend.username,
-          bio: friend.bio === null ? undefined : friend.bio,
+          bio: friend.bio ?? undefined,
           isOnline: friend.isOnline,
         };
       })
     );
 
     return friends.filter((f) => f !== null);
-  } catch {
-    return null;
+  } catch (error) {
+    throw error;
   }
 };
 
-export const searchUserByQuery = async <T extends keyof SearchUserType>(
+export const getUserByQuery = async <T extends keyof SearchUserType>(
   contains: string,
   reqData: T[]
 ) => {
@@ -211,13 +211,22 @@ export const searchUserByQuery = async <T extends keyof SearchUserType>(
           { username: { contains, mode: "insensitive" } },
           { email: { contains, mode: "insensitive" } },
         ],
+        NOT: { id: session.user.id },
       },
       select,
     });
 
-    return users.filter((u) => u.id !== session.user.id);
-  } catch {
-    return null;
+    return users
+      .filter((u) => u.id !== session.user.id)
+      .map((u) => {
+        return {
+          ...u,
+          name: u.name ?? undefined,
+          avatarUrl: u.avatarUrl ?? undefined,
+        };
+      });
+  } catch (error) {
+    throw error;
   }
 };
 
@@ -234,6 +243,13 @@ export const sendFriendRequest = async (
     });
     if (existingRequest) {
       throw new Error("Friend request already sent");
+    }
+
+    const areFriends = await db.userFriends.findFirst({
+      where: { userId: senderId, friendId: receiverId },
+    });
+    if (areFriends) {
+      throw new Error("Users are already friends");
     }
     const friendRequest = await db.friendRequest.create({
       data: {
@@ -254,7 +270,7 @@ export const getPendingRequests = async (senderId: string) => {
         senderId,
         status: "PENDING",
       },
-      select: { id: true },
+      select: { id: true, receiverId: true },
     });
 
     return pendingRequests;
@@ -275,7 +291,7 @@ export const handleFriendRequest = async (
         senderId_receiverId: { senderId, receiverId },
       },
       data: {
-        status: action == status ? "PENDING" : action,
+        status: action === status ? "PENDING" : action,
       },
     });
   } catch (error) {

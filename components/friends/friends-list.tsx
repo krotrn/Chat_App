@@ -13,13 +13,13 @@ import { AnimatePresence } from "framer-motion";
 import FriendCard from "@/components/friends/friend-card";
 import { FormattedFriendType } from "@/types/formattedDataTypes";
 interface FriendsListProps {
-  friends: FormattedFriendType[] | null;
+  friends: FormattedFriendType[];
 }
 
 export default function FriendsList({ friends }: FriendsListProps) {
   const [searchQuery, setSearchQuery] = useSearchQuery("fr", "");
 
-  const filteredFriends = friends?.filter((friend) =>
+  const filteredFriends = friends.filter((friend) =>
     (friend.name ? friend.name + friend.username : friend.username)
       .toLowerCase()
       .includes(searchQuery.toLowerCase())

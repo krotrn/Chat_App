@@ -22,10 +22,10 @@ export interface StatsProps {
 
 export interface SearchUserType {
   id: string;
-  name: string | null;
+  name?: string;
   username: string;
   email: string;
-  avatarUrl: string | null;
+  avatarUrl?: string;
 }
 
 export interface PendingRequestsType{
