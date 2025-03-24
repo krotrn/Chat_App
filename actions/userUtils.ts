@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 import { handleError, handleSuccess } from "@/lib/helper";
 import { db } from "@/prisma";
 import { profileSchema } from "@/schemas/profileSchema";
-import { FormattedFriend } from "@/types/formattedDataTypes";
+import { FormattedFriend, StatsProps } from "@/types/formattedDataTypes";
 import { FriendRequest, User } from "@prisma/client";
 import { z } from "zod";
 
@@ -15,60 +15,48 @@ interface ResponseType {
   message: string;
 }
 
-export const getRecommendations = async (): Promise<ResponseType> => {
+export const getRecommendations = async () => {
   const session = await auth();
-  if (!session) return handleError("Unauthorized Access");
+  if (!session) return null;
 
   try {
     const recommendations = await db.recommendations.findMany({
       where: { userId: session.user.id },
     });
-    return handleSuccess(
-      recommendations,
-      "Successfully fetched recommendations."
-    );
-  } catch (error) {
-    console.error("Error fetching recommendations:", error);
-    return handleError("An error occurred while fetching recommendations.");
+    return recommendations;
+  } catch  {
+    return null;
   }
 };
 
-export const getActivities = async (): Promise<ResponseType> => {
+export const getActivities = async () => {
   const session = await auth();
-  if (!session) return handleError("Unauthorized Access");
+  if (!session) return null;
 
   try {
     const activities = await db.activity.findMany({
       where: { userId: session.user.id },
       orderBy: { createdAt: "desc" },
     });
-    return handleSuccess(activities, "Successfully fetched activities.");
-  } catch (error) {
-    console.error("Error fetching activities:", error);
-    return handleError("An error occurred while fetching activities.");
+    return activities;
+  } catch {
+    return null;
   }
 };
 
-export const getUserStats = async (
-  fields: (keyof User)[] = [
-    "username",
-    "email",
-    "avatarUrl",
-    "name",
-    "bio",
-    "lastLogin",
-  ]
-): Promise<ResponseType> => {
+export const getUserStats = async <T extends keyof StatsProps>(
+  fields: T[]
+) => {
   const session = await auth();
-  if (!session) return handleError("Unauthorized Access");
+  if (!session) return null;
 
   try {
-    const select: Partial<Record<keyof User, boolean>> = fields.reduce(
-      (acc, field) => {
-        acc[field] = true;
+    const select: Partial<Record<keyof StatsProps, boolean>> = fields.reduce(
+      (acc, key) => {
+        acc[key as keyof StatsProps] = true;
         return acc;
       },
-      {} as Partial<Record<keyof User, boolean>>
+      {} as Partial<Record<keyof StatsProps, boolean>>
     );
 
     const user = await db.user.findUnique({
@@ -78,12 +66,10 @@ export const getUserStats = async (
         ...select,
       },
     });
-
-    if (!user) return handleError("User not found.");
-    return handleSuccess(user, "Successfully fetched user stats.");
-  } catch (error) {
-    console.error("Error fetching user stats:", error);
-    return handleError("An error occurred while fetching user stats.");
+    if (!user) return null;
+    return user;
+  } catch {
+    return null;
   }
 };
 
@@ -104,8 +90,7 @@ export const updateProfile = async (
     });
 
     return handleSuccess(null, "Profile updated successfully.");
-  } catch (error) {
-    console.error("Error updating profile:", error);
+  } catch  {
     return handleError("An error occurred while updating the profile.");
   }
 };
@@ -134,8 +119,7 @@ export const getFriendRequests = async <T extends keyof FriendRequest>(
     });
 
     return friendRequests;
-  } catch (error) {
-    console.error("Error fetching friend requests:", error);
+  } catch {
     return null;
   }
 };
@@ -163,21 +147,20 @@ export const getUserDataById = async <T extends keyof User>(
       return null;
     }
     return user;
-  } catch (error) {
-    console.error("Error fetching user data:", error);
+  } catch  {
     return null;
   }
 };
 
 export const getUserFriends = async (
   id: string
-): Promise<FormattedFriend[]> => {
+): Promise<FormattedFriend[] | null> => {
   try {
     const user = await db.user.findUnique({
       where: { id },
       select: { friends: { select: { id: true } } },
     });
-    if (!user || !user.friends) return [];
+    if (!user || !user.friends) return null;
     const friends = await Promise.all(
       user.friends.map(async (f) => {
         const friend = await db.user.findUnique({
@@ -203,8 +186,7 @@ export const getUserFriends = async (
     );
 
     return friends.filter((f) => f !== null);
-  } catch (error) {
-    console.error("Error fetching user friends:", error);
-    return [];
+  } catch  {
+    return null;
   }
 };

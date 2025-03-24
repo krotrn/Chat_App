@@ -3,10 +3,10 @@ import { groupMessagesByDate } from "@/lib/utils/groupMessageByDate";
 import { Message } from "@/types/ChatType";
 import { User } from "next-auth";
 import { Fragment, useEffect, useState } from "react";
-import { ScrollArea } from "../ui/scroll-area";
-import DateDivider from "./date-divider";
-import MessageItem from "./message-item";
-import MessageListSkeleton from "../skeleton/message-list-skeleton";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import DateDivider from "@/components/chat/date-divider";
+import MessageItem from "@/components/chat/message-item";
+import MessageListSkeleton from "@/components/skeleton/message-list-skeleton";
 
 interface MessageListProps {
   messages: Message[];

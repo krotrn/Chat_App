@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import useSearchQuery from "@/hooks/useSearchQuery";
 import { searchUsers, sendFriendRequest } from "@/lib/user-service";
 import { User } from "@/types/ChatType";
@@ -11,12 +11,12 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../ui/card";
+} from "@/components/ui/card";
 import { Search, UserPlus } from "lucide-react";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { AnimatePresence } from "framer-motion";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function FriendSearch({ userId }: { userId: string }) {
   const [searchQuery, setSearchQuery] = useSearchQuery("nfr", "");

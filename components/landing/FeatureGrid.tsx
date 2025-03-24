@@ -2,7 +2,7 @@
 import { container, featureVariants } from "@/animations/landing/featureVariants";
 import { features } from "@/lib/landing/features";
 import { motion } from "framer-motion";
-import FeatureCard from "./FeatureCard";
+import FeatureCard from "@/components/landing/FeatureCard";
 
 export default function FeatureGrid() {
   return (

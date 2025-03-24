@@ -1,7 +1,7 @@
 "use client";
 import { motion } from "framer-motion";
 import heroVariants from "@/animations/landing/heroVariants";
-import HeroContent from "./HeroContent";
+import HeroContent from "@/components/landing/HeroContent";
 
 export default function HeroSection() {
   return (

@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User } from "next-auth";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { Edit, MessageSquareMoreIcon } from "lucide-react";
 import Link from "next/link";
 

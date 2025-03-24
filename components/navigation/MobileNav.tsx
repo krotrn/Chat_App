@@ -1,8 +1,8 @@
 import { MessageSquare, Settings } from "lucide-react";
-import { SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
-import { Button } from "../ui/button";
+import { SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { menuItems } from "@/lib/navigation/menuItem";
 import { cn } from "@/lib/utils";
 import { config } from "@/config";
@@ -36,7 +36,9 @@ function MobileNav({ pathname, setIsOpen }: MobileNavProps) {
               onClick={() => setIsOpen(false)}
               className={cn(
                 "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent",
-                pathname === item.href ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                pathname === item.href
+                  ? "bg-accent text-accent-foreground"
+                  : "text-muted-foreground"
               )}
             >
               <item.icon className="mr-2 h-4 w-4" />

@@ -3,10 +3,10 @@ import { Chat, Message, MessageReaction } from "@/types/ChatType";
 import { User } from "next-auth";
 import { useState, useCallback, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import ChatHeader from "./chat-header";
-import MessageList from "./message-list";
-import MessageInput from "./message-input";
-import ChatDetails from "./chat-details";
+import ChatHeader from "@/components/chat/chat-header";
+import MessageList from "@/components/chat/message-list";
+import MessageInput from "@/components/chat/message-input";
+import ChatDetails from "@/components/chat/chat-details";
 
 interface ChatMainProps {
   chat: Chat;

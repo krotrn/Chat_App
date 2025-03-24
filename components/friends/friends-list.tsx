@@ -5,21 +5,21 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../ui/card";
+} from "@/components/ui/card";
 import { Search } from "lucide-react";
-import { Input } from "../ui/input";
+import { Input } from "@/components/ui/input";
 import useSearchQuery from "@/hooks/useSearchQuery";
 import { AnimatePresence } from "framer-motion";
-import FriendCard from "./friend-card";
+import FriendCard from "@/components/friends/friend-card";
 import { FormattedFriend } from "@/types/formattedDataTypes";
 interface FriendsListProps {
-  friends: FormattedFriend[];
+  friends: FormattedFriend[] | null;
 }
 
 export default function FriendsList({ friends }: FriendsListProps) {
   const [searchQuery, setSearchQuery] = useSearchQuery("fr", "");
 
-  const filteredFriends = friends.filter((friend) =>
+  const filteredFriends = friends?.filter((friend) =>
     (friend.name ? friend.name + friend.username : friend.username)
       .toLowerCase()
       .includes(searchQuery.toLowerCase())
@@ -28,7 +28,7 @@ export default function FriendsList({ friends }: FriendsListProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>My Friends ({friends.length})</CardTitle>
+        <CardTitle>My Friends ({friends ? friends.length : 0})</CardTitle>
         <CardDescription>View and manage your connections</CardDescription>
       </CardHeader>
       <CardContent>
@@ -42,23 +42,23 @@ export default function FriendsList({ friends }: FriendsListProps) {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        filteredFriends.length === 0 ? (
-        <div className="h-32 flex flex-col items-center justify-center rounded-md border border-dashed p-8 text-center">
-          <p className="text-sm text-muted-foreground">
-            {searchQuery.length
-              ? "No friends match your search"
-              : "You don't have any friends yet"}
-          </p>
-        </div>
+        {(filteredFriends && filteredFriends.length) === 0 ? (
+          <div className="h-32 flex flex-col items-center justify-center rounded-md border border-dashed p-8 text-center">
+            <p className="text-sm text-muted-foreground">
+              {searchQuery.length
+                ? "No friends match your search"
+                : "You don't have any friends yet"}
+            </p>
+          </div>
         ) : (
-        <div>
-          <AnimatePresence>
-            {filteredFriends.map((friend) => (
-              <FriendCard friend={friend} key={friend.id} />
-            ))}
-          </AnimatePresence>
-        </div>
-        )
+          <div>
+            <AnimatePresence>
+              {filteredFriends?.map((friend) => (
+                <FriendCard friend={friend} key={friend.id} />
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

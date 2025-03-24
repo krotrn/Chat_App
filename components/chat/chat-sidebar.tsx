@@ -3,12 +3,12 @@ import useSearchQuery from "@/hooks/useSearchQuery";
 import { AIModel, Chat } from "@/types/ChatType";
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
-import { Input } from "../ui/input";
+import { Input } from "@/components/ui/input";
 import { ChangeEvent, useCallback, useEffect, useState } from "react";
-import { ScrollArea } from "../ui/scroll-area";
-import ChatItem from "./chat-item";
-import AIChatItem from "./ai-chat-item";
-import ChatListSkeleton from "../skeleton/chat-list-skeleton";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import ChatItem from "@/components/chat/chat-item";
+import AIChatItem from "@/components/chat/ai-chat-item";
+import ChatListSkeleton from "@/components/skeleton/chat-list-skeleton";
 
 interface ChatSidebarProps {
   chats: Chat[];

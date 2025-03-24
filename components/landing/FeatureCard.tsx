@@ -5,7 +5,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../ui/card";
+} from "@/components/ui/card";
 import { motion } from "framer-motion";
 
 const FeatureCard = ({ feature }: { feature: featureProps }) => {

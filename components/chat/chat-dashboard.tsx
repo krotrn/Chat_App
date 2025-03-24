@@ -5,7 +5,7 @@ import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import useSearchQuery from "@/hooks/useSearchQuery";
 import ChatSidebar from "./chat-sidebar";
-import ChatMain from "./chat-main";
+import ChatMain from "@/components/chat/chat-main";
 import { useIsMobile } from "@/hooks/use-mobile";
 interface ChatDashboardProps {
   currentUser: User;

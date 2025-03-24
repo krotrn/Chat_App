@@ -13,13 +13,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "../ui/form";
-import { Input } from "../ui/input";
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { useTransition } from "react";
-import { FormError } from "../auth/Form-Error";
-import { FormSuccess } from "../auth/Form-Success";
-import { Button } from "../ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { FormError } from "@/components/auth/Form-Error";
+import { FormSuccess } from "@/components/auth/Form-Success";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { updateProfile } from "@/actions/userUtils";
 
 export default function ProfileForm({ user }: { user: User }) {

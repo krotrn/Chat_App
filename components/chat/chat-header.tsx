@@ -1,9 +1,9 @@
 import { Chat } from "@/types/ChatType";
-import { Skeleton } from "../ui/skeleton";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import HeaderActions from "./header-action";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import HeaderActions from "@/components/chat/header-action";
 import { ArrowLeft } from "lucide-react";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 
 interface ChatHeaderProps {
   chat: Chat;

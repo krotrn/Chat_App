@@ -8,33 +8,21 @@ import {
   getRecommendations,
   getUserStats,
 } from "@/actions/userUtils";
-import { Activity, Recommendations } from "@prisma/client";
-import { statsProps } from "@/types/ChatType";
+import RefreshPage from "@/components/RefreshPage";
 
 export default async function DashboardPage() {
   const session = await auth();
   if (!session) redirect("/login");
 
-  const [recommendationsResponse, activityResponse, userStatsResponse] = await Promise.all([
-    getRecommendations(),
-    getActivities(),
-    getUserStats(),
-  ]);
+  const [recommendationsResponse, activityResponse, userStatsResponse] =
+    await Promise.all([
+      getRecommendations(),
+      getActivities(),
+      getUserStats(["friends"]),
+    ]);
 
-  if (
-    recommendationsResponse.error ||
-    activityResponse.error ||
-    userStatsResponse.error
-  ) {
-    
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <p className="text-red-500">
-          Error loading dashboard: Please try again later.
-        </p>
-      </div>
-    );
-  }
+  if (!recommendationsResponse || !activityResponse || !userStatsResponse)
+    return <RefreshPage />;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -42,9 +30,9 @@ export default async function DashboardPage() {
       <Suspense fallback={<LoadingDashboard />}>
         <UserDashboard
           user={session.user}
-          recommendations={recommendationsResponse.data as Recommendations[]}
-          activity={activityResponse.data as Activity[]}
-          stats={userStatsResponse.data as statsProps}
+          recommendations={recommendationsResponse}
+          activity={activityResponse}
+          stats={userStatsResponse}
         />
       </Suspense>
     </div>

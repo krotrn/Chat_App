@@ -9,8 +9,8 @@ import { Suspense } from "react";
 
 export default async function FriendsPage() {
   const session = await auth();
-  if (!session) throw new Error("unauthoriozed");
-  const friends = await getUserFriends(session.user.id!);
+  if (!session || !session.user.id) throw new Error("unauthoriozed");
+  const friends = await getUserFriends(session.user.id);
   return (
     <div className="w-full flex items-center justify-center py-10">
       <Suspense

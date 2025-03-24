@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
-import { SettingsProvider } from "./ThemeProvider";
+import { SettingsProvider } from "@/components/ThemeProvider";
 
 export function ThemeProvider({
   children,

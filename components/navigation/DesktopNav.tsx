@@ -2,7 +2,7 @@ import { menuItems } from "@/lib/navigation/menuItem";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { NavigationMenuList } from "../ui/navigation-menu";
+import { NavigationMenuList } from "@/components/ui/navigation-menu";
 
 function DesktopNav({ pathname }: { pathname: string }) {
   return (

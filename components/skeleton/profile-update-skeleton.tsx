@@ -1,5 +1,10 @@
-import { Skeleton } from "../ui/skeleton";
-import { Card, CardContent, CardFooter, CardHeader } from "../ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 
 export default function ProfileUpdateSkeleton() {
   return (

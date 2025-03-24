@@ -9,12 +9,12 @@ import {
   Activity,
   Recommendations as RecType,
 } from "@prisma/client";
-import { statsProps } from "@/types/ChatType";
+import { StatsProps } from "@/types/formattedDataTypes";
 interface UserDashboardProps {
   user: User;
   recommendations: RecType[];
   activity: Activity[];
-  stats?: statsProps;
+  stats: StatsProps;
 }
 
 export function UserDashboard({
@@ -23,7 +23,7 @@ export function UserDashboard({
   activity,
   stats,
 }: UserDashboardProps) {
-  const friendCount = stats?.friends?.length ?? 0;
+  const friendCount = stats.friends.length ?? 0;
   // TODO: Group Count
   return (
     <Authorized user={user}>

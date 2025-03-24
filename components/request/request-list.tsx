@@ -51,11 +51,11 @@ export function RequestsList({ requests, userId }: RequestsListProps) {
   return (
     <Card>
       <CardHeader>
-            <CardTitle>Friend Requests ({filteredRequests?.length || 0})</CardTitle>
-            <CardDescription>Manage your incoming friend requests.</CardDescription>
+        <CardTitle>Friend Requests ({filteredRequests?.length || 0})</CardTitle>
+        <CardDescription>Manage your incoming friend requests.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        filteredRequests && filteredRequests.length === 0 ? (
+        {filteredRequests && filteredRequests.length === 0 ? (
           <div className="flex h-32 flex-col items-center justify-center rounded-md border border-dashed p-8 text-center">
             <p className="text-sm text-muted-foreground">
               No pending friend requests
@@ -73,8 +73,8 @@ export function RequestsList({ requests, userId }: RequestsListProps) {
                 />
               ))}
             </AnimatePresence>
-        </div>
-        )
+          </div>
+        )}
       </CardContent>
     </Card>
   );

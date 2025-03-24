@@ -9,8 +9,13 @@ import {
   Music,
   X,
 } from "lucide-react";
-import { Button } from "../ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 

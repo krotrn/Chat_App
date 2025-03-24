@@ -3,14 +3,18 @@ import { mockUsers } from "@/lib/mock-data";
 import { Message } from "@/types/ChatType";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { Paperclip, Send, X } from "lucide-react";
-import AttachmentPreview from "./attachment-previews";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import FileUploader from "./file-uploader";
-import { Textarea } from "../ui/textarea";
-import EmojiPicker from "./emoji-picker";
-import CameraCapture from "./camera-capture";
+import AttachmentPreview from "@/components/chat/attachment-previews";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import FileUploader from "@/components/chat/file-uploader";
+import { Textarea } from "@/components/ui/textarea";
+import EmojiPicker from "@/components/chat/emoji-picker";
+import CameraCapture from "@/components/chat/camera-capture";
 
 interface MessageInputProps {
   onSendMessage: (
@@ -110,7 +114,6 @@ export default function MessageInput({
             className="mb-2 flex items-center justify-between bg-muted p-2 rounded"
           >
             <div>
-              
               <p className="text-xs font-medium">
                 Replying to {replyToUser?.name}
               </p>

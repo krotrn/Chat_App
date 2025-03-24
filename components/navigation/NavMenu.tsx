@@ -1,11 +1,11 @@
 "use client";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { Sheet, SheetTrigger } from "../ui/sheet";
-import MobileNav from "./MobileNav";
-import DesktopNav from "./DesktopNav";
-import { NavigationMenu } from "../ui/navigation-menu";
-import { Button } from "../ui/button";
+import { Sheet, SheetTrigger } from "@/components/ui/sheet";
+import MobileNav from "@/components/navigation/MobileNav";
+import DesktopNav from "@/components/navigation/DesktopNav";
+import { NavigationMenu } from "@/components/ui/navigation-menu";
+import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 
 const NavMenu = () => {

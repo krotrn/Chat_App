@@ -1,4 +1,4 @@
-import { FriendRequest } from "@prisma/client";
+import { FriendRequest, UserFriends } from "@prisma/client";
 
 export interface FormattedFriendRequest extends FriendRequest {
   senderAvatar: string | null;
@@ -14,4 +14,8 @@ export interface FormattedFriend {
   avatarUrl?: string;
   bio?: string;
   isOnline: boolean;
+}
+
+export interface StatsProps{
+  friends: UserFriends[];
 }

@@ -1,17 +1,17 @@
 "use client";
 import { User } from "next-auth";
 import { useEffect, useState } from "react";
-import ProfileUpdateSkeleton from "../skeleton/profile-update-skeleton";
+import ProfileUpdateSkeleton from "@/components/skeleton/profile-update-skeleton";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../ui/card";
+} from "@/components/ui/card";
 
 import { motion } from "framer-motion";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileForm from "./profile-form";
 
 export default function ProfileWrapper({ user }: { user: User }) {
