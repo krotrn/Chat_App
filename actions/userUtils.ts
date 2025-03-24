@@ -9,7 +9,7 @@ import {
   SearchUserType,
   StatsProps,
 } from "@/types/formattedDataTypes";
-import { FriendRequest, User } from "@prisma/client";
+import { FriendRequest, FriendshipStatus, User } from "@prisma/client";
 import { z } from "zod";
 
 interface ResponseType {
@@ -107,7 +107,7 @@ export const getFriendRequests = async <T extends keyof FriendRequest>(
   selectFields: T[]
 ) => {
   const session = await auth();
-  if (!session || !session.user.id) return null;
+  if (!session || !session.user.id) throw new Error("Unauthorized");
 
   try {
     const select = selectFields.reduce((acc, field) => {
@@ -122,7 +122,7 @@ export const getFriendRequests = async <T extends keyof FriendRequest>(
 
     return friendRequests;
   } catch {
-    return null;
+    throw new Error("Error Getting Request.");
   }
 };
 
@@ -252,11 +252,32 @@ export const getPendingRequests = async (senderId: string) => {
     const pendingRequests = await db.friendRequest.findMany({
       where: {
         senderId,
+        status: "PENDING",
       },
       select: { id: true },
     });
 
     return pendingRequests;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const handleFriendRequest = async (
+  senderId: string,
+  receiverId: string,
+  action: FriendshipStatus,
+  status: FriendshipStatus
+) => {
+  try {
+    await db.friendRequest.update({
+      where: {
+        senderId_receiverId: { senderId, receiverId },
+      },
+      data: {
+        status: action == status ? "PENDING" : action,
+      },
+    });
   } catch (error) {
     throw error;
   }

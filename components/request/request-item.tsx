@@ -4,11 +4,12 @@ import { Button } from "@/components/ui/button";
 import { CheckIcon, XIcon, BanIcon } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { FormattedFriendRequestType } from "@/types/formattedDataTypes";
+import { FriendshipStatus } from "@prisma/client";
 
 interface RequestItemProps {
   request: FormattedFriendRequestType;
   isPending: boolean;
-  onAction: (requestId: string, action: "accept" | "reject" | "block") => void;
+  onAction: (requestId: string, action:FriendshipStatus, status:FriendshipStatus) => void;
 }
 
 export default function RequestItem({
@@ -53,7 +54,7 @@ export default function RequestItem({
           size="sm"
           className="border-green-500 text-green-500 hover:bg-green-50 hover:text-green-600 h-9 min-w-[80px]"
           disabled={isPending}
-          onClick={() => onAction(request.id, "accept")}
+          onClick={() => onAction(request.id, "ACCEPTED", request.status)}
         >
           <CheckIcon className="mr-1 h-4 w-4" />
           <span>Accept</span>
@@ -63,7 +64,7 @@ export default function RequestItem({
           size="sm"
           className="border-red-500 text-red-500 hover:bg-red-50 hover:text-red-600 h-9 min-w-[80px]"
           disabled={isPending}
-          onClick={() => onAction(request.id, "reject")}
+          onClick={() => onAction(request.id, "REJECTED", request.status)}
         >
           <XIcon className="mr-1 h-4 w-4" />
           <span>Reject</span>
@@ -72,7 +73,7 @@ export default function RequestItem({
           variant="outline"
           size="sm"
           disabled={isPending}
-          onClick={() => onAction(request.id, "block")}
+          onClick={() => onAction(request.id,"BLOCKED", request.status)}
           className="h-9 min-w-[80px]"
         >
           <BanIcon className="mr-1 h-4 w-4" />

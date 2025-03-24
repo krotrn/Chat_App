@@ -28,6 +28,7 @@ enum FriendshipStatus {
   PENDING
   ACCEPTED
   REJECTED
+  BLOCKED
 }
 
 enum ActivityType {
