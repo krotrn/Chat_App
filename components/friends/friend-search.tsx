@@ -1,9 +1,6 @@
 "use client";
 import useSearchQuery from "@/hooks/useSearchQuery";
-import { searchUsers, sendFriendRequest } from "@/lib/user-service";
-import { User } from "@/types/ChatType";
-import { useState, useTransition } from "react";
-import { toast } from "sonner";
+import { useEffect, useState, useTransition } from "react";
 import { motion } from "framer-motion";
 import {
   Card,
@@ -17,29 +14,48 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { SearchUserType } from "@/types/formattedDataTypes";
+import { searchUserByQuery, sendFriendRequest } from "@/actions/userUtils";
+import { toast } from "sonner";
 
-export default function FriendSearch({ userId }: { userId: string }) {
+interface FriendSearchProps {
+  userId: string;
+  pending: string[];
+}
+
+export default function FriendSearch({ userId, pending }: FriendSearchProps) {
   const [searchQuery, setSearchQuery] = useSearchQuery("nfr", "");
-  const [searchResults, setSearchResult] = useState<User[]>([]);
+  const [searchResults, setSearchResult] = useState<SearchUserType[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<string[]>(pending);
   const [isSearching, startTransition] = useTransition();
-  const [pendingRequests, setPendingRequests] = useState<string[]>([]);
+  useEffect(() => {
+    if (!searchQuery) {
+      setSearchResult([]);
+    }
+  }, [setSearchQuery, searchQuery]);
+
   const handleSearch = () => {
     if (!searchQuery.trim()) return;
     startTransition(async () => {
       try {
-        const results = await searchUsers(searchQuery);
-        setSearchResult(results.filter((user) => user.id !== userId));
+        const results = await searchUserByQuery(searchQuery, [
+          "id",
+          "email",
+          "username",
+          "name",
+          "avatarUrl",
+        ]);
+        setSearchResult(results || []);
       } catch (error) {
         console.log(error);
         toast.error("Faild to search user");
       }
     });
   };
-
   const handleSendRequest = async (id: string) => {
     try {
       await sendFriendRequest(userId, id);
-      setPendingRequests((prev) => [...prev, userId]);
+      setPendingRequests((prev) => [...prev, id]);
       toast.success("Friend request sent");
     } catch (error) {
       toast.error((error as Error).message || "Failed to send friend request");
@@ -89,13 +105,20 @@ export default function FriendSearch({ userId }: { userId: string }) {
                   >
                     <div className="flex items-center space-x-3">
                       <Avatar>
-                        <AvatarImage src={user.avatar} alt={user.name} />
+                        <AvatarImage
+                          src={user.avatarUrl || undefined}
+                          alt={user.name || user.username}
+                        />
                         <AvatarFallback>
-                          {user.name.charAt(0).toUpperCase()}
+                          {user.name
+                            ? user.name[0].toUpperCase()
+                            : user.username[0].toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium">{user.name}</p>
+                        <p className="font-medium">
+                          {user.name || user.username}
+                        </p>
                         {user.email && (
                           <p className="text-xs text-muted-foreground">
                             {user.email}

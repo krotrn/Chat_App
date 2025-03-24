@@ -2,10 +2,10 @@ import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { MessageSquareMore, UserMinus } from "lucide-react";
-import { FormattedFriend } from "@/types/formattedDataTypes";
+import { FormattedFriendType } from "@/types/formattedDataTypes";
 import { friendCardVariant } from "@/animations/friends/friend-card-variant";
 interface FriendCardProps {
-  friend: FormattedFriend;
+  friend: FormattedFriendType;
 }
 
 export default function FriendCard({ friend }: FriendCardProps) {

@@ -11,9 +11,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import RequestItem from "@/components/request/request-item";
-import { FormattedFriendRequest } from "@/types/formattedDataTypes";
+import { FormattedFriendRequestType } from "@/types/formattedDataTypes";
 interface RequestsListProps {
-  requests: FormattedFriendRequest[] | null;
+  requests: FormattedFriendRequestType[] | null;
   userId: string;
 }
 

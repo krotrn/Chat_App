@@ -1,16 +1,22 @@
-import { getUserFriends } from "@/actions/userUtils";
+import {
+  getPendingRequests,
+  getUserFriends,
+} from "@/actions/userUtils";
 import { auth } from "@/auth";
 import Authorized from "@/components/authorized";
 import FriendSearch from "@/components/friends/friend-search";
 import FriendsList from "@/components/friends/friends-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
-import { Suspense } from "react";
+import {
+  Suspense,
+} from "react";
 
 export default async function FriendsPage() {
   const session = await auth();
   if (!session || !session.user.id) throw new Error("unauthoriozed");
   const friends = await getUserFriends(session.user.id);
+  const pending = await getPendingRequests(session.user.id);
   return (
     <div className="w-full flex items-center justify-center py-10">
       <Suspense
@@ -37,7 +43,10 @@ export default async function FriendsPage() {
                 <FriendsList friends={friends} />
               </TabsContent>
               <TabsContent value="find">
-                <FriendSearch userId={session.user.id!} />
+                <FriendSearch
+                  userId={session.user.id!}
+                  pending={pending.map((p) => p.id)}
+                />
               </TabsContent>
             </Tabs>
           </Authorized>

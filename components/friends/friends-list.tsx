@@ -11,9 +11,9 @@ import { Input } from "@/components/ui/input";
 import useSearchQuery from "@/hooks/useSearchQuery";
 import { AnimatePresence } from "framer-motion";
 import FriendCard from "@/components/friends/friend-card";
-import { FormattedFriend } from "@/types/formattedDataTypes";
+import { FormattedFriendType } from "@/types/formattedDataTypes";
 interface FriendsListProps {
-  friends: FormattedFriend[] | null;
+  friends: FormattedFriendType[] | null;
 }
 
 export default function FriendsList({ friends }: FriendsListProps) {

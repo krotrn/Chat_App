@@ -3,12 +3,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { CheckIcon, XIcon, BanIcon } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { FormattedFriendRequest } from "@/types/formattedDataTypes";
-
-
+import { FormattedFriendRequestType } from "@/types/formattedDataTypes";
 
 interface RequestItemProps {
-  request: FormattedFriendRequest;
+  request: FormattedFriendRequestType;
   isPending: boolean;
   onAction: (requestId: string, action: "accept" | "reject" | "block") => void;
 }
@@ -33,13 +31,19 @@ export default function RequestItem({
             alt={request.senderName || request.senderUsername || "User"}
           />
           <AvatarFallback>
-            {(request.senderName || request.senderUsername || "U")[0].toUpperCase()}
+            {(request.senderName ||
+              request.senderUsername ||
+              "U")[0].toUpperCase()}
           </AvatarFallback>
         </Avatar>
         <div>
           <p className="font-medium">{request.senderUsername}</p>
           <p className="text-xs text-muted-foreground">
-            {request.requestCreatedAt ? formatDistanceToNow(request.requestCreatedAt, { addSuffix: true }) : ""}
+            {request.requestCreatedAt
+              ? formatDistanceToNow(request.requestCreatedAt, {
+                  addSuffix: true,
+                })
+              : ""}
           </p>
         </div>
       </div>

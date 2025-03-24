@@ -4,7 +4,11 @@ import { auth } from "@/auth";
 import { handleError, handleSuccess } from "@/lib/helper";
 import { db } from "@/prisma";
 import { profileSchema } from "@/schemas/profileSchema";
-import { FormattedFriend, StatsProps } from "@/types/formattedDataTypes";
+import {
+  FormattedFriendType,
+  SearchUserType,
+  StatsProps,
+} from "@/types/formattedDataTypes";
 import { FriendRequest, User } from "@prisma/client";
 import { z } from "zod";
 
@@ -24,7 +28,7 @@ export const getRecommendations = async () => {
       where: { userId: session.user.id },
     });
     return recommendations;
-  } catch  {
+  } catch {
     return null;
   }
 };
@@ -44,9 +48,7 @@ export const getActivities = async () => {
   }
 };
 
-export const getUserStats = async <T extends keyof StatsProps>(
-  fields: T[]
-) => {
+export const getUserStats = async <T extends keyof StatsProps>(fields: T[]) => {
   const session = await auth();
   if (!session) return null;
 
@@ -90,7 +92,7 @@ export const updateProfile = async (
     });
 
     return handleSuccess(null, "Profile updated successfully.");
-  } catch  {
+  } catch {
     return handleError("An error occurred while updating the profile.");
   }
 };
@@ -147,14 +149,14 @@ export const getUserDataById = async <T extends keyof User>(
       return null;
     }
     return user;
-  } catch  {
+  } catch {
     return null;
   }
 };
 
 export const getUserFriends = async (
   id: string
-): Promise<FormattedFriend[] | null> => {
+): Promise<FormattedFriendType[] | null> => {
   try {
     const user = await db.user.findUnique({
       where: { id },
@@ -181,12 +183,81 @@ export const getUserFriends = async (
           username: friend.username,
           bio: friend.bio === null ? undefined : friend.bio,
           isOnline: friend.isOnline,
-        } 
+        };
       })
     );
 
     return friends.filter((f) => f !== null);
-  } catch  {
+  } catch {
     return null;
+  }
+};
+
+export const searchUserByQuery = async <T extends keyof SearchUserType>(
+  contains: string,
+  reqData: T[]
+) => {
+  const session = await auth();
+  if (!session) throw new Error("Unauthorized");
+  try {
+    const select = reqData.reduce((acc, key) => {
+      acc[key] = true;
+      return acc;
+    }, {} as Partial<Record<keyof SearchUserType, boolean>>);
+    const users = await db.user.findMany({
+      where: {
+        OR: [
+          { name: { contains, mode: "insensitive" } },
+          { username: { contains, mode: "insensitive" } },
+          { email: { contains, mode: "insensitive" } },
+        ],
+      },
+      select,
+    });
+
+    return users.filter((u) => u.id !== session.user.id);
+  } catch {
+    return null;
+  }
+};
+
+export const sendFriendRequest = async (
+  senderId: string,
+  receiverId: string
+) => {
+  try {
+    const existingRequest = await db.friendRequest.findFirst({
+      where: {
+        senderId,
+        receiverId,
+      },
+    });
+    if (existingRequest) {
+      throw new Error("Friend request already sent");
+    }
+    const friendRequest = await db.friendRequest.create({
+      data: {
+        senderId,
+        receiverId,
+      },
+    });
+    return friendRequest;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getPendingRequests = async (senderId: string) => {
+  try {
+    const pendingRequests = await db.friendRequest.findMany({
+      where: {
+        senderId,
+      },
+      select: { id: true },
+    });
+
+    return pendingRequests;
+  } catch (error) {
+    throw error;
   }
 };

@@ -1,21 +1,33 @@
 import { FriendRequest, UserFriends } from "@prisma/client";
 
-export interface FormattedFriendRequest extends FriendRequest {
+export interface FormattedFriendRequestType extends FriendRequest {
   senderAvatar: string | null;
   senderName: string | null;
   senderUsername: string;
   requestCreatedAt: Date;
 }
 
-export interface FormattedFriend {
+export interface FormattedFriendType {
   id: string;
-  name?: string
+  name?: string;
   username: string;
   avatarUrl?: string;
   bio?: string;
   isOnline: boolean;
 }
 
-export interface StatsProps{
+export interface StatsProps {
   friends: UserFriends[];
+}
+
+export interface SearchUserType {
+  id: string;
+  name: string | null;
+  username: string;
+  email: string;
+  avatarUrl: string | null;
+}
+
+export interface PendingRequestsType{
+  id: string;
 }
