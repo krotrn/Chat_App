@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Search, UserPlus } from "lucide-react";
+import { Loader2, Search, UserPlus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { AnimatePresence } from "framer-motion";
@@ -88,7 +88,7 @@ export default function FriendSearch({ userId, pending }: FriendSearchProps) {
             disabled={isSearching}
             className="h-10"
           >
-            {isSearching ? "Searching..." : "Search"}
+            {isSearching ? <Loader2 /> : "Search"}
           </Button>
         </div>
         <div className="space-y-4">
