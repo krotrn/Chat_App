@@ -14,7 +14,7 @@ export default function MessageListSkeleton({ messageCount = 6 }: MessageListSke
         {Array.from({ length: messageCount }).map((_, i) => (
           <div key={i} className={`flex ${i % 2 === 0 ? "justify-start" : "justify-end"}`}>
             <div className={`flex max-w-[80%] gap-2 ${i % 2 === 0 ? "flex-row" : "flex-row-reverse"}`}>
-              {i % 2 === 0 && <Skeleton className="h-8 w-8 rounded-full flex-shrink-0" />}
+              {i % 2 === 0 && <Skeleton className="h-8 w-8 rounded-full shrink-0" />}
               <div>
                 {i % 2 === 0 && <Skeleton className="mb-1 h-3 w-20" />}
                 <Skeleton className={`h-${12 + (i % 3) * 4} w-${48 + (i % 4) * 16} rounded-lg`} />

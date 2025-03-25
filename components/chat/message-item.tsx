@@ -173,7 +173,7 @@ export default function MessageItem({
                               <Button
                                 size="icon"
                                 variant="secondary"
-                                className="h-6 w-6 rounded-full shadow-sm"
+                                className="h-6 w-6 rounded-full shadow-xs"
                                 onClick={() => onReply(message.id)}
                               >
                                 <Reply className="h-3 w-3" />
@@ -194,7 +194,7 @@ export default function MessageItem({
                             <Button
                               size="icon"
                               variant="secondary"
-                              className="h-6 w-6 rounded-full shadow-sm"
+                              className="h-6 w-6 rounded-full shadow-xs"
                             >
                               <Smile className="h-3 w-3" />
                             </Button>
@@ -252,7 +252,7 @@ export default function MessageItem({
                         ([emoji, reactions]) => (
                           <div
                             key={emoji}
-                            className="flex items-center bg-background rounded-full border px-2 py-0.5 text-xs shadow-sm"
+                            className="flex items-center bg-background rounded-full border px-2 py-0.5 text-xs shadow-xs"
                           >
                             <span className="mr-1">{emoji}</span>
                             <span className="text-muted-foreground">
