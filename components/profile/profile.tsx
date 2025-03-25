@@ -1,7 +1,5 @@
 "use client";
 import { User } from "next-auth";
-import { useEffect, useState } from "react";
-import ProfileUpdateSkeleton from "@/components/skeleton/profile-update-skeleton";
 import {
   Card,
   CardContent,
@@ -12,18 +10,9 @@ import {
 
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ProfileForm from "./profile-form";
+import ProfileForm from "@/components/profile/profile-form";
 
 export default function ProfileWrapper({ user }: { user: User }) {
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsInitialLoading(false);
-    }, 1500);
-
-    return () => clearTimeout(timer);
-  }, []);
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -34,23 +23,20 @@ export default function ProfileWrapper({ user }: { user: User }) {
         <TabsList className="grid w-full grid-cols-1">
           <TabsTrigger value="general">General</TabsTrigger>
         </TabsList>
-        {!isInitialLoading ? (
-          <TabsContent value="general">
-            <Card>
-              <CardHeader>
-                <CardTitle>General Information</CardTitle>
-                <CardDescription>
-                  Update your personal information.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <ProfileForm user={user} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-        ) : (
-          <ProfileUpdateSkeleton />
-        )}
+
+        <TabsContent value="general">
+          <Card>
+            <CardHeader>
+              <CardTitle>General Information</CardTitle>
+              <CardDescription>
+                Update your personal information.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <ProfileForm user={user} />
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </motion.div>
   );
