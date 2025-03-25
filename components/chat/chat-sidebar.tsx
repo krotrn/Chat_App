@@ -1,50 +1,65 @@
 "use client";
-import useSearchQuery from "@/hooks/useSearchQuery";
-import { AIModel, Chat } from "@/types/ChatType";
+
+import { useState, useCallback, ChangeEvent, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { ChangeEvent, useCallback, useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ChatItem from "@/components/chat/chat-item";
 import AIChatItem from "@/components/chat/ai-chat-item";
 import ChatListSkeleton from "@/components/skeleton/chat-list-skeleton";
+import { Chat, AIModel } from "@/types/ChatType";
 
 interface ChatSidebarProps {
   chats: Chat[];
   selectedChatId: string | null;
-  onChatSelect: (chatId: string) => void;
-  onSearch: (query: string) => void;
   aiModels?: AIModel[];
   onAIModelSelect?: (modelId: string) => void;
   selectedAIModelId?: string | null;
 }
 
 export default function ChatSidebar({
-  chats,
+  chats: initialChats,
   selectedChatId,
-  onChatSelect,
-  onSearch,
   aiModels,
   onAIModelSelect,
   selectedAIModelId,
 }: ChatSidebarProps) {
-  const [searchQuery, setSearchQuery] = useSearchQuery("q", "");
+  const [chats, setChats] = useState<Chat[]>(initialChats);
+  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
+
   const handleSearch = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
       setSearchQuery(value);
-      onSearch(value);
+      if (!value.trim()) {
+        setChats(initialChats);
+      } else {
+        const filtered = initialChats.filter(
+          (chat) =>
+            chat.name.toLowerCase().includes(value.toLowerCase()) ||
+            chat.lastMessage?.content
+              .toLowerCase()
+              .includes(value.toLowerCase())
+        );
+        setChats(filtered);
+      }
     },
-    [setSearchQuery, onSearch]
+    [initialChats]
+  );
+
+  const handleChatSelect = useCallback(
+    (chatId: string) => {
+      router.push(`/dashboard/chats?chat=${chatId}`);
+    },
+    [router]
   );
 
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsInitialLoading(false);
-    }, 1000);
-
+    const timer = setTimeout(() => setIsInitialLoading(false), 1000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -62,7 +77,7 @@ export default function ChatSidebar({
             type="search"
             placeholder="Search chats..."
             className="pl-8"
-            value={searchQuery || ""}
+            value={searchQuery}
             onChange={handleSearch}
           />
         </div>
@@ -78,7 +93,7 @@ export default function ChatSidebar({
                   key={chat.id}
                   chat={chat}
                   isSelected={chat.id === selectedChatId}
-                  onClick={() => onChatSelect(chat.id)}
+                  onClick={() => handleChatSelect(chat.id)}
                 />
               ))
             ) : (

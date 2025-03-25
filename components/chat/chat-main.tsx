@@ -7,38 +7,42 @@ import ChatHeader from "@/components/chat/chat-header";
 import MessageList from "@/components/chat/message-list";
 import MessageInput from "@/components/chat/message-input";
 import ChatDetails from "@/components/chat/chat-details";
+import { useRouter } from "next/navigation";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ChatMainProps {
   chat: Chat;
   currentUser: User;
-  showDetails: boolean;
-  onToggleDetails: () => void;
-  onDeleteChat: (chatId: string) => void;
-  onDeleteMessage: (messageId: string, forEveryone: boolean) => void;
-  onBack?: () => void;
 }
 
 export default function ChatMain({
-  chat,
+  chat: initialChat,
   currentUser,
-  showDetails,
-  onToggleDetails,
-  onDeleteChat,
-  onDeleteMessage,
-  onBack,
 }: ChatMainProps) {
-  const [messages, setMessages] = useState<Message[]>(chat.messages);
+  const [messages, setMessages] = useState<Message[]>(initialChat.messages);
+  const [chat, setChat] = useState<Chat>(initialChat);
+  const [showDetails, setShowDetails] = useState(false);
   const [replyToMessage, setReplyToMessage] = useState<Message | null>(null);
+  const router = useRouter();
+  const isMobile = useIsMobile();
+
   useEffect(() => {
-    setMessages(chat.messages);
-  }, [chat]);
+    setMessages(initialChat.messages);
+    setChat(initialChat);
+  }, [initialChat]);
+
+  const toggleDetails = useCallback(() => setShowDetails((prev) => !prev), []);
+
+  const handleBack = useCallback(() => {
+    router.push("/dashboard/chats");
+  }, [router]);
 
   const handleSendMessage = useCallback(
     (content: string, attachments?: File[], replyToId?: string) => {
       const newMessage: Message = {
         id: `msg-${Date.now()}`,
         content,
-        senderId: currentUser?.id as string,
+        senderId: currentUser.id as string,
         timestamp: new Date().toISOString(),
         status: "sent",
         replyToId,
@@ -65,20 +69,24 @@ export default function ChatMain({
     setReplyToMessage(null);
   }, []);
 
+  const handleDeleteChat = useCallback(() => {
+    router.push("/dashboard/chats");
+  }, [router]);
+
   const handleDeleteMessage = useCallback(
     (messageId: string, forEveryone: boolean) => {
       if (replyToMessage?.id === messageId) setReplyToMessage(null);
       setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
-      onDeleteMessage(messageId, forEveryone);
+      void forEveryone;
     },
-    [replyToMessage, onDeleteMessage]
+    [replyToMessage]
   );
 
   const handleReactToMessage = useCallback(
     (messageId: string, emoji: string) => {
       const newReaction: MessageReaction = {
         emoji,
-        userId: currentUser?.id as string,
+        userId: currentUser.id as string,
         timestamp: new Date().toISOString(),
       };
       setMessages((prev) =>
@@ -88,11 +96,11 @@ export default function ChatMain({
                 ...msg,
                 reactions: msg.reactions
                   ? msg.reactions.some(
-                      (r) => r.userId === currentUser?.id && r.emoji === emoji
+                      (r) => r.userId === currentUser.id && r.emoji === emoji
                     )
                     ? msg.reactions.filter(
                         (r) =>
-                          !(r.userId === currentUser?.id && r.emoji === emoji)
+                          !(r.userId === currentUser.id && r.emoji === emoji)
                       )
                     : [...msg.reactions, newReaction]
                   : [newReaction],
@@ -106,7 +114,7 @@ export default function ChatMain({
 
   return (
     <motion.div
-      className="flex flex-1 w-full flex-col h-full bg-background"
+      className="flex flex-1 flex-col h-full bg-background"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -115,9 +123,9 @@ export default function ChatMain({
     >
       <ChatHeader
         chat={chat}
-        onToggleDetails={onToggleDetails}
-        onDeleteChat={() => onDeleteChat(chat.id)}
-        onBack={onBack}
+        onToggleDetails={toggleDetails}
+        onDeleteChat={handleDeleteChat}
+        onBack={isMobile ? handleBack : undefined}
       />
       <div className="flex flex-1 h-screen overflow-hidden">
         <div className="flex flex-1 flex-col">
@@ -135,7 +143,7 @@ export default function ChatMain({
           />
         </div>
         <AnimatePresence>
-          {showDetails && <ChatDetails onClose={onToggleDetails} />}
+          {showDetails && <ChatDetails onClose={toggleDetails} />}
         </AnimatePresence>
       </div>
     </motion.div>
