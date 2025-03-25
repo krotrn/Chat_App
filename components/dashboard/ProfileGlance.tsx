@@ -38,13 +38,13 @@ const ProfileGlance = ({ user }: ProfileGlanceProps) => {
       <CardContent className="space-y-4">
         <p className="text-sm">{user.bio || "No bio available"}</p>
         <div className="flex gap-2">
-          <Link href="/dashboard/profile">
+          <Link href="/profile">
             <Button variant="outline" size="sm" className="flex-1">
               <Edit className="h-4 w-4 mr-2" />
               Edit Profile
             </Button>
           </Link>
-          <Link href="/dashboard/chats">
+          <Link href="/chats">
             <Button variant="outline" size="sm" className="flex-1">
               <MessageSquareMoreIcon className="h-4 w-4 mr-2" />
               Messages

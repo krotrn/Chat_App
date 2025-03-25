@@ -52,7 +52,7 @@ export default function ChatSidebar({
 
   const handleChatSelect = useCallback(
     (chatId: string) => {
-      router.push(`/dashboard/chats?chat=${chatId}`);
+      router.push(`/chats?chat=${chatId}`);
     },
     [router]
   );

@@ -2,17 +2,17 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
-import ChatItem from "./chat-item";
-import AIChatItem from "./ai-chat-item";
+import ChatItem from "@/components/chat/chat-item";
+import AIChatItem from "@/components/chat/ai-chat-item";
 import { Chat, AIModel } from "@/types/ChatType";
 
 interface ChatListProps {
-  chats: Chat[]; // Injected by ChatSidebar
+  chats: Chat[];
   selectedChatId: string | null;
   aiModels?: AIModel[];
   onAIModelSelect?: (modelId: string) => void;
   selectedAIModelId?: string | null;
-  count: number; // Injected by ChatSidebar
+  count: number;
 }
 
 export default function ChatList({
@@ -26,7 +26,7 @@ export default function ChatList({
 
   const handleChatSelect = useCallback(
     (chatId: string) => {
-      router.push(`/dashboard/chats?chat=${chatId}`);
+      router.push(`/chats?chat=${chatId}`);
     },
     [router]
   );

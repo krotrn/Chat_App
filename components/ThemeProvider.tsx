@@ -38,7 +38,6 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   const [fontSize, setFontSize] = useState<FontSize>("medium");
   const [mounted, setMounted] = useState(false);
 
-  // Load settings from localStorage on mount
   useEffect(() => {
     setMounted(true);
     const storedTheme = localStorage.getItem("theme") as Theme;
@@ -53,14 +52,12 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     }
   }, []);
 
-  // Update localStorage when settings change
   useEffect(() => {
     if (!mounted) return;
 
     localStorage.setItem("theme", theme);
     localStorage.setItem("fontSize", fontSize);
 
-    // Apply theme to document
     const root = window.document.documentElement;
     root.classList.remove("light", "dark");
 
@@ -74,7 +71,6 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       root.classList.add(theme);
     }
 
-    // Apply font size to document
     root.classList.remove("text-sm", "text-base", "text-lg");
     switch (fontSize) {
       case "small":

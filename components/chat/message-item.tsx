@@ -32,10 +32,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import AttachmentPreview from "./attachment-previews";
+import AttachmentPreview from "@/components/chat/attachment-previews";
 import { reactionEmoji } from "@/lib/emojis";
 import { format } from "date-fns";
-import DateDivider from "./date-divider";
+import DateDivider from "@/components/chat/date-divider";
 
 interface MessageItemProps {
   message: Message;
@@ -61,7 +61,7 @@ export default function MessageItem({
   date,
 }: MessageItemProps) {
   const [showReactions, setShowReactions] = useState(false);
-  const sender = mockUsers.find((user) => user.id === message.senderId); // Fixed to senderId
+  const sender = mockUsers.find((user) => user.id === message.senderId);
   const replySender = replyMessage
     ? mockUsers.find((user) => user.id === replyMessage.senderId)
     : null;

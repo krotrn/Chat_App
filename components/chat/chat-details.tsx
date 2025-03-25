@@ -11,7 +11,7 @@ export default function ChatDetails({
   onClose,
   isLoading = false,
 }: ChatDetailsProps) {
-  if (isLoading) return null; // Handle loading elsewhere if needed
+  if (isLoading) return null;
   return (
     <motion.div
       className="w-80 border-l bg-background"

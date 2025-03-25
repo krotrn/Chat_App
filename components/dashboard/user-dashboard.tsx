@@ -3,7 +3,7 @@ import { UserStats } from "@/components/dashboard/user-stats";
 import Recommendations from "@/components/dashboard/Recommendations";
 import ProfileGlance from "@/components/dashboard/ProfileGlance";
 
-import Authorized from "../authorized";
+import Authorized from "@/components/authorized";
 import { User } from "next-auth";
 import {
   Activity,

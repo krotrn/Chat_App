@@ -3,9 +3,9 @@ import { Home, MessageSquare, Settings, User, UserPlus, Users } from "lucide-rea
 
 export const menuItems: menuItemProps[] = [
   { name: "Home", href: "/dashboard", icon: Home },
-  { name: "Chats", href: "/dashboard/chats", icon: MessageSquare },
-  { name: "Friends", href: "/dashboard/friends", icon: Users },
-  { name: "Request", href: "/dashboard/request", icon: UserPlus },
-  { name: "Settings", href: "/dashboard/settings", icon: Settings },
-  { name: "Profile", href: "/dashboard/profile", icon: User },
+  { name: "Chats", href: "/chats", icon: MessageSquare },
+  { name: "Friends", href: "/friends", icon: Users },
+  { name: "Request", href: "/request", icon: UserPlus },
+  { name: "Settings", href: "/settings", icon: Settings },
+  { name: "Profile", href: "/profile", icon: User },
 ];

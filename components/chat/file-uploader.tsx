@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 interface FileUploaderProps {
   onFileSelect: (files: File[]) => void;
   maxFiles?: number;
-  maxSize?: number; // in bytes
+  maxSize?: number;
   accept?: string;
   multiple?: boolean;
 }

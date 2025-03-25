@@ -48,7 +48,7 @@ export default function CameraCapture({ onCapture }: CameraCaptureProps) {
     } else {
       stopCamera();
     }
-    return () => stopCamera(); // Cleanup on unmount
+    return () => stopCamera();
   }, [isOpen, startCamera, stopCamera]);
 
   const captureImage = useCallback(() => {
