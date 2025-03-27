@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, ChangeEvent, useEffect } from "react";
+import { useState, useCallback, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ChatItem from "@/components/chat/chat-item";
 import AIChatItem from "@/components/chat/ai-chat-item";
-import ChatListSkeleton from "@/components/skeleton/chat-list-skeleton";
 import { Chat, AIModel } from "@/types/ChatType";
 
 interface ChatSidebarProps {
@@ -57,12 +56,6 @@ export default function ChatSidebar({
     [router]
   );
 
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
-  useEffect(() => {
-    const timer = setTimeout(() => setIsInitialLoading(false), 1000);
-    return () => clearTimeout(timer);
-  }, []);
-
   return (
     <motion.div
       className="flex h-full w-full md:w-80 flex-col border-r"
@@ -85,9 +78,7 @@ export default function ChatSidebar({
       <ScrollArea className="flex-1">
         <div className="px-2">
           <div className="space-y-1">
-            {isInitialLoading ? (
-              <ChatListSkeleton />
-            ) : chats.length > 0 ? (
+            {chats.length > 0 ? (
               chats.map((chat) => (
                 <ChatItem
                   key={chat.id}

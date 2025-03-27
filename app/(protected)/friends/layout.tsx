@@ -1,15 +1,16 @@
-import { getPendingRequests, getUserFriends } from "@/actions/userUtils";
 import { auth } from "@/auth";
 import Authorized from "@/components/authorized";
-import FriendSearch from "@/components/friends/friend-search";
-import FriendsList from "@/components/friends/friends-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-export default async function FriendsPage() {
+export default async function FriendsLayout({
+  friendsList,
+  friendsSearch,
+}: {
+  friendsList: React.ReactNode;
+  friendsSearch: React.ReactNode;
+}) {
   const session = await auth();
-  if (!session || !session.user.id) throw new Error("unauthoriozed");
-  const friends = await getUserFriends(session.user.id);
-  const pending = await getPendingRequests(session.user.id);
+  if (!session) throw new Error("Unauthozied");
   return (
     <div className="w-full flex items-center justify-center py-10">
       <main className="w-full max-w-4xl space-y-4">
@@ -25,15 +26,8 @@ export default async function FriendsPage() {
               <TabsTrigger value="friends">My Friends</TabsTrigger>
               <TabsTrigger value="find">Find Friends</TabsTrigger>
             </TabsList>
-            <TabsContent value="friends">
-              <FriendsList friends={friends} />
-            </TabsContent>
-            <TabsContent value="find">
-              <FriendSearch
-                userId={session.user.id!}
-                pending={pending.map((p) => p.id)}
-              />
-            </TabsContent>
+            <TabsContent value="friends">{friendsList}</TabsContent>
+            <TabsContent value="find">{friendsSearch}</TabsContent>
           </Tabs>
         </Authorized>
       </main>

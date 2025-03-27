@@ -104,7 +104,7 @@ export default function MessageInput({
     : null;
 
   return (
-    <div className="border-t p-4">
+    <div className="bottom-0 border-t p-4">
       <AnimatePresence>
         {replyToMessage && (
           <motion.div

@@ -6,7 +6,6 @@ import { Fragment, useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import DateDivider from "@/components/chat/date-divider";
 import MessageItem from "@/components/chat/message-item";
-import MessageListSkeleton from "@/components/skeleton/message-list-skeleton";
 
 interface MessageListProps {
   messages: Message[];
@@ -23,7 +22,6 @@ export default function MessageList({
   onDeleteMessage,
   onReplyMessage,
   onReactToMessage,
-  isLoading = false,
 }: MessageListProps) {
   const [groupedMessages, setGroupedMessages] = useState<
     Record<string, Message[]>
@@ -32,7 +30,6 @@ export default function MessageList({
     const grouped = groupMessagesByDate(messages);
     setGroupedMessages(grouped);
   }, [messages]);
-  if (isLoading) return <MessageListSkeleton />;
 
   const findMessageById = (messageId: string): Message | undefined =>
     messages.find((msg) => msg.id === messageId);

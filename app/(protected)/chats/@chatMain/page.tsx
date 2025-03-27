@@ -15,7 +15,9 @@ export default async function ChatMainPage({
   if (!selectedChatId) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p className="text-muted-foreground">Select a chat to start messaging</p>
+        <p className="text-muted-foreground">
+          Select a chat to start messaging
+        </p>
       </div>
     );
   }

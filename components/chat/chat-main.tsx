@@ -34,7 +34,7 @@ export default function ChatMain({
   const toggleDetails = useCallback(() => setShowDetails((prev) => !prev), []);
 
   const handleBack = useCallback(() => {
-    router.push("/dashboard/chats");
+    router.push("/chats");
   }, [router]);
 
   const handleSendMessage = useCallback(
@@ -70,7 +70,7 @@ export default function ChatMain({
   }, []);
 
   const handleDeleteChat = useCallback(() => {
-    router.push("/dashboard/chats");
+    router.push("/chats");
   }, [router]);
 
   const handleDeleteMessage = useCallback(
