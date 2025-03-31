@@ -1,12 +1,17 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User } from "next-auth";
 import { Button } from "@/components/ui/button";
 import { Edit, MessageSquareMoreIcon } from "lucide-react";
 import Link from "next/link";
 
 interface ProfileGlanceProps {
-  user: User;
+  user: {
+    name: string | null;
+    username: string;
+    avatarUrl: string | null;
+    email: string;
+    bio: string | null;
+  };
 }
 
 const ProfileGlance = ({ user }: ProfileGlanceProps) => {

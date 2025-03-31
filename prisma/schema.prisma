@@ -67,13 +67,14 @@ model User {
   accountLocked           Boolean     @default(false)
 
   // Relationships for user management
-  accounts         Account[]
-  sentRequests     FriendRequest[]   @relation("SentRequests")
-  receivedRequests FriendRequest[]   @relation("ReceivedRequests")
-  friends          UserFriends[]     @relation("UserFriends")
-  friendOf         UserFriends[]     @relation("UserFriendsFriend")
-  recentActivities Activity[]
-  recommendations  Recommendations[]
+  accounts                Account[]
+  sentRequests            FriendRequest[]   @relation("SentRequests")
+  receivedRequests        FriendRequest[]   @relation("ReceivedRequests")
+  friends                 UserFriends[]     @relation("UserFriends")
+  friendOf                UserFriends[]     @relation("UserFriendsFriend")
+  recentActivities        Activity[]
+  recommendations         Recommendations[]
+  receivedRecommendations Recommendations[] @relation("ReceivedRecommendations")
 
   @@unique([username, email])
   @@unique([emailVerificationToken])
@@ -139,13 +140,31 @@ model UserFriends {
 }
 
 model Recommendations {
-  id          String             @id @default(cuid())
-  userId      String
-  type        RecommendationType
-  title       String
-  description String
-  avatarUrl   String
-  user        User               @relation(onDelete: Cascade, fields: [userId], references: [id])
+  id                 String             @id @default(cuid())
+  userId             String
+  type               RecommendationType
+  recommendedUserId  String             @default("")
+  recommendedGroupId String             @default("")
+  title              String?
+  description        String?
+  avatarUrl          String?
+
+  user             User   @relation(onDelete: Cascade, fields: [userId], references: [id])
+  recommendedUser  User?  @relation("ReceivedRecommendations", onDelete: Cascade, fields: [recommendedUserId], references: [id])
+  recommendedGroup Group? @relation(onDelete: Cascade, fields: [recommendedGroupId], references: [id])
+
+  @@index([userId])
+  @@index([recommendedUserId])
+  @@index([recommendedGroupId])
+}
+
+model Group {
+  id              String            @id @default(cuid())
+  backendId       String
+  name            String
+  avatarUrl       String?
+  description     String?
+  recommendations Recommendations[]
 }
 
 model Activity {

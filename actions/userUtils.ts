@@ -9,7 +9,12 @@ import {
   SearchUserType,
   StatsProps,
 } from "@/types/formattedDataTypes";
-import { FriendRequest, FriendshipStatus, User } from "@prisma/client";
+import {
+  FriendRequest,
+  FriendshipStatus,
+  RecommendationType,
+  User,
+} from "@prisma/client";
 import { z } from "zod";
 
 interface ResponseType {
@@ -19,16 +24,63 @@ interface ResponseType {
   message: string;
 }
 
-export const getRecommendations = async () => {
+export interface RecommendationWithRelations {
+  id: string;
+  type: RecommendationType;
+  recommendedUser: {
+    id: string;
+    username: string;
+    name: string | null;
+    avatarUrl: string | null;
+    bio: string | null;
+  } | null;
+  recommendedGroup: {
+    id: string;
+    backendId: string;
+    name: string;
+    avatarUrl: string | null;
+    description: string | null;
+  } | null;
+}
+
+export const getRecommendations = async (): Promise<
+  RecommendationWithRelations[]
+> => {
   const session = await auth();
   if (!session) throw new Error("Unauthenticated");
 
   try {
     const recommendations = await db.recommendations.findMany({
       where: { userId: session.user.id },
+      select: {
+        id: true,
+        type: true,
+        recommendedUser: {
+          select: {
+            id: true,
+            name: true,
+            avatarUrl: true,
+            username: true,
+            bio: true,
+          },
+        },
+        recommendedGroup: {
+          select: {
+            id: true,
+            backendId: true,
+            name: true,
+            avatarUrl: true,
+            description: true,
+          },
+        },
+      },
     });
     return recommendations;
   } catch (error) {
+    if (error instanceof Error) {
+      console.log(error.message);
+      throw new Error(error.message);
+    }
     throw error;
   }
 };
@@ -44,6 +96,10 @@ export const getActivities = async () => {
     });
     return activities;
   } catch (error) {
+    if (error instanceof Error) {
+      console.log(error.message);
+      throw new Error(error.message);
+    }
     throw error;
   }
 };
@@ -71,10 +127,27 @@ export const getUserStats = async <T extends keyof StatsProps>(fields: T[]) => {
     if (!user) throw new Error("User not found");
     return user;
   } catch (error) {
+    if (error instanceof Error) {
+      console.log(error.message);
+      throw new Error(error.message);
+    }
     throw error;
   }
 };
 
+/**
+ * Updates the user's profile with the provided data.
+ *
+ * This function first verifies the user session and then updates the
+ * profile's name, bio, and avatar URL in the database. If an avatar is provided,
+ * it is uploaded and its URL is stored. If the operation is successful, a success
+ * response is returned; otherwise, an error response is returned.
+ *
+ * @param data - The profile data to update, which should conform to the profileSchema.
+ *               This includes the user's name, bio, and optionally an avatar.
+ * @returns A Promise that resolves with a ResponseType indicating whether the update
+ *          was successful or detailing any errors encountered.
+ */
 export const updateProfile = async (
   data: z.infer<typeof profileSchema>
 ): Promise<ResponseType> => {
@@ -97,23 +170,43 @@ export const updateProfile = async (
   }
 };
 
+/**
+ * Uploads an avatar image file.
+ *
+ * This function uploads the supplied avatar file and returns a URL pointing to the uploaded image.
+ * Currently, the implementation is a placeholder that returns a fixed URL.
+ *
+ * @param avatar - The image file to be uploaded.
+ * @returns A promise that resolves to the URL string of the uploaded avatar.
+ */
 async function uploadAvatar(avatar: File): Promise<string> {
   // TODO
   void avatar;
   return "https://example.com/avatar.jpg";
 }
 
+/**
+ * Retrieves friend requests for the authenticated user, selecting only the specified fields.
+ *
+ * @template T - A key of the FriendRequest interface that represents a valid field to select.
+ * @param {T[]} selectFields - An array of keys from FriendRequest. Only these fields will be included in the result.
+ * @returns {Promise<FriendRequest[]>} A promise that resolves to an array of friend requests, each represented as an object with only the selected fields.
+ * @throws {Error} If the user is not authenticated or if an error occurs during the database query.
+ */
 export const getFriendRequests = async <T extends keyof FriendRequest>(
   selectFields: T[]
-) => {
+): Promise<FriendRequest[]> => {
   const session = await auth();
   if (!session || !session.user.id) throw new Error("Unauthorized");
 
   try {
-    const select = selectFields.reduce((acc, field) => {
-      acc[field] = true;
-      return acc;
-    }, {} as Partial<Record<keyof FriendRequest, boolean>>);
+    const select = selectFields.reduce(
+      (acc, field) => {
+        acc[field] = true;
+        return acc;
+      },
+      {} as Partial<Record<keyof FriendRequest, boolean>>
+    );
 
     const friendRequests = await db.friendRequest.findMany({
       where: { receiverId: session.user.id, status: "PENDING" },
@@ -126,19 +219,24 @@ export const getFriendRequests = async <T extends keyof FriendRequest>(
   }
 };
 
-export const getUserDataById = async <T extends keyof User>(
+/**
+ * Retrieves user data by its unique identifier with the specified field selection.
+ *
+ * @template T - A type representing the selection object where each key (from the User model) is a boolean
+ * indicating whether that field should be included in the retrieved user object.
+ * @param {string} id - The unique identifier of the user.
+ * @param {T} select - An object specifying which fields to include in the result.
+ * @returns A promise that resolves with the user data if found.
+ *
+ * @throws {Error} If the user with the specified id is not found or if any error occurs during the database operation.
+ */
+export const getUserDataById = async <
+  T extends Partial<Record<keyof User, boolean>>,
+>(
   id: string,
-  reqData: T[]
+  select: T
 ) => {
   try {
-    const select: Partial<Record<keyof User, boolean>> = reqData.reduce(
-      (acc, key) => {
-        acc[key as keyof User] = true;
-        return acc;
-      },
-      {} as Partial<Record<keyof User, boolean>>
-    );
-
     const user = await db.user.findUnique({
       where: { id },
       select,
@@ -146,11 +244,15 @@ export const getUserDataById = async <T extends keyof User>(
 
     if (!user) {
       console.warn(`User with ID ${id} not found.`);
-      return null;
+      throw new Error("User not found");
     }
     return user;
-  } catch {
-    return null;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log(error.message);
+      throw new Error(error.message);
+    }
+    throw error;
   }
 };
 
@@ -189,6 +291,10 @@ export const getUserFriends = async (
 
     return friends.filter((f) => f !== null);
   } catch (error) {
+    if (error instanceof Error) {
+      console.log(error.message);
+      throw new Error(error.message);
+    }
     throw error;
   }
 };
@@ -200,10 +306,13 @@ export const getUserByQuery = async <T extends keyof SearchUserType>(
   const session = await auth();
   if (!session) throw new Error("Unauthorized");
   try {
-    const select = reqData.reduce((acc, key) => {
-      acc[key] = true;
-      return acc;
-    }, {} as Partial<Record<keyof SearchUserType, boolean>>);
+    const select = reqData.reduce(
+      (acc, key) => {
+        acc[key] = true;
+        return acc;
+      },
+      {} as Partial<Record<keyof SearchUserType, boolean>>
+    );
     const users = await db.user.findMany({
       where: {
         OR: [
@@ -226,6 +335,10 @@ export const getUserByQuery = async <T extends keyof SearchUserType>(
         };
       });
   } catch (error) {
+    if (error instanceof Error) {
+      console.log(error.message);
+      throw new Error(error.message);
+    }
     throw error;
   }
 };
@@ -259,6 +372,10 @@ export const sendFriendRequest = async (
     });
     return friendRequest;
   } catch (error) {
+    if (error instanceof Error) {
+      console.log(error.message);
+      throw new Error(error.message);
+    }
     throw error;
   }
 };
@@ -275,6 +392,10 @@ export const getPendingRequests = async (senderId: string) => {
 
     return pendingRequests;
   } catch (error) {
+    if (error instanceof Error) {
+      console.log(error.message);
+      throw new Error(error.message);
+    }
     throw error;
   }
 };
@@ -295,6 +416,10 @@ export const handleFriendRequest = async (
       },
     });
   } catch (error) {
+    if (error instanceof Error) {
+      console.log(error.message);
+      throw new Error(error.message);
+    }
     throw error;
   }
 };

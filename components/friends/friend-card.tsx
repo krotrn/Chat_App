@@ -9,7 +9,6 @@ interface FriendCardProps {
 }
 
 export default function FriendCard({ friend }: FriendCardProps) {
-  //TODO
   return (
     <motion.div
       variants={friendCardVariant}
