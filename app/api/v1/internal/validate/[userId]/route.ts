@@ -8,7 +8,7 @@ export async function GET(
   const apiKey = req.headers.get("x-internal-api-key");
   if (apiKey !== process.env.INTERNAL_API_KEY) {
     return NextResponse.json(
-      { success: false, error: "Unauthorized" },
+      { success: false, error: "Unauthorized", valid:false },
       { status: 401 }
     );
   }

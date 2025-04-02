@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { mockChats } from "@/lib/mock-data";
 import ChatMain from "@/components/chat/chat-main";
+import { getChatById } from "@/services/chat-api";
 
 export default async function ChatMainPage({
   searchParams,
@@ -22,7 +22,7 @@ export default async function ChatMainPage({
     );
   }
 
-  const chat = mockChats.find((c) => c.id === selectedChatId);
+  const chat = await getChatById({chatId:selectedChatId});
   if (!chat) {
     return (
       <div className="flex h-full items-center justify-center">

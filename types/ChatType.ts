@@ -25,10 +25,7 @@ export interface Chat {
   name: string;
   avatar: string;
   isGroup: boolean;
-  lastMessage?: {
-    content: string;
-    timestamp: string;
-  };
+  lastMessage?: Message;
   messages: Message[];
   participants?: string[];
   adminIds?: string[];
