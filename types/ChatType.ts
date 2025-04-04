@@ -28,10 +28,7 @@ export interface Message {
     name: string;
   }>;
   replyToId?: string;
-  reactions?: Array<{
-    userId: string;
-    emoji: string;
-  }>;
+  reactions?: MessageReaction[];
   status: "sent" | "delivered" | "read";
 }
 

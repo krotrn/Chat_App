@@ -1,8 +1,9 @@
 "use client";
+
 import { groupMessagesByDate } from "@/lib/utils/groupMessageByDate";
 import { Message } from "@/types/ChatType";
 import { User } from "next-auth";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useMemo } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import DateDivider from "@/components/chat/date-divider";
 import MessageItem from "@/components/chat/message-item";
@@ -23,16 +24,15 @@ export default function MessageList({
   onReplyMessage,
   onReactToMessage,
 }: MessageListProps) {
-  const [groupedMessages, setGroupedMessages] = useState<
-    Record<string, Message[]>
-  >({});
-  useEffect(() => {
-    const grouped = groupMessagesByDate(messages);
-    setGroupedMessages(grouped);
+  const messageMap = useMemo(() => {
+    const map = new Map<string, Message>();
+    messages.forEach((msg) => map.set(msg.id, msg));
+    return map;
   }, [messages]);
 
-  const findMessageById = (messageId: string): Message | undefined =>
-    messages.find((msg) => msg.id === messageId);
+  const groupedMessages = useMemo(() => {
+    return groupMessagesByDate(messages);
+  }, [messages]);
 
   return (
     <ScrollArea className="flex-1 p-4">
@@ -41,11 +41,12 @@ export default function MessageList({
           <DateDivider date={date} />
           {dateMessages.map((message, index) => {
             const replyMessage = message.replyToId
-              ? findMessageById(message.replyToId)
+              ? messageMap.get(message.replyToId) || null
               : null;
-            const showAvatar =
-              index === 0 ||
-              dateMessages[index - 1]?.senderId !== message.senderId;
+
+            const previous = dateMessages[index - 1];
+            const showAvatar = !previous || previous.senderId !== message.senderId;
+
             return (
               <MessageItem
                 key={message.id}

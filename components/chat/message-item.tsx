@@ -1,7 +1,7 @@
 "use client";
 import useTouchActions from "@/hooks/useTouchActions";
 import { mockUsers } from "@/lib/mock-data";
-import { Message, MessageReaction } from "@/types/ChatType";
+import { Message } from "@/types/ChatType";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -19,7 +19,7 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { messageVariants } from "@/animations/chat/messageVariants";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Check, CheckCheck, Copy, Reply, Smile, Trash2 } from "lucide-react";
+import { Copy, Reply, Smile, Trash2 } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -34,8 +34,10 @@ import {
 } from "@/components/ui/popover";
 import AttachmentPreview from "@/components/chat/attachment-previews";
 import { reactionEmoji } from "@/lib/emojis";
-import { format } from "date-fns";
 import DateDivider from "@/components/chat/date-divider";
+import { ReplyPreview } from "@/components/chat/reply-preview";
+import { ReactionsDisplay } from "@/components/chat/reaction-display";
+import { MessageTimestampStatus } from "@/components/chat/message-timestamp-status";
 
 interface MessageItemProps {
   message: Message;
@@ -73,18 +75,12 @@ export default function MessageItem({
     toast.success("Message copied to clipboard");
   };
 
-  const { handleMouseDown, handleMouseUp, handleTouchEnd, handleTouchStart } =
+  const { handleMouseDown, handleMouseUp, handleTouchStart, handleTouchEnd } =
     useTouchActions(
       handleCopyToClipboard,
       longPressTimeoutRef,
       setIsLongPressed
     );
-
-  const groupedReactions: Record<string, MessageReaction[]> = {};
-  message.reactions?.forEach((reaction) => {
-    groupedReactions[reaction.emoji] = groupedReactions[reaction.emoji] || [];
-    groupedReactions[reaction.emoji].push(reaction);
-  });
 
   return (
     <>
@@ -138,23 +134,11 @@ export default function MessageItem({
                   )}
                 >
                   {replyMessage && (
-                    <div
-                      className={cn(
-                        "rounded-lg px-3 py-1.5 text-xs border-l-2",
-                        isOwn
-                          ? "bg-primary/10 border-primary/30"
-                          : "bg-muted/70 border-muted-foreground/30"
-                      )}
-                    >
-                      <p className="font-medium text-xs">
-                        {replySender?.id === sender?.id
-                          ? "Replying to themselves"
-                          : `Replying to ${replySender?.name}`}
-                      </p>
-                      <p className="truncate opacity-80">
-                        {replyMessage.content}
-                      </p>
-                    </div>
+                    <ReplyPreview
+                      replyMessage={replyMessage}
+                      replySender={replySender}
+                      isOwn={isOwn}
+                    />
                   )}
                   {message.content && (
                     <div
@@ -234,49 +218,24 @@ export default function MessageItem({
                           key={index}
                           file={attachment}
                           className={cn(
-                            "max-w-sm",
-                            isOwn ? "bg-primary/10" : "bg-muted/50"
+                            isOwn ? "bg-primary/10" : "bg-muted/50",
+                            "max-w-sm"
                           )}
                         />
                       ))}
                     </div>
                   )}
                   {message.reactions && message.reactions.length > 0 && (
-                    <div
-                      className={cn(
-                        "flex flex-wrap gap-1",
-                        isOwn ? "justify-end" : "justify-start"
-                      )}
-                    >
-                      {Object.entries(groupedReactions).map(
-                        ([emoji, reactions]) => (
-                          <div
-                            key={emoji}
-                            className="flex items-center bg-background rounded-full border px-2 py-0.5 text-xs shadow-xs"
-                          >
-                            <span className="mr-1">{emoji}</span>
-                            <span className="text-muted-foreground">
-                              {reactions.length}
-                            </span>
-                          </div>
-                        )
-                      )}
-                    </div>
+                    <ReactionsDisplay
+                      isOwn={isOwn}
+                      reactions={message.reactions}
+                    />
                   )}
-                  <div
-                    className={cn(
-                      "mt-1 flex items-center gap-1 text-xs text-muted-foreground",
-                      isOwn ? "justify-end" : "justify-start"
-                    )}
-                  >
-                    <span>{format(new Date(message.timestamp), "HH:mm")}</span>
-                    {isOwn &&
-                      (message.status === "read" ? (
-                        <CheckCheck className="h-3 w-3" />
-                      ) : (
-                        <Check className="h-3 w-3" />
-                      ))}
-                  </div>
+                  <MessageTimestampStatus
+                    isOwn={isOwn}
+                    status={message.status}
+                    timestamp={message.updatedAt}
+                  />
                 </div>
               </div>
             </div>
