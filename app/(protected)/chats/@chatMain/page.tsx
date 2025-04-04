@@ -11,8 +11,8 @@ export default async function ChatMainPage({
   const session = await auth();
   if (!session) redirect("/login");
 
-  const selectedChatId = (await searchParams).chat;
-  if (!selectedChatId) {
+  const chatId = (await searchParams).chat;
+  if (!chatId) {
     return (
       <div className="flex h-full items-center justify-center">
         <p className="text-muted-foreground">
@@ -22,7 +22,7 @@ export default async function ChatMainPage({
     );
   }
 
-  const chat = await getChatById({chatId:selectedChatId});
+  const chat = await getChatById({ chatId });
   if (!chat) {
     return (
       <div className="flex h-full items-center justify-center">

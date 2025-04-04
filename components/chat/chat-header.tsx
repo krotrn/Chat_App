@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 interface ChatHeaderProps {
   chat: Chat;
   onToggleDetails: () => void;
-  onDeleteChat: () => void;
+  onDeleteChat: (chatId: string, forEveryone: boolean) => void;
   isLoading?: boolean;
   onBack?: () => void;
 }

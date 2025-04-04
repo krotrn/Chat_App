@@ -1,7 +1,7 @@
 "use client";
-import { Chat, Message, MessageReaction } from "@/types/ChatType";
+import { Chat, Message } from "@/types/ChatType";
 import { User } from "next-auth";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useTransition } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import ChatHeader from "@/components/chat/chat-header";
 import MessageList from "@/components/chat/message-list";
@@ -9,6 +9,16 @@ import MessageInput from "@/components/chat/message-input";
 import ChatDetails from "@/components/chat/chat-details";
 import { useRouter } from "next/navigation";
 import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  sendMessage,
+  deleteMessage,
+  updateReaction,
+  deleteOneOnOneChat,
+  deleteChatForMe,
+} from "@/services/chat-api";
+import { initSocket, joinChat } from "@/lib/socket";
+import { toast } from "sonner";
+import { ChatEventEnum } from "@/lib/socket-event";
 
 interface ChatMainProps {
   chat: Chat;
@@ -24,12 +34,46 @@ export default function ChatMain({
   const [showDetails, setShowDetails] = useState(false);
   const [replyToMessage, setReplyToMessage] = useState<Message | null>(null);
   const router = useRouter();
+  const [isLoading, startTransition] = useTransition();
   const isMobile = useIsMobile();
 
   useEffect(() => {
     setMessages(initialChat.messages);
     setChat(initialChat);
-  }, [initialChat]);
+    if (currentUser.id) {
+      const socket = initSocket(currentUser.id);
+      joinChat(initialChat.id);
+
+      // Listen for new messages
+      socket.on(ChatEventEnum.MESSAGE_RECEIVED_EVENT, (message: Message) => {
+        if (message.chatId === initialChat.id) {
+          setMessages((prev) => [...prev, message]);
+        }
+      });
+
+      // Listen for message reactions
+      socket.on(ChatEventEnum.MESSAGE_REACTION_EVENT, (message: Message) => {
+        if (message.chatId === initialChat.id) {
+          setMessages((prev) =>
+            prev.map((msg) => (msg.id === message.id ? message : msg))
+          );
+        }
+      });
+
+      // Listen for deleted messages
+      socket.on(ChatEventEnum.MESSAGE_DELETE_EVENT, (message: Message) => {
+        if (message) {
+          setMessages((prev) => prev.filter((msg) => msg.id !== message.id));
+        }
+      });
+
+      return () => {
+        socket.off(ChatEventEnum.MESSAGE_RECEIVED_EVENT);
+        socket.off(ChatEventEnum.MESSAGE_REACTION_EVENT);
+        socket.off(ChatEventEnum.MESSAGE_DELETE_EVENT);
+      };
+    }
+  }, [initialChat, currentUser.id]);
 
   const toggleDetails = useCallback(() => setShowDetails((prev) => !prev), []);
 
@@ -38,23 +82,22 @@ export default function ChatMain({
   }, [router]);
 
   const handleSendMessage = useCallback(
-    (content: string, attachments?: File[], replyToId?: string) => {
-      const newMessage: Message = {
-        id: `msg-${Date.now()}`,
-        content,
-        senderId: currentUser.id as string,
-        timestamp: new Date().toISOString(),
-        status: "sent",
-        replyToId,
-        attachments: attachments?.map((file) => ({
-          url: URL.createObjectURL(file),
-          type: file.type,
-          name: file.name,
-        })),
-      };
-      setMessages((prev) => [...prev, newMessage]);
+    async (content: string, attachments?: File[], replyToId?: string) => {
+      startTransition(async () => {
+        try {
+          await sendMessage({
+            chatId: chat.id,
+            content,
+            attachments,
+            replyToId,
+          });
+        } catch (error) {
+          console.log(error);
+          toast.error("Failed to send message");
+        }
+      });
     },
-    [currentUser]
+    [chat.id]
   );
 
   const handleReplyToMessage = useCallback(
@@ -69,47 +112,64 @@ export default function ChatMain({
     setReplyToMessage(null);
   }, []);
 
-  const handleDeleteChat = useCallback(() => {
-    router.push("/chats");
-  }, [router]);
+  const handleDeleteChat = useCallback(
+    async (chatId: string, forEveryone: boolean) => {
+      startTransition(async () => {
+        try {
+          if (forEveryone) {
+            await deleteOneOnOneChat({ chatId });
+          } else {
+            await deleteChatForMe({ chatId });
+          }
+          router.push("/chats");
+        } catch (error) {
+          console.log(error);
+          toast.error("Failed to delete chat");
+        }
+      });
+    },
+    [router]
+  );
 
   const handleDeleteMessage = useCallback(
-    (messageId: string, forEveryone: boolean) => {
-      if (replyToMessage?.id === messageId) setReplyToMessage(null);
-      setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
+    async (messageId: string, forEveryone: boolean) => {
       void forEveryone;
+      startTransition(async () => {
+        try {
+          await deleteMessage({
+            chatId: chat.id,
+            messageId,
+          });
+          if (replyToMessage?.id === messageId) setReplyToMessage(null);
+          setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
+        } catch (error) {
+          console.log(error);
+          toast.error("Failed to delete message");
+        }
+      });
     },
-    [replyToMessage]
+    [chat.id, replyToMessage]
   );
 
   const handleReactToMessage = useCallback(
     (messageId: string, emoji: string) => {
-      const newReaction: MessageReaction = {
-        emoji,
-        userId: currentUser.id as string,
-        timestamp: new Date().toISOString(),
-      };
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === messageId
-            ? {
-                ...msg,
-                reactions: msg.reactions
-                  ? msg.reactions.some(
-                      (r) => r.userId === currentUser.id && r.emoji === emoji
-                    )
-                    ? msg.reactions.filter(
-                        (r) =>
-                          !(r.userId === currentUser.id && r.emoji === emoji)
-                      )
-                    : [...msg.reactions, newReaction]
-                  : [newReaction],
-              }
-            : msg
-        )
-      );
+      startTransition(async () => {
+        try {
+          const updatedMessage = await updateReaction({
+            chatId: chat.id,
+            messageId,
+            emoji,
+          });
+          setMessages((prev) =>
+            prev.map((msg) => (msg.id === messageId ? updatedMessage : msg))
+          );
+        } catch (error) {
+          console.log(error);
+          toast.error("Failed to update reaction");
+        }
+      });
     },
-    [currentUser]
+    [chat.id]
   );
 
   return (
@@ -135,6 +195,7 @@ export default function ChatMain({
             onDeleteMessage={handleDeleteMessage}
             onReplyMessage={handleReplyToMessage}
             onReactToMessage={handleReactToMessage}
+            isLoading={isLoading}
           />
           <MessageInput
             onSendMessage={handleSendMessage}

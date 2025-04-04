@@ -9,6 +9,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import ChatItem from "@/components/chat/chat-item";
 import AIChatItem from "@/components/chat/ai-chat-item";
 import { Chat, AIModel } from "@/types/ChatType";
+import { deleteOneOnOneChat, deleteChatForMe } from "@/services/chat-api";
+import { toast } from "sonner";
 
 interface ChatSidebarProps {
   chats: Chat[];
@@ -31,17 +33,16 @@ export default function ChatSidebar({
 
   const handleSearch = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
+      const value = e.target.value.toLowerCase();
       setSearchQuery(value);
       if (!value.trim()) {
         setChats(initialChats);
       } else {
         const filtered = initialChats.filter(
           (chat) =>
-            chat.name.toLowerCase().includes(value.toLowerCase()) ||
+            chat.name.toLowerCase().includes(value) ||
             chat.lastMessage?.content
-              .toLowerCase()
-              .includes(value.toLowerCase())
+              .includes(value)
         );
         setChats(filtered);
       }
@@ -54,6 +55,26 @@ export default function ChatSidebar({
       router.push(`/chats?chat=${chatId}`);
     },
     [router]
+  );
+
+  const handleDeleteChat = useCallback(
+    async (chatId: string, forEveryone: boolean) => {
+      try {
+        if (forEveryone) {
+          await deleteOneOnOneChat({ chatId });
+        } else {
+          await deleteChatForMe({ chatId });
+        }
+        setChats((prev) => prev.filter((chat) => chat.id !== chatId));
+        if (selectedChatId === chatId) {
+          router.push("/chats");
+        }
+      } catch (error) {
+        console.log(error);
+        toast.error("Failed to delete chat");
+      }
+    },
+    [selectedChatId, router]
   );
 
   return (
@@ -85,6 +106,7 @@ export default function ChatSidebar({
                   chat={chat}
                   isSelected={chat.id === selectedChatId}
                   onClick={() => handleChatSelect(chat.id)}
+                  onDelete={(forEveryone) => handleDeleteChat(chat.id, forEveryone)}
                 />
               ))
             ) : (

@@ -6,20 +6,35 @@ export interface MessageReaction {
   timestamp: string;
 }
 
+export interface ParticipantsType {
+  userId: string;
+  name: string;
+  avatarUrl: string;
+  role: "member" | "admin";
+  joinedAt: Date;
+}
+
+
 export interface Message {
   id: string;
   content: string;
   senderId: string;
-  timestamp: string;
-  status: "sent" | "delivered" | "read";
-  replyToId?: string;
-  reactions?: MessageReaction[];
+  chatId: string;
+  createdAt: string;
+  updatedAt: string;
   attachments?: Array<{
     url: string;
     type: string;
     name: string;
   }>;
+  replyToId?: string;
+  reactions?: Array<{
+    userId: string;
+    emoji: string;
+  }>;
+  status: "sent" | "delivered" | "read";
 }
+
 export interface Chat {
   id: string;
   name: string;
@@ -31,6 +46,7 @@ export interface Chat {
   adminIds?: string[];
   unreadCount: number;
 }
+
 export interface AIModel {
   id: string;
   name: string;
@@ -59,6 +75,7 @@ export interface FriendRequest {
   status: "pending" | "accepted" | "rejected" | "blocked";
   createdAt: string;
 }
+
 export interface User {
   id: string;
   name: string;
@@ -96,6 +113,7 @@ export interface Recommendation {
   description: string;
   avatarUrl: string;
 }
+
 export interface statsProps {
   username: string;
   email: string;

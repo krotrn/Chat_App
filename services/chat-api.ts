@@ -1,6 +1,6 @@
 import axios from "axios";
 import { config } from "@/config";
-import { Chat, Message } from "@/types/ChatType";
+import { Chat, Message, ParticipantsType } from "@/types/ChatType";
 
 interface ApiResponse<T> {
   statusCode: number;
@@ -48,7 +48,7 @@ export const createOrGetAOneOnOneChat = async ({
   participants,
   name,
 }: {
-  participants: string[];
+  participants: ParticipantsType[];
   name: string;
 }): Promise<Chat> => {
   try {
@@ -135,7 +135,7 @@ export const createAGroupChat = async ({
   name,
 }: {
   name: string;
-  participants: string[];
+  participants: ParticipantsType[];
 }): Promise<Chat> => {
   try {
     const response = await api.post<ApiResponse<Chat>>(
@@ -354,15 +354,33 @@ export const getAllMessages = async ({ chatId }: { chatId: string }) => {
 export const sendMessage = async ({
   chatId,
   content,
+  attachments,
+  replyToId,
 }: {
   chatId: string;
   content: string;
+  attachments?: File[];
+  replyToId?: string;
 }) => {
   try {
+    const formData = new FormData();
+    formData.append("content", content);
+    if (replyToId) formData.append("replyToId", replyToId);
+    if (attachments) {
+      attachments.forEach((file) => {
+        formData.append("attachments", file);
+      });
+    }
+
     const response = await api.post<ApiResponse<Message>>(
       `/messages/${chatId}`,
-      { content },
-      { withCredentials: true }
+      formData,
+      {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
     );
     return response.data.data;
   } catch (error) {
@@ -373,6 +391,7 @@ export const sendMessage = async ({
     throw error;
   }
 };
+
 export const deleteMessage = async ({
   chatId,
   messageId,
@@ -419,20 +438,36 @@ export const updateReaction = async ({
     throw error;
   }
 };
+
 export const replyMessage = async ({
   chatId,
   messageId,
   content,
+  attachments,
 }: {
   chatId: string;
   messageId: string;
   content: string;
+  attachments?: File[];
 }) => {
   try {
+    const formData = new FormData();
+    formData.append("content", content);
+    if (attachments) {
+      attachments.forEach((file) => {
+        formData.append("attachments", file);
+      });
+    }
+
     const response = await api.post<ApiResponse<Message>>(
       `/messages/${chatId}/${messageId}/reply`,
-      { content },
-      { withCredentials: true }
+      formData,
+      {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
     );
     return response.data.data;
   } catch (error) {

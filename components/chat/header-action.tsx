@@ -12,13 +12,12 @@ import {
 interface HeaderActionsProps {
   isAdmin: boolean;
   onToggleDetails: () => void;
-  onDeleteChat: () => void;
+  onDeleteChat: (chatId: string, forEveryone: boolean) => void;
 }
 
 export default function HeaderActions({
   isAdmin,
   onToggleDetails,
-  onDeleteChat,
 }: HeaderActionsProps) {
   return (
     <div className="flex items-center gap-2">
@@ -44,7 +43,6 @@ export default function HeaderActions({
           {isAdmin && (
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"
-              onClick={onDeleteChat}
             >
               <Trash2 className="mr-2 h-4 w-4" />
               Delete chat

@@ -1,18 +1,33 @@
 "use client";
 import { motion } from "framer-motion";
-import { format } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { Chat } from "@/types/ChatType";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { MoreVertical, Trash2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { formatDistanceToNow } from "date-fns";
 
 interface ChatItemProps {
   chat: Chat;
   isSelected: boolean;
   onClick: () => void;
+  onDelete: (forEveryone: boolean) => void;
 }
 
-export default function ChatItem({ chat, isSelected, onClick }: ChatItemProps) {
+export default function ChatItem({
+  chat,
+  isSelected,
+  onClick,
+  onDelete,
+}: ChatItemProps) {
   const { name, avatar, lastMessage, unreadCount } = chat;
+  void unreadCount;
 
   return (
     <motion.div
@@ -33,24 +48,52 @@ export default function ChatItem({ chat, isSelected, onClick }: ChatItemProps) {
         <div className="flex items-center justify-between">
           <p className="truncate font-medium">{name}</p>
           {lastMessage && (
-            <p className="text-xs text-muted-foreground">
-              {format(new Date(lastMessage.timestamp), "HH:mm")}
+            <p className="shrink-0 text-xs text-muted-foreground">
+              {formatDistanceToNow(new Date(lastMessage.createdAt), {
+                addSuffix: true,
+              })}
             </p>
           )}
         </div>
-        <div className="flex items-center justify-between">
-          {lastMessage && (
-            <p className="truncate text-sm text-muted-foreground">
-              {lastMessage.content}
-            </p>
-          )}
-          {unreadCount > 0 && (
-            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-              {unreadCount}
-            </div>
-          )}
-        </div>
+        {lastMessage && (
+          <p className="truncate text-xs text-muted-foreground">
+            {lastMessage.content}
+          </p>
+        )}
       </div>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <MoreVertical className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem
+            className="text-destructive focus:text-destructive"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(false);
+            }}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete for me
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="text-destructive focus:text-destructive"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(true);
+            }}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete for everyone
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </motion.div>
   );
 }

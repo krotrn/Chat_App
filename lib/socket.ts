@@ -28,7 +28,7 @@ export const initSocket = (token: string) => {
 };
 
 export const joinChat = (chatId: string) => {
-  socket?.emit(ChatEventEnum.JOIN_CHAT_EVENT, { chatId });
+  socket?.emit(ChatEventEnum.ONLINE_EVENT, { chatId });
 };
 
 export const onMessageReceived = (callback: (message: Message) => void) => {
