@@ -1,8 +1,8 @@
 # ChatApp
 
-**ChatApp** is a modern, feature-rich chatting application built with Next.js (App Router), designed to connect people through seamless communication. Whether you're chatting one-on-one with friends or collaborating in group conversations, ChatApp offers a scalable, intuitive, and responsive experience. It leverages cutting-edge technologies like Auth.js v5 for secure authentication, PostgreSQL (via Prisma) for robust user management, and MongoDB (via Mongoose) for efficient chat storage. The user interface, crafted with [shadcn/ui](https://ui.shadcn.com/) components, ensures a sleek, accessible, and visually appealing design.
+**ChatApp** is a modern, feature-rich real-time communication platform built with Next.js (App Router), designed to connect people through seamless messaging and video calls. Whether you're chatting one-on-one with friends or collaborating in group conversations, ChatApp offers a scalable, intuitive, and responsive experience. It leverages cutting-edge technologies like Auth.js v5 for secure authentication, PostgreSQL (via Prisma) for robust user management, and MongoDB (via Mongoose) for efficient chat storage. The user interface, crafted with [shadcn/ui](https://ui.shadcn.com/) components, ensures a sleek, accessible, and visually appealing design.
 
-This project is perfect for developers looking to explore a full-stack application or for anyone seeking a customizable chat platform to adapt to their needs.
+This project is perfect for developers looking to explore a full-stack application with real-time communication features or for anyone seeking a customizable chat platform to adapt to their needs.
 
 ---
 
@@ -25,40 +25,52 @@ This project is perfect for developers looking to explore a full-stack applicati
 
 ## Features
 
-ChatApp is packed with functionality to enhance user experience and provide flexibility for future growth. Here’s what it offers:
+ChatApp is packed with functionality to enhance user experience and provide flexibility for future growth. Here's what it offers:
 
 - **Authentication & Authorization**
+  - **Credential Authentication**: Securely log in with an email and password combination
+  - **Social Authentication**: Sign in effortlessly using Google or GitHub accounts
+  - **Email Verification**: Powered by [Resend](https://resend.com/), ensuring only verified users gain access
 
-  - **Credential Authentication**: Securely log in with an email and password combination.
-  - **Social Authentication**: Sign in effortlessly using Google or GitHub accounts.
-  - **Email Verification**: Powered by [Resend](https://resend.com/), ensuring only verified users gain access.
-
-- **Chat Functionality**
-
-  - **Group Chats**: Create and participate in multi-user conversations for teams or communities.
-  - **One-on-One Chats**: Enjoy private messaging with friends in a clean, distraction-free interface.
-  - **Friend Requests**: Build your network by sending, accepting, or declining friend requests.
+- **Real-Time Chat Functionality**
+  - **Group Chats**: Create and participate in multi-user conversations
+  - **One-on-One Chats**: Enjoy private messaging with friends
+  - **Friend Requests**: Build your network by sending, accepting, or declining friend requests
+  - **Message Features**:
+    - Text messages with emoji support
+    - File attachments (images, documents, etc.)
+    - Camera capture integration
+    - Message reactions
+    - Reply to messages
+    - Read receipts
+    - Typing indicators
 
 - **User Interface**
+  - **Modern and Responsive**: Built with [shadcn/ui](https://ui.shadcn.com/) components
+  - **Dark/Light Mode**: Seamless theme switching
+  - **Animations**: Smooth transitions using Framer Motion
+  - **Mobile-First**: Optimized for all device sizes
 
-  - **Modern and Responsive**: Built with [shadcn/ui](https://ui.shadcn.com/) components, delivering a polished and adaptive design across devices.
-  - **Real-Time Updates**: Stay connected with instant message delivery and notifications (planned for future releases).
+- **User Profiles & Privacy**
+  - **Personalization**: Edit your name, avatar, and status
+  - **Online Status**: See when your friends are available
+  - **Privacy Controls**:
+    - Online status visibility
+    - Read receipts
+    - Typing indicators
+    - Data collection preferences
 
-- **User Profiles**
+- **File Management**
+  - **Drag & Drop**: Easy file uploads
+  - **Multiple File Support**: Upload up to 5 files simultaneously
+  - **File Type Validation**: Automatic file type checking
+  - **Size Limits**: Configurable file size restrictions
+  - **Progress Tracking**: Visual upload progress indicators
 
-  - **Personalization**: Edit your name, avatar, and status to reflect your identity.
-  - **Online Status**: See when your friends are available to chat.
-
-- **Scalable & Modular Design**
-
-  - **User Management**: PostgreSQL and Prisma ensure efficient handling of user data and relationships.
-  - **Chat Storage**: MongoDB with Mongoose provides a flexible, scalable solution for storing messages and group data.
-  - **API-Driven**: A clear separation of concerns makes it easy to extend or integrate with other systems.
-
-- **Future Enhancements**
-  - Real-time messaging powered by WebSockets for instantaneous communication.
-  - End-to-end encryption to prioritize user privacy and security.
-  - Mobile app support for iOS and Android platforms.
+- **Real-Time Features**
+  - **WebSocket Integration**: Instant message delivery
+  - **Socket Events**: Efficient real-time communication
+  - **Connection Management**: Automatic reconnection handling
 
 ---
 
@@ -67,37 +79,59 @@ ChatApp is packed with functionality to enhance user experience and provide flex
 ChatApp is built with a thoughtfully selected set of technologies to ensure performance, maintainability, and developer-friendliness:
 
 - **Frontend**:
+  - **[Next.js 15](https://nextjs.org/)**: App Router for server-side rendering and routing
+  - **[React 19](https://reactjs.org/)**: UI components and state management
+  - **[TypeScript](https://www.typescriptlang.org/)**: Type-safe code
+  - **[Tailwind CSS](https://tailwindcss.com/)**: Utility-first CSS framework
+  - **[shadcn/ui](https://ui.shadcn.com/)**: Accessible UI components
+  - **[Framer Motion](https://www.framer.com/motion/)**: Animations
+  - **[Socket.io Client](https://socket.io/)**: Real-time communication
 
-  - **[Next.js (App Router)](https://nextjs.org/docs/app)**: Powers server-side rendering, routing, and API endpoints for a fast, SEO-friendly experience.
-  - **[React](https://reactjs.org/)**: Drives dynamic, component-based UI development.
-  - **[shadcn/ui](https://ui.shadcn.com/)**: Provides customizable, accessible UI components for a consistent look and feel.
+- **Backend**:
+  - **[Next.js API Routes](https://nextjs.org/docs/api-routes/introduction)**: API endpoints
+  - **[Prisma](https://www.prisma.io/)**: PostgreSQL ORM
+  - **[MongoDB](https://www.mongodb.com/)**: Chat data storage
+  - **[Socket.io](https://socket.io/)**: WebSocket server
+  - **[Auth.js v5](https://authjs.dev/)**: Authentication
+  - **[Resend](https://resend.com/)**: Email service
 
-- **Authentication**:
-
-  - **[Auth.js v5](https://authjs.dev/)**: A versatile library supporting credential-based logins and social providers like Google and GitHub.
-
-- **Databases**:
-
-  - **PostgreSQL (via [Prisma ORM](https://www.prisma.io/))**: Manages user authentication, profiles, and relationships with a robust relational structure.
-
-- **Languages**:
-  - **[TypeScript](https://www.typescriptlang.org/)**: Adds type safety and enhances code quality, making development smoother and more reliable.
+- **Development Tools**:
+  - **[Turbopack](https://turbo.build/pack)**: Fast development server
+  - **[ESLint](https://eslint.org/)**: Code linting
+  - **[Prettier](https://prettier.io/)**: Code formatting
 
 ---
 
 ## Project Structure
 
-ChatApp’s codebase is organized for clarity and scalability. Here’s an overview:
+ChatApp's codebase is organized for clarity and scalability. Here's an overview:
 
 ```
-├── app/                # Next.js app directory (pages, API routes, layouts)
-├── components/         # Reusable React components (e.g., chat window, auth forms)
-├── lib/                # Utility functions (e.g., database connections, auth helpers)
-├── prisma/             # Prisma schema, migrations, and database configuration
-├── public/             # Static assets (images, icons, etc.)
-├── styles/             # Global styles and CSS modules
-├── types/              # TypeScript type definitions for shared interfaces
-└── utils/              # General-purpose utilities (e.g., formatting, validation)
+├── app/                    # Next.js app directory
+│   ├── api/               # API routes
+│   ├── auth/              # Authentication pages
+│   ├── (protected)/      # Protected routes
+│   └── globals.css       # Global styles
+├── components/            # React components
+│   ├── auth/             # Authentication components
+│   ├── chat/             # Chat-related components
+│   ├── dashboard/        # Dashboard components
+│   ├── friends/          # Friend management components
+│   ├── landing/          # Landing page components
+│   ├── navigation/       # Navigation components
+│   ├── profile/          # User profile components
+│   ├── settings/         # Settings components
+│   ├── skeleton/         # Loading skeleton components
+│   └── ui/               # Reusable UI components
+├── lib/                  # Utility functions and configurations
+│   ├── api/             # API utilities
+│   ├── settings/        # Settings configurations
+│   ├── socket.ts        # Socket.io client setup
+│   └── utils/           # Helper functions
+├── services/            # API service functions
+├── hooks/               # Custom React hooks
+├── types/               # TypeScript type definitions
+└── public/             # Static assets
 ```
 
 This structure separates concerns, making it easier to navigate and maintain the project.
@@ -110,71 +144,75 @@ Follow these steps to set up ChatApp on your local machine.
 
 ### Prerequisites
 
-Ensure you have the following installed:
-
-- **[Node.js](https://nodejs.org/)** (v14 or later)
-- **[PostgreSQL](https://www.postgresql.org/)** – A running instance (local or remote).
+Before you begin, ensure you have the following installed:
+- Node.js 18.x or later
+- PostgreSQL 14.x or later
+- MongoDB 6.x or later
+- npm or yarn package manager
 
 ### Installation
 
 1. **Clone the Repository**
-
    ```bash
-   git clone https://github.com/krotrn/Chat_App.git
-   cd Chat_App
+   git clone https://github.com/yourusername/chat-app.git
+   cd chat-app
    ```
 
 2. **Install Dependencies**
-
-   Using npm:
-
    ```bash
-   npm install --force
+   npm install
+   # or
+   yarn install
    ```
 
-3. **Configure Environment Variables**
-
-   Create a `.env` file in the root directory and populate it with the following:
-
+3. **Environment Setup**
+   Create a `.env` file in the root directory with the following variables:
    ```env
-   DATABASE_URL=your_postgresql_connection_string
-   AUTH_SECRET=your_random_auth_secret
-   GOOGLE_CLIENT_ID=your_google_client_id
-   GOOGLE_CLIENT_SECRET=your_google_client_secret
-   GITHUB_CLIENT_ID=your_github_client_id
-   GITHUB_CLIENT_SECRET=your_github_client_secret
-   RESEND_API_KEY=your_resend_api_key
-   RESEND_FROM_EMAI =****************
-   NEXT_PUBLIC_APP_NAME=app_name
-   ENCRYPTION_KEY = "your_encryption_key_here"
-   EMAIL_TOKEN_EXPIRATION_TIME = "in_HOURS"
-   CHAT_API_URL="your_chat_api_url_here"
-   INTERNAL_API_KEY="your_internal_api_key_here"
-   ACCESS_TOKEN_SECRET="your_access_token_secret"
+   # Database
+   DATABASE_URL="postgresql://user:password@localhost:5432/chat_app"
+   MONGODB_URI="mongodb://localhost:27017/chat_app"
+
+   # Authentication
+   NEXTAUTH_URL="http://localhost:3000"
+   NEXTAUTH_SECRET="your-secret-key"
+   GOOGLE_CLIENT_ID="your-google-client-id"
+   GOOGLE_CLIENT_SECRET="your-google-client-secret"
+   GITHUB_CLIENT_ID="your-github-client-id"
+   GITHUB_CLIENT_SECRET="your-github-client-secret"
+
+   # Email Service
+   RESEND_API_KEY="your-resend-api-key"
+
+   # Chat API
+   CHAT_API_URL="http://localhost:3001"
    ```
 
-   - Replace placeholders with your actual credentials (e.g., generate `AUTH_SECRET` with a random string).
-   - Obtain social auth keys from Google and GitHub developer consoles.
-
-4. **Set Up Databases**
-
-   - **PostgreSQL**: Initialize the schema with Prisma migrations:
-
-     ```bash
-     npx prisma migrate dev
-     ```
+4. **Database Setup**
+   ```bash
+   npx prisma generate
+   npx prisma db push
+   ```
 
 ---
 
 ## Running the Application
 
-Launch the development server:
+1. **Development Mode**
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
+   The application will be available at `http://localhost:3000`
 
-```bash
-npm run dev
-```
-
-Open your browser to `http://localhost:3000` to explore ChatApp locally.
+2. **Production Build**
+   ```bash
+   npm run build
+   npm start
+   # or
+   yarn build
+   yarn start
+   ```
 
 ---
 
@@ -214,35 +252,42 @@ Consider using a platform like Vercel for Next.js hosting or a custom server wit
 
 ## API Documentation
 
-Developers can explore and integrate with ChatApp via our upcoming [API Documentation](https://github.com/krotrn/ChatApp-backend/blob/main/API_DOC.md). It will detail endpoints, payloads, and authentication flows for extending the platform.
+The API documentation is available at `/api-docs` when running in development mode. Key endpoints include:
+
+- `POST /api/auth/*` - Authentication endpoints
+- `GET /api/chats` - Fetch user's chats
+- `POST /api/chats` - Create new chat
+- `GET /api/messages/:chatId` - Fetch chat messages
+- `POST /api/messages` - Send new message
+- `GET /api/friends` - Manage friend connections
 
 ---
 
 ## Contributing
 
-We’d love your help to make ChatApp even better! To contribute:
+We'd love your help to make ChatApp even better! To contribute:
 
 1. **Fork the Repository**
-2. **Create a Feature Branch**
+   ```bash
+   git clone https://github.com/yourusername/chat-app.git
+   ```
 
+2. **Create a Feature Branch**
    ```bash
    git checkout -b feature/your-feature-name
    ```
 
 3. **Commit Your Changes**
-
    ```bash
    git commit -m "Add your feature description"
    ```
 
 4. **Push to Your Fork**
-
    ```bash
    git push origin feature/your-feature-name
    ```
 
 5. **Submit a Pull Request**
-
    Include a detailed description of your changes and link any related issues.
 
 Check out [CONTRIBUTING.md](CONTRIBUTING.md) for full guidelines on reporting bugs, suggesting features, and coding standards.
@@ -262,7 +307,7 @@ Have questions or ideas? Reach out by:
 - Opening an issue on GitHub.
 - Emailing [krotrn.ks@gmail.com](mailto:krotrn.ks@gmail.com).
 
-We’re excited to hear from you!
+We're excited to hear from you!
 
 ---
 
