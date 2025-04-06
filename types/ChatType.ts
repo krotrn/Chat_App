@@ -3,8 +3,17 @@ import { UserFriends } from "@prisma/client";
 export interface MessageReaction {
   emoji: string;
   userId: string;
-  timestamp: string;
+  timestamp: Date;
 }
+
+export interface AttachmentResponse {
+  name: string;
+  url: string;
+  localPath: string;
+  type: string;
+  status: "sent" | "delivered" | "read";
+}
+
 
 export interface ParticipantsType {
   userId: string;
@@ -15,33 +24,48 @@ export interface ParticipantsType {
 }
 
 
-export interface Message {
-  id: string;
-  content: string;
-  senderId: string;
+export interface MessageType {
+  _id: string;
+  sender: string;
+  receivers: string[];
   chatId: string;
-  createdAt: string;
-  updatedAt: string;
-  attachments?: Array<{
-    url: string;
-    type: string;
-    name: string;
-  }>;
-  replyToId?: string;
-  reactions?: MessageReaction[];
-  status: "sent" | "delivered" | "read";
+  content: string;
+  attachments: AttachmentResponse[];
+  reactions: MessageReaction[];
+  edited: {
+    isEdited: boolean;
+    editedAt?: Date;
+    PreviousContent: string[];
+  };
+  isDeleted: boolean;
+  replyToId?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-export interface Chat {
-  id: string;
+export interface DeletedForEntry {
+  userId: string;
+  deletedAt: Date;
+}
+
+
+export interface ChatType {
+  _id: string;
   name: string;
+  lastMessage?: MessageType | null;
+  messages?: MessageType[];
   avatar: string;
-  isGroup: boolean;
-  lastMessage?: Message;
-  messages: Message[];
-  participants?: string[];
-  adminIds?: string[];
-  unreadCount: number;
+  participants: ParticipantsType[];
+  admin: string;
+  type: "direct" | "group" | "channel";
+  createdBy: string;
+  deletedFor: DeletedForEntry[];
+  metadata: {
+    pinnedMessage: string[];
+    customePermissions?: unknown;
+  };
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface AIModel {
@@ -82,7 +106,7 @@ export interface User {
   role: "admin" | "user";
   status?: "online" | "offline" | "away";
   lastSeen?: string;
-  friends?: string[]; // IDs of friends
+  friends?: string[];
   friendRequests?: {
     incoming: FriendRequest[];
     outgoing: FriendRequest[];

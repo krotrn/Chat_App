@@ -1,11 +1,11 @@
-import { Chat } from "@/types/ChatType";
+import { ChatType } from "@/types/ChatType";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import HeaderActions from "@/components/chat/header-action";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ChatHeaderProps {
-  chat: Chat;
+  chat: ChatType;
   onToggleDetails: () => void;
   onDeleteChat: (chatId: string, forEveryone: boolean) => void;
   isLoading?: boolean;
@@ -37,7 +37,7 @@ export default function ChatHeader({
         </Avatar>
         <div>
           <h2 className="font-semibold">{chat.name}</h2>
-          {chat.isGroup && (
+          {chat.type === "group" && (
             <p className="text-sm text-muted-foreground">{`${chat.participants} members`}</p>
           )}
         </div>

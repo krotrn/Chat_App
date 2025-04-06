@@ -10,7 +10,7 @@ export default async function FriendsLayout({
   friendsSearch: React.ReactNode;
 }) {
   const session = await auth();
-  if (!session) throw new Error("Unauthozied");
+  if (!session) throw new Error("Unauthorized");
   return (
     <div className="w-full flex items-center justify-center py-10">
       <main className="w-full max-w-4xl space-y-4">

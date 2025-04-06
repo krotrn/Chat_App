@@ -5,13 +5,13 @@ import {
   deleteMessage,
   updateReaction,
 } from "@/services/chat-api";
-import { Message } from "@/types/ChatType";
+import { MessageType } from "@/types/ChatType";
 
 export default function useChatActions(
   chatId: string,
-  replyToMessage: Message | null,
-  setReplyToMessage: React.Dispatch<React.SetStateAction<Message | null>>,
-  setMessages: React.Dispatch<React.SetStateAction<Message[]>>
+  replyToMessage: MessageType | null,
+  setReplyToMessage: React.Dispatch<React.SetStateAction<MessageType | null>>,
+  setMessages: React.Dispatch<React.SetStateAction<MessageType[]>>
 ) {
   const [isLoading, startTransition] = useTransition();
 
@@ -35,8 +35,8 @@ export default function useChatActions(
       startTransition(async () => {
         try {
           await deleteMessage({ chatId, messageId });
-          setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
-          if (replyToMessage?.id === messageId) setReplyToMessage(null);
+          setMessages((prev) => prev.filter((msg) => msg._id !== messageId));
+          if (replyToMessage?._id === messageId) setReplyToMessage(null);
         } catch (error) {
           console.error(error);
           toast.error("Failed to delete message");
@@ -50,9 +50,13 @@ export default function useChatActions(
     (messageId: string, emoji: string) => {
       startTransition(async () => {
         try {
-          const updatedMessage = await updateReaction({ chatId, messageId, emoji });
+          const updatedMessage = await updateReaction({
+            chatId,
+            messageId,
+            emoji,
+          });
           setMessages((prev) =>
-            prev.map((msg) => (msg.id === messageId ? updatedMessage : msg))
+            prev.map((msg) => (msg._id === messageId ? updatedMessage : msg))
           );
         } catch (error) {
           console.error(error);
@@ -63,5 +67,10 @@ export default function useChatActions(
     [chatId, setMessages]
   );
 
-  return { handleSendMessage, handleDeleteMessage, handleReactToMessage, isLoading };
+  return {
+    handleDeleteMessage,
+    handleReactToMessage,
+    handleSendMessage,
+    isLoading,
+  };
 }

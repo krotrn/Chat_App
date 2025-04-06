@@ -9,7 +9,7 @@ import MessageList from "@/components/chat/message-list";
 import MessageInput from "@/components/chat/message-input";
 import ChatDetails from "@/components/chat/chat-details";
 
-import { Chat, Message } from "@/types/ChatType";
+import { ChatType, MessageType } from "@/types/ChatType";
 import { User } from "next-auth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { deleteOneOnOneChat, deleteChatForMe } from "@/services/chat-api";
@@ -18,7 +18,7 @@ import useChatSocket from "@/hooks/useChatSocket";
 import useChatActions from "@/hooks/useChatActions";
 
 interface ChatMainProps {
-  chat: Chat;
+  chat: ChatType;
   currentUser: User;
 }
 
@@ -30,11 +30,11 @@ export default function ChatMain({
   const isMobile = useIsMobile();
   const [chat, setChat] = useState(initialChat);
   const [showDetails, setShowDetails] = useState(false);
-  const [replyToMessage, setReplyToMessage] = useState<Message | null>(null);
+  const [replyToMessage, setReplyToMessage] = useState<MessageType | null>(null);
   const { messages, setMessages } = useChatSocket(
-    initialChat.id,
+    initialChat._id,
     currentUser.id!,
-    initialChat.messages
+    initialChat.messages || []
   );
 
   useEffect(() => {
@@ -46,14 +46,14 @@ export default function ChatMain({
     handleDeleteMessage,
     handleReactToMessage,
     isLoading,
-  } = useChatActions(chat.id, replyToMessage, setReplyToMessage, setMessages);
+  } = useChatActions(chat._id, replyToMessage, setReplyToMessage, setMessages);
 
   const toggleDetails = useCallback(() => setShowDetails((prev) => !prev), []);
   const handleBack = useCallback(() => router.push("/chats"), [router]);
 
   const handleReplyToMessage = useCallback(
     (messageId: string) => {
-      const message = messages.find((msg) => msg.id === messageId);
+      const message = messages.find((msg) => msg._id === messageId);
       if (message) setReplyToMessage(message);
     },
     [messages]
@@ -85,7 +85,7 @@ export default function ChatMain({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
-      key={chat.id}
+      key={chat._id}
     >
       <ChatHeader
         chat={chat}
@@ -97,6 +97,7 @@ export default function ChatMain({
         <div className="flex flex-1 flex-col">
           <MessageList
             messages={messages}
+            participants = {chat.participants}
             currentUser={currentUser}
             onDeleteMessage={handleDeleteMessage}
             onReplyMessage={handleReplyToMessage}
@@ -104,6 +105,7 @@ export default function ChatMain({
             isLoading={isLoading}
           />
           <MessageInput
+            participants = {chat.participants}
             onSendMessage={handleSendMessage}
             replyToMessage={replyToMessage}
             onCancelReply={handleCancelReply}

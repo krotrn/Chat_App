@@ -20,7 +20,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 interface AttachmentPreviewProps {
-  file: File | { url: string; type: string; name: string };
+  file: File | { url: string; type: string; status: "sent" | "delivered" | "read"; name: string };
   onRemove?: () => void;
   className?: string;
 }

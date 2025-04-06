@@ -1,7 +1,7 @@
 "use client";
 import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import type { Chat } from "@/types/ChatType";
+import type { ChatType } from "@/types/ChatType";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { MoreVertical, Trash2 } from "lucide-react";
@@ -14,7 +14,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 
 interface ChatItemProps {
-  chat: Chat;
+  chat: ChatType;
   isSelected: boolean;
   onClick: () => void;
   onDelete: (forEveryone: boolean) => void;
@@ -26,8 +26,7 @@ export default function ChatItem({
   onClick,
   onDelete,
 }: ChatItemProps) {
-  const { name, avatar, lastMessage, unreadCount } = chat;
-  void unreadCount;
+  const { name, avatar, lastMessage } = chat;
 
   return (
     <motion.div

@@ -1,5 +1,5 @@
 import { format, isToday, isYesterday, isSameDay } from "date-fns"
-import type { Message } from "@/types/ChatType"
+import type { MessageType } from "@/types/ChatType"
 
 export function formatMessageDate(date: Date): string {
   if (isToday(date)) {
@@ -11,10 +11,10 @@ export function formatMessageDate(date: Date): string {
   }
 }
 
-export function groupMessagesByDate(messages: Message[]): Record<string, Message[]> {
-  const grouped: Record<string, Message[]> = {}
+export function groupMessagesByDate(messages: MessageType[]): Record<string, MessageType[]> {
+  const grouped: Record<string, MessageType[]> = {}
   messages.forEach((message) => {
-    const date = new Date(message.timestamp)
+    const date = new Date(message.createdAt)
     const dateKey = formatMessageDate(date)
 
     if (!grouped[dateKey]) {

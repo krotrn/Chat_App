@@ -1,6 +1,5 @@
 "use client";
-import { mockUsers } from "@/lib/mock-data";
-import { Message } from "@/types/ChatType";
+import { MessageType, ParticipantsType } from "@/types/ChatType";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -17,16 +16,18 @@ import EmojiPicker from "@/components/chat/emoji-picker";
 import CameraCapture from "@/components/chat/camera-capture";
 
 interface MessageInputProps {
+  participants: ParticipantsType[];
   onSendMessage: (
     content: string,
     attachments?: File[],
     replyToId?: string
   ) => void;
-  replyToMessage: Message | null;
+  replyToMessage: MessageType | null;
   onCancelReply: () => void;
 }
 
 export default function MessageInput({
+  participants,
   onSendMessage,
   replyToMessage,
   onCancelReply,
@@ -48,7 +49,7 @@ export default function MessageInput({
     (e: React.FormEvent) => {
       e.preventDefault();
       if (!message.trim() && !attachments.length) return;
-      onSendMessage(message, attachments, replyToMessage?.id);
+      onSendMessage(message, attachments, replyToMessage?._id);
       setMessage("");
       setAttachments([]);
       onCancelReply();
@@ -100,7 +101,7 @@ export default function MessageInput({
   }, []);
 
   const replyToUser = replyToMessage
-    ? mockUsers.find((user) => user.id === replyToMessage.senderId)
+    ? participants.find((user) => user.userId === replyToMessage.sender)
     : null;
 
   return (

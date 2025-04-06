@@ -1,7 +1,7 @@
 "use client";
 
 import { groupMessagesByDate } from "@/lib/utils/groupMessageByDate";
-import { Message } from "@/types/ChatType";
+import { MessageType, ParticipantsType } from "@/types/ChatType";
 import { User } from "next-auth";
 import { Fragment, useMemo } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -9,7 +9,8 @@ import DateDivider from "@/components/chat/date-divider";
 import MessageItem from "@/components/chat/message-item";
 
 interface MessageListProps {
-  messages: Message[];
+  participants:ParticipantsType[]
+  messages: MessageType[];
   currentUser: User;
   onDeleteMessage: (messageId: string, forEveryone: boolean) => void;
   onReplyMessage: (messageId: string) => void;
@@ -18,6 +19,7 @@ interface MessageListProps {
 }
 
 export default function MessageList({
+  participants,
   messages,
   currentUser,
   onDeleteMessage,
@@ -25,8 +27,8 @@ export default function MessageList({
   onReactToMessage,
 }: MessageListProps) {
   const messageMap = useMemo(() => {
-    const map = new Map<string, Message>();
-    messages.forEach((msg) => map.set(msg.id, msg));
+    const map = new Map<string, MessageType>();
+    messages.forEach((msg) => map.set(msg._id, msg));
     return map;
   }, [messages]);
 
@@ -45,13 +47,14 @@ export default function MessageList({
               : null;
 
             const previous = dateMessages[index - 1];
-            const showAvatar = !previous || previous.senderId !== message.senderId;
+            const showAvatar = !previous || previous.sender !== message.sender;
 
             return (
               <MessageItem
-                key={message.id}
+                participants={participants}
+                key={message._id}
                 message={message}
-                isOwn={message.senderId === currentUser?.id}
+                isOwn={message.sender === currentUser?.id}
                 showAvatar={showAvatar}
                 onDelete={onDeleteMessage}
                 onReply={onReplyMessage}

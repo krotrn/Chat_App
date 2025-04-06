@@ -20,7 +20,7 @@ import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormSuccess } from "@/components/auth/Form-Success";
 
-const RegisterForm = ():React.ReactNode => {
+const RegisterForm = (): React.ReactNode => {
   const searchParams = useSearchParams();
   const urlError =
     searchParams.get("error") == "OAuthAccountNotLinked"
@@ -32,7 +32,7 @@ const RegisterForm = ():React.ReactNode => {
       email: "",
       username: "",
       password: "",
-      confirmpassword:""
+      confirmpassword: "",
     },
   });
   const router = useRouter();
@@ -49,19 +49,22 @@ const RegisterForm = ():React.ReactNode => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
       })
-        .then((data) =>  data.json())
+        .then((data) => data.json())
         .then((result) => {
           if (result.sendEmail) {
             setError(result.message);
-            router.push(`/auth/verify-email/${encodeURIComponent(credentials.email)}`);
+            router.push(
+              `/auth/verify-email/${encodeURIComponent(credentials.email)}`
+            );
           } else if (result.success) {
-            setSuccess(result.message)
+            setSuccess(result.message);
           } else {
             setError(result.message);
           }
         })
-        .catch(() => {
-          setError("An unexpected error occurred");
+        .catch((error) => {
+          console.error("Registration error:", error);
+          setError("An unexpected error occurred. Please try again later.");
         });
     });
   };

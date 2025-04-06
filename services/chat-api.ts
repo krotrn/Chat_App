@@ -1,6 +1,6 @@
 import axios from "axios";
 import { config } from "@/config";
-import { Chat, Message, ParticipantsType } from "@/types/ChatType";
+import { ChatType, MessageType, ParticipantsType } from "@/types/ChatType";
 
 interface ApiResponse<T> {
   statusCode: number;
@@ -28,9 +28,9 @@ export const setAuthToken = (token: string) => {
 };
 
 // Fetch all chats
-export const fetchChats = async (): Promise<Chat[]> => {
+export const fetchChats = async (): Promise<ChatType[]> => {
   try {
-    const response = await api.get<ApiResponse<Chat[]>>("/chats", {
+    const response = await api.get<ApiResponse<ChatType[]>>("/chats", {
       withCredentials: true,
     });
     return response.data.data;
@@ -50,9 +50,9 @@ export const createOrGetAOneOnOneChat = async ({
 }: {
   participants: ParticipantsType[];
   name: string;
-}): Promise<Chat> => {
+}): Promise<ChatType> => {
   try {
-    const response = await api.post<ApiResponse<Chat>>(
+    const response = await api.post<ApiResponse<ChatType>>(
       "/chats/chat",
       { participants, name },
       { withCredentials: true }
@@ -72,9 +72,9 @@ export const getChatById = async ({
   chatId,
 }: {
   chatId: string;
-}): Promise<Chat> => {
+}): Promise<ChatType> => {
   try {
-    const response = await api.get<ApiResponse<Chat>>(`/chats/chat/${chatId}`, {
+    const response = await api.get<ApiResponse<ChatType>>(`/chats/chat/${chatId}`, {
       withCredentials: true,
     });
     return response.data.data;
@@ -136,9 +136,9 @@ export const createAGroupChat = async ({
 }: {
   name: string;
   participants: ParticipantsType[];
-}): Promise<Chat> => {
+}): Promise<ChatType> => {
   try {
-    const response = await api.post<ApiResponse<Chat>>(
+    const response = await api.post<ApiResponse<ChatType>>(
       "/chats/group",
       { participants, name },
       { withCredentials: true }
@@ -158,9 +158,9 @@ export const getGroupChatDetails = async ({
   chatId,
 }: {
   chatId: string;
-}): Promise<Chat> => {
+}): Promise<ChatType> => {
   try {
-    const response = await api.get<ApiResponse<Chat>>(
+    const response = await api.get<ApiResponse<ChatType>>(
       `/chats/group/${chatId}`,
       { withCredentials: true }
     );
@@ -181,9 +181,9 @@ export const renameGroupChat = async ({
 }: {
   chatId: string;
   name: string;
-}): Promise<Chat> => {
+}): Promise<ChatType> => {
   try {
-    const response = await api.patch<ApiResponse<Chat>>(
+    const response = await api.patch<ApiResponse<ChatType>>(
       `/chats/group/${chatId}`,
       { name },
       { withCredentials: true }
@@ -203,9 +203,9 @@ export const deleteGroupChat = async ({
   chatId,
 }: {
   chatId: string;
-}): Promise<Chat> => {
+}): Promise<ChatType> => {
   try {
-    const response = await api.delete<ApiResponse<Chat>>(
+    const response = await api.delete<ApiResponse<ChatType>>(
       `/chats/group/${chatId}`,
       { withCredentials: true }
     );
@@ -226,9 +226,9 @@ export const addNewParticipantInGroupChat = async ({
 }: {
   chatId: string;
   participantId: string;
-}): Promise<Chat> => {
+}): Promise<ChatType> => {
   try {
-    const response = await api.post<ApiResponse<Chat>>(
+    const response = await api.post<ApiResponse<ChatType>>(
       `/chats/group/${chatId}/participant/${participantId}`,
       {},
       { withCredentials: true }
@@ -250,9 +250,9 @@ export const removeParticipantFromGroupChat = async ({
 }: {
   chatId: string;
   participantId: string;
-}): Promise<Chat> => {
+}): Promise<ChatType> => {
   try {
-    const response = await api.delete<ApiResponse<Chat>>(
+    const response = await api.delete<ApiResponse<ChatType>>(
       `/chats/group/${chatId}/participant/${participantId}`,
       { withCredentials: true }
     );
@@ -271,9 +271,9 @@ export const leaveGroupChat = async ({
   chatId,
 }: {
   chatId: string;
-}): Promise<Chat> => {
+}): Promise<ChatType> => {
   try {
-    const response = await api.delete<ApiResponse<Chat>>(
+    const response = await api.delete<ApiResponse<ChatType>>(
       `/chats/group/${chatId}/leave`,
       { withCredentials: true }
     );
@@ -294,9 +294,9 @@ export const pinMessage = async ({
 }: {
   chatId: string;
   messageId: string;
-}): Promise<Chat> => {
+}): Promise<ChatType> => {
   try {
-    const response = await api.post<ApiResponse<Chat>>(
+    const response = await api.post<ApiResponse<ChatType>>(
       `/chats/chat/${chatId}/pin/${messageId}`,
       {},
       { withCredentials: true }
@@ -318,9 +318,9 @@ export const unpinMessage = async ({
 }: {
   chatId: string;
   messageId: string;
-}): Promise<Chat> => {
+}): Promise<ChatType> => {
   try {
-    const response = await api.delete<ApiResponse<Chat>>(
+    const response = await api.delete<ApiResponse<ChatType>>(
       `/chats/chat/${chatId}/pin/${messageId}`,
       { withCredentials: true }
     );
@@ -336,7 +336,7 @@ export const unpinMessage = async ({
 
 export const getAllMessages = async ({ chatId }: { chatId: string }) => {
   try {
-    const response = await api.get<ApiResponse<Message>>(
+    const response = await api.get<ApiResponse<MessageType>>(
       `/messages/${chatId}`,
       { withCredentials: true }
     );
@@ -372,7 +372,7 @@ export const sendMessage = async ({
       });
     }
 
-    const response = await api.post<ApiResponse<Message>>(
+    const response = await api.post<ApiResponse<MessageType>>(
       `/messages/${chatId}`,
       formData,
       {
@@ -400,7 +400,7 @@ export const deleteMessage = async ({
   messageId: string;
 }) => {
   try {
-    const response = await api.delete<ApiResponse<Message>>(
+    const response = await api.delete<ApiResponse<MessageType>>(
       `/messages/${chatId}/${messageId}`,
       { withCredentials: true }
     );
@@ -424,7 +424,7 @@ export const updateReaction = async ({
   emoji: string;
 }) => {
   try {
-    const response = await api.post<ApiResponse<Message>>(
+    const response = await api.post<ApiResponse<MessageType>>(
       `/messages/${chatId}/${messageId}/reaction`,
       { emoji },
       { withCredentials: true }
@@ -459,7 +459,7 @@ export const replyMessage = async ({
       });
     }
 
-    const response = await api.post<ApiResponse<Message>>(
+    const response = await api.post<ApiResponse<MessageType>>(
       `/messages/${chatId}/${messageId}/reply`,
       formData,
       {

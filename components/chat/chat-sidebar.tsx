@@ -8,12 +8,12 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ChatItem from "@/components/chat/chat-item";
 import AIChatItem from "@/components/chat/ai-chat-item";
-import { Chat, AIModel } from "@/types/ChatType";
+import { ChatType, AIModel } from "@/types/ChatType";
 import { deleteOneOnOneChat, deleteChatForMe } from "@/services/chat-api";
 import { toast } from "sonner";
 
 interface ChatSidebarProps {
-  chats: Chat[];
+  chats: ChatType[];
   selectedChatId: string | null;
   aiModels?: AIModel[];
   onAIModelSelect?: (modelId: string) => void;
@@ -27,7 +27,7 @@ export default function ChatSidebar({
   onAIModelSelect,
   selectedAIModelId,
 }: ChatSidebarProps) {
-  const [chats, setChats] = useState<Chat[]>(initialChats);
+  const [chats, setChats] = useState<ChatType[]>(initialChats);
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
@@ -65,7 +65,7 @@ export default function ChatSidebar({
         } else {
           await deleteChatForMe({ chatId });
         }
-        setChats((prev) => prev.filter((chat) => chat.id !== chatId));
+        setChats((prev) => prev.filter((chat) => chat._id !== chatId));
         if (selectedChatId === chatId) {
           router.push("/chats");
         }
@@ -102,11 +102,11 @@ export default function ChatSidebar({
             {chats.length > 0 ? (
               chats.map((chat) => (
                 <ChatItem
-                  key={chat.id}
+                  key={chat._id}
                   chat={chat}
-                  isSelected={chat.id === selectedChatId}
-                  onClick={() => handleChatSelect(chat.id)}
-                  onDelete={(forEveryone) => handleDeleteChat(chat.id, forEveryone)}
+                  isSelected={chat._id === selectedChatId}
+                  onClick={() => handleChatSelect(chat._id)}
+                  onDelete={(forEveryone) => handleDeleteChat(chat._id, forEveryone)}
                 />
               ))
             ) : (

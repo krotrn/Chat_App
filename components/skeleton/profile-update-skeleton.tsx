@@ -31,14 +31,10 @@ export default function ProfileUpdateSkeleton() {
             <Skeleton className="h-4 w-16" />
             <Skeleton className="h-10 w-full" />
           </div>
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-16" />
-            <Skeleton className="h-32 w-full" />
-          </div>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-end">
-        <Skeleton className="h-10 w-32" />
+      <CardFooter>
+        <Skeleton className="h-10 w-full" />
       </CardFooter>
     </Card>
   );

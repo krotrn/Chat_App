@@ -1,7 +1,6 @@
 "use client";
 import useTouchActions from "@/hooks/useTouchActions";
-import { mockUsers } from "@/lib/mock-data";
-import { Message } from "@/types/ChatType";
+import { MessageType, ParticipantsType } from "@/types/ChatType";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -40,18 +39,20 @@ import { ReactionsDisplay } from "@/components/chat/reaction-display";
 import { MessageTimestampStatus } from "@/components/chat/message-timestamp-status";
 
 interface MessageItemProps {
-  message: Message;
+  participants:ParticipantsType[]
+  message: MessageType;
   isOwn: boolean;
   showAvatar: boolean;
   onDelete: (messageId: string, forEveryone: boolean) => void;
   onReply: (messageId: string) => void;
   onReact: (messageId: string, emoji: string) => void;
-  replyMessage?: Message | null;
+  replyMessage?: MessageType | null;
   showDate?: boolean;
   date?: string;
 }
 
 export default function MessageItem({
+  participants,
   message,
   isOwn,
   showAvatar,
@@ -63,16 +64,16 @@ export default function MessageItem({
   date,
 }: MessageItemProps) {
   const [showReactions, setShowReactions] = useState(false);
-  const sender = mockUsers.find((user) => user.id === message.senderId);
+  const sender = participants.find((user) => user.userId === message.sender);
   const replySender = replyMessage
-    ? mockUsers.find((user) => user.id === replyMessage.senderId)
+    ? participants.find((user) => user.userId === replyMessage.sender)
     : null;
   const longPressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isLongPressed, setIsLongPressed] = useState(false);
 
   const handleCopyToClipboard = () => {
     navigator.clipboard.writeText(message.content);
-    toast.success("Message copied to clipboard");
+    toast.success("MessageType copied to clipboard");
   };
 
   const { handleMouseDown, handleMouseUp, handleTouchStart, handleTouchEnd } =
@@ -158,7 +159,7 @@ export default function MessageItem({
                                 size="icon"
                                 variant="secondary"
                                 className="h-6 w-6 rounded-full shadow-xs"
-                                onClick={() => onReply(message.id)}
+                                onClick={() => onReply(message._id)}
                               >
                                 <Reply className="h-3 w-3" />
                               </Button>
@@ -193,7 +194,7 @@ export default function MessageItem({
                                   key={emoji}
                                   className="text-lg hover:scale-125 transition-transform p-1"
                                   onClick={() => {
-                                    onReact(message.id, emoji);
+                                    onReact(message._id, emoji);
                                     setShowReactions(false);
                                   }}
                                 >
@@ -233,8 +234,8 @@ export default function MessageItem({
                   )}
                   <MessageTimestampStatus
                     isOwn={isOwn}
-                    status={message.status}
-                    timestamp={message.updatedAt}
+                    status={"sent"}
+                    timestamp={message.updatedAt.toLocaleString()}
                   />
                 </div>
               </div>
@@ -242,7 +243,7 @@ export default function MessageItem({
           </motion.div>
         </ContextMenuTrigger>
         <ContextMenuContent>
-          <ContextMenuItem onClick={() => onReply(message.id)}>
+          <ContextMenuItem onClick={() => onReply(message._id)}>
             <Reply className="mr-2 h-4 w-4" />
             Reply
           </ContextMenuItem>
@@ -262,7 +263,7 @@ export default function MessageItem({
                     <button
                       key={emoji}
                       className="text-lg hover:bg-accent rounded-md p-1 transition-colors"
-                      onClick={() => onReact(message.id, emoji)}
+                      onClick={() => onReact(message._id, emoji)}
                     >
                       {emoji}
                     </button>
@@ -274,17 +275,17 @@ export default function MessageItem({
           <ContextMenuSeparator />
           {isOwn ? (
             <>
-              <ContextMenuItem onClick={() => onDelete(message.id, false)}>
+              <ContextMenuItem onClick={() => onDelete(message._id, false)}>
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete for me
               </ContextMenuItem>
-              <ContextMenuItem onClick={() => onDelete(message.id, true)}>
+              <ContextMenuItem onClick={() => onDelete(message._id, true)}>
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete for everyone
               </ContextMenuItem>
             </>
           ) : (
-            <ContextMenuItem onClick={() => onDelete(message.id, false)}>
+            <ContextMenuItem onClick={() => onDelete(message._id, false)}>
               <Trash2 className="mr-2 h-4 w-4" />
               Delete for me
             </ContextMenuItem>

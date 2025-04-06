@@ -2,13 +2,13 @@
 
 import { useEffect } from "react";
 
-export default function ProfileError({ error }: { error: Error }) {
+export default function ActivityError({ error }: { error: Error }) {
   useEffect(() => {
-    console.error("Profile error:", error);
+    console.error("Activity error:", error);
   }, [error]);
   return (
     <div className="text-red-500">
-      Failed to load profile. Please try again.
+      Failed to load activity. Please try again.
     </div>
   );
 }

@@ -1,10 +1,9 @@
 import { cn } from "@/lib/utils";
-import { Message } from "@/types/ChatType";
-import { User } from "next-auth";
+import { MessageType, ParticipantsType } from "@/types/ChatType";
 
 export function ReplyPreview({ replyMessage, replySender, isOwn }: {
-  replyMessage: Message,
-  replySender?: User | null,
+  replyMessage: MessageType,
+  replySender?: ParticipantsType | null,
   isOwn: boolean
 }) {
   if (!replyMessage) return null;
@@ -17,7 +16,7 @@ export function ReplyPreview({ replyMessage, replySender, isOwn }: {
       )}
     >
       <p className="font-medium text-xs">
-        {replySender?.id === replyMessage.senderId
+        {replySender?.userId === replyMessage.sender
           ? "Replying to themselves"
           : `Replying to ${replySender?.name}`}
       </p>
