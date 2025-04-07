@@ -18,9 +18,10 @@ import {
 } from "@/components/ui/sheet";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { AttachmentResponse } from "@/types/ChatType";
 
 interface AttachmentPreviewProps {
-  file: File | { url: string; type: string; status: "sent" | "delivered" | "read"; name: string };
+  file: File | AttachmentResponse;
   onRemove?: () => void;
   className?: string;
 }

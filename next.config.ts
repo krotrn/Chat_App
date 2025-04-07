@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  experimental: {
+    reactCompiler: true,
+  },
   async headers() {
     return [
       {
@@ -13,7 +16,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Access-Control-Allow-Methods",
-            value: "GET,HEAD,OPTIONS,POST,PUT",
+            value: "GET",
           },
           {
             key: "Access-Control-Allow-Headers",
