@@ -7,7 +7,7 @@ export default async function ChatsLayout({
 }: {
   chatList: React.ReactNode;
   chatMain: React.ReactNode;
-  searchParams: Promise<{ chat?: string }>;
+  searchParams: Promise<{ chat?: string; }>;
 }) {
   const search = await searchParams;
   const selectedChatId = search?.chat;
