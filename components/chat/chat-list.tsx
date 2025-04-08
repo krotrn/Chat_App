@@ -4,10 +4,10 @@ import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import ChatItem from "@/components/chat/chat-item";
 import AIChatItem from "@/components/chat/ai-chat-item";
-import { Chat, AIModel } from "@/types/ChatType";
+import { ChatType, AIModel } from "@/types/ChatType";
 
 interface ChatListProps {
-  chats: Chat[];
+  chats: ChatType[];
   selectedChatId: string | null;
   aiModels?: AIModel[];
   onAIModelSelect?: (modelId: string) => void;
@@ -24,6 +24,22 @@ export default function ChatList({
 }: ChatListProps) {
   const router = useRouter();
 
+  const handleDelete = async (forEveryone:boolean) => {
+   try {
+     if (forEveryone) {
+      console.log("deleted for everyone")
+    }
+    console.log("deleted")
+   } catch (error) {
+     if (error instanceof Error) {
+       console.log(error.message);
+       return;
+     }
+     console.log("Error deleting message");
+     return;
+   }
+ } 
+
   const handleChatSelect = useCallback(
     (chatId: string) => {
       router.push(`/chats?chat=${chatId}`);
@@ -37,10 +53,11 @@ export default function ChatList({
         {chats.length > 0 ? (
           chats.map((chat) => (
             <ChatItem
-              key={chat.id}
+              key={chat._id}
               chat={chat}
-              isSelected={chat.id === selectedChatId}
-              onClick={() => handleChatSelect(chat.id)}
+              isSelected={chat._id === selectedChatId}
+              onClick={() => handleChatSelect(chat._id)}
+              onDelete={handleDelete}
             />
           ))
         ) : (
