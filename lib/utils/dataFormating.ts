@@ -8,12 +8,12 @@ export const formatRequests = async (
 try {
     const formattedDataPromises = unFormattedData.map(async (req) => {
       const { senderId } = req;
-      const data = await getUserDataById(senderId, [
-        "avatarUrl",
-        "name",
-        "username",
-        "createdAt",
-      ]);
+      const data = await getUserDataById(senderId, {
+        avatarUrl: true,
+        name: true,
+        username: true,
+        createdAt: true,
+      });
   
       if (!data) {
         throw new Error("data not found");
