@@ -1,7 +1,7 @@
 import { config } from "@/config";
 import io, { Socket } from "socket.io-client";
 import { ChatEventEnum } from "./socket-event";
-import { Message } from "@/types/ChatType";
+import { MessageType } from "@/types/ChatType";
 
 let socket: typeof Socket | null = null;
 
@@ -31,11 +31,11 @@ export const joinChat = (chatId: string) => {
   socket?.emit(ChatEventEnum.ONLINE_EVENT, { chatId });
 };
 
-export const onMessageReceived = (callback: (message: Message) => void) => {
+export const onMessageReceived = (callback: (message: MessageType) => void) => {
   socket?.on(ChatEventEnum.MESSAGE_RECEIVED_EVENT, callback);
 };
 
-export const onMessageDeleted = (callback: (message: Message) => void) => {
+export const onMessageDeleted = (callback: (message: MessageType) => void) => {
   socket?.on(ChatEventEnum.MESSAGE_DELETE_EVENT, callback);
 };
 
