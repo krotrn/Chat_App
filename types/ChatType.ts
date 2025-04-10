@@ -14,7 +14,6 @@ export interface AttachmentResponse {
   status: "sent" | "delivered" | "read";
 }
 
-
 export interface ParticipantsType {
   userId: string;
   name: string;
@@ -23,22 +22,28 @@ export interface ParticipantsType {
   joinedAt: Date;
 }
 
+export enum StatusEnum {
+  "sent",
+  "delivered",
+  "read",
+}
 
 export interface MessageType {
   _id: string;
   sender: string;
-  receivers: string[];
+  receivers: ParticipantsType[];
   chatId: string;
   content: string;
   attachments: AttachmentResponse[];
+  status: StatusEnum;
   reactions: MessageReaction[];
   edited: {
     isEdited: boolean;
-    editedAt?: Date;
+    editedAt: Date;
     PreviousContent: string[];
   };
   isDeleted: boolean;
-  replyToId?: string | null;
+  replyToId?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -47,7 +52,6 @@ export interface DeletedForEntry {
   userId: string;
   deletedAt: Date;
 }
-
 
 export interface ChatType {
   _id: string;
@@ -145,4 +149,11 @@ export interface statsProps {
   friends: UserFriends[];
   sentRequests: FriendRequest[];
   receivedRequests: FriendRequest[];
+}
+
+export interface ApiResponse<T> {
+  statusCode: number;
+  data: T;
+  message: string;
+  success: boolean;
 }

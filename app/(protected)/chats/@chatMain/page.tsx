@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import ChatMain from "@/components/chat/chat-main";
-import { getChatById } from "@/services/chat-api";
+import { getChatById, setAuthToken } from "@/services/chat-api";
 
 export default async function ChatMainPage({
   searchParams,
@@ -13,23 +13,31 @@ export default async function ChatMainPage({
 
   const chatId = (await searchParams).chat;
   if (!chatId) {
+    return null; // Let the default.tsx handle this case
+  }
+
+  try {
+    // Set the auth token before making API calls
+    if (session.accessToken) {
+      setAuthToken(session.accessToken);
+    }
+
+    const chat = await getChatById({ chatId });
+    if (!chat) {
+      return (
+        <div className="flex h-full items-center justify-center">
+          <p className="text-red-500">Chat not found</p>
+        </div>
+      );
+    }
+
+    return <ChatMain chat={chat} currentUser={session.user} token={session.accessToken} />;
+  } catch (error) {
+    console.error("Error fetching chat:", error);
     return (
       <div className="flex h-full items-center justify-center">
-        <p className="text-muted-foreground">
-          Select a chat to start messaging
-        </p>
+        <p className="text-red-500">Error loading chat</p>
       </div>
     );
   }
-
-  const chat = await getChatById({ chatId });
-  if (!chat) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <p className="text-red-500">Chat not found</p>
-      </div>
-    );
-  }
-
-  return <ChatMain chat={chat} currentUser={session.user} />;
 }

@@ -13,6 +13,7 @@ export const initSocket = (token: string) => {
     }
     socket = io(config.chatApiUrl, {
       auth: { token },
+      transports: ['websocket'],
     });
     if (!socket) {
       throw new Error("Error Configuring Socket");

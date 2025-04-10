@@ -31,6 +31,8 @@ ChatApp is packed with functionality to enhance user experience and provide flex
   - **Credential Authentication**: Securely log in with an email and password combination
   - **Social Authentication**: Sign in effortlessly using Google or GitHub accounts
   - **Email Verification**: Powered by [Resend](https://resend.com/), ensuring only verified users gain access
+  - **JWT Token Management**: Secure token handling with proper expiration and validation
+  - **Session Management**: Robust session handling with access token persistence
 
 - **Real-Time Chat Functionality**
   - **Group Chats**: Create and participate in multi-user conversations
@@ -48,8 +50,7 @@ ChatApp is packed with functionality to enhance user experience and provide flex
 - **User Interface**
   - **Modern and Responsive**: Built with [shadcn/ui](https://ui.shadcn.com/) components
   - **Dark/Light Mode**: Seamless theme switching
-  - **Animations**: Smooth transitions using Framer Motion
-  - **Mobile-First**: Optimized for all device sizes
+  - **Error Handling**: Graceful error states and user feedback
 
 - **User Profiles & Privacy**
   - **Personalization**: Edit your name, avatar, and status

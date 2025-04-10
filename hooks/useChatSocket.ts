@@ -6,13 +6,14 @@ import { MessageType } from "@/types/ChatType";
 export default function useChatSocket(
   initialChatId: string,
   currentUserId: string,
+  token: string,
   initialMessages: MessageType[]
 ) {
   const [messages, setMessages] = useState<MessageType[]>(initialMessages);
 
   useEffect(() => {
     if (!currentUserId || !initialChatId) return;
-    const socket = initSocket(currentUserId);
+    const socket = initSocket(token);
     joinChat(initialChatId);
 
     socket.on(ChatEventEnum.MESSAGE_RECEIVED_EVENT, (message: MessageType) => {
@@ -40,7 +41,7 @@ export default function useChatSocket(
       socket.off(ChatEventEnum.MESSAGE_REACTION_EVENT);
       socket.off(ChatEventEnum.MESSAGE_DELETE_EVENT);
     };
-  }, [initialChatId, currentUserId]);
+  }, [initialChatId, currentUserId, token]);
 
   return { messages, setMessages };
 }

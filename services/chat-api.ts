@@ -30,13 +30,11 @@ export const setAuthToken = (token: string) => {
 // Fetch all chats
 export const fetchChats = async (): Promise<ChatType[]> => {
   try {
-    const response = await api.get<ApiResponse<ChatType[]>>("/chats", {
-      withCredentials: true,
-    });
+    const response = await api.get<ApiResponse<ChatType[]>>("/chats");
     return response.data.data;
   } catch (error) {
     if (error instanceof Error) {
-      console.log(error.message);
+      console.error("Error fetching chats:", error.message);
       throw new Error(error.message);
     }
     throw error;

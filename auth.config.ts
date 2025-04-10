@@ -54,8 +54,8 @@ export default {
             username: user.username,
             role: user.role,
           },
-          process.env.ACCESS_TOKEN_SECRET!,
-          { expiresIn: "1h" }
+          process.env.JWT_SECRET!,
+          { expiresIn: "30d" } as jwt.SignOptions
         );
 
         return {
@@ -68,6 +68,7 @@ export default {
           username: user.username,
           role: user.role,
           bio: user.bio,
+          exp: Math.floor(Date.now() / 1000) + 3600*24*30,
         };
       }
       if (Date.now() < (token.exp as number) * 1000) {
@@ -87,6 +88,7 @@ export default {
           role: token.role as UserRoles,
           bio: token.bio as string,
         };
+        session.accessToken = token.accessToken as string;
       }
       return session;
     },

@@ -20,11 +20,13 @@ import useChatActions from "@/hooks/useChatActions";
 interface ChatMainProps {
   chat: ChatType;
   currentUser: User;
+  token:string;
 }
 
 export default function ChatMain({
   chat: initialChat,
   currentUser,
+  token
 }: ChatMainProps) {
   const router = useRouter();
   const isMobile = useIsMobile();
@@ -34,6 +36,7 @@ export default function ChatMain({
   const { messages, setMessages } = useChatSocket(
     initialChat._id,
     currentUser.id!,
+    token,
     initialChat.messages || []
   );
 
