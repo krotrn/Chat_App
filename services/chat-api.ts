@@ -9,17 +9,32 @@ interface ApiResponse<T> {
   success: boolean;
 }
 
+console.log("API Base URL:", config.chatApiUrl);
+
 const api = axios.create({
   baseURL: `${config.chatApiUrl}/api/v1`,
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true
 });
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log("Response received:", response.status, response.config.url);
+    return response;
+  },
   (error) => {
-    return Promise.reject(error.response?.data || error.message);
+    if (error.response) {
+      console.error('Error response:', error.response.status, error.response.data);
+      return Promise.reject(error.response.data);
+    } else if (error.request) {
+      console.error('Error request:', error.request);
+      return Promise.reject(new Error('No response received from server'));
+    } else {
+      console.error('Error message:', error.message);
+      return Promise.reject(error);
+    }
   }
 );
 
@@ -31,13 +46,26 @@ export const setAuthToken = (token: string) => {
 export const fetchChats = async (): Promise<ChatType[]> => {
   try {
     const response = await api.get<ApiResponse<ChatType[]>>("/chats");
+    
+    if (!response.data?.success) {
+      console.warn("API request was not successful:", response.data?.message);
+      return [];
+    }
+
+    if (!response.data?.data) {
+      console.warn("No chats data in response");
+      return [];
+    }
+
     return response.data.data;
   } catch (error) {
+    console.error("Error fetching chats:", error);
+    
     if (error instanceof Error) {
-      console.error("Error fetching chats:", error.message);
-      throw new Error(error.message);
+      throw error;
     }
-    throw error;
+    
+    throw new Error("Failed to fetch chats. Please try again later.");
   }
 };
 
