@@ -1,5 +1,5 @@
 export const config = {
-  baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000",
+  baseUrl: process.env.CHAT_API_URL || "http://localhost:8000",
   chatApiUrl:process.env.CHAT_API_URL,
   resendApiKey: process.env.RESEND_API_KEY,
   resendFromEmail: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",

@@ -2,9 +2,6 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  experimental: {
-    reactCompiler: true,
-  },
   async headers() {
     return [
       {
@@ -12,11 +9,11 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: "Access-Control-Allow-Origin",
-            value: process.env.CHAT_API_URL || "http://localhost:3001",
+            value: process.env.CHAT_API_URL || "http://localhost:8000",
           },
           {
             key: "Access-Control-Allow-Methods",
-            value: "GET",
+            value: "GET, POST, PUT, DELETE, OPTIONS",
           },
           {
             key: "Access-Control-Allow-Headers",
