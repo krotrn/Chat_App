@@ -48,8 +48,16 @@ export default function ChatMain({
     handleSendMessage,
     handleDeleteMessage,
     handleReactToMessage,
+    handleEditMessage,
+    handleMarkAsRead,
     isLoading,
-  } = useChatActions(chat._id, replyToMessage, setReplyToMessage, setMessages);
+  } = useChatActions(chat._id, replyToMessage, setReplyToMessage, setMessages, currentUser.id);
+
+  useEffect(() => {
+    if (chat._id) {
+      handleMarkAsRead();
+    }
+  }, [chat._id, handleMarkAsRead]);
 
   const toggleDetails = useCallback(() => setShowDetails((prev) => !prev), []);
   const handleBack = useCallback(() => router.push("/chats"), [router]);
@@ -100,11 +108,12 @@ export default function ChatMain({
         <div className="flex flex-1 flex-col">
           <MessageList
             messages={messages}
-            participants = {chat.participants}
+            participants={chat.participants}
             currentUser={currentUser}
             onDeleteMessage={handleDeleteMessage}
             onReplyMessage={handleReplyToMessage}
             onReactToMessage={handleReactToMessage}
+            onEditMessage={handleEditMessage}
             isLoading={isLoading}
           />
           <MessageInput

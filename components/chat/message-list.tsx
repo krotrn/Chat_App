@@ -9,12 +9,13 @@ import DateDivider from "@/components/chat/date-divider";
 import MessageItem from "@/components/chat/message-item";
 
 interface MessageListProps {
-  participants:ParticipantsType[]
+  participants: ParticipantsType[];
   messages: MessageType[];
   currentUser: User;
   onDeleteMessage: (messageId: string, forEveryone: boolean) => void;
   onReplyMessage: (messageId: string) => void;
   onReactToMessage: (messageId: string, emoji: string) => void;
+  onEditMessage?: (messageId: string, content: string) => void;
   isLoading?: boolean;
 }
 
@@ -25,6 +26,7 @@ export default function MessageList({
   onDeleteMessage,
   onReplyMessage,
   onReactToMessage,
+  onEditMessage,
 }: MessageListProps) {
   const messageMap = useMemo(() => {
     const map = new Map<string, MessageType>();
@@ -59,7 +61,9 @@ export default function MessageList({
                 onDelete={onDeleteMessage}
                 onReply={onReplyMessage}
                 onReact={onReactToMessage}
+                onEdit={onEditMessage}
                 replyMessage={replyMessage}
+                currentUserId={currentUser?.id}
               />
             );
           })}

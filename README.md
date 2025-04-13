@@ -46,6 +46,15 @@ ChatApp is packed with functionality to enhance user experience and provide flex
     - Reply to messages
     - Read receipts
     - Typing indicators
+    - Message editing
+    - Message deletion (for sender or admin)
+    - Rich text formatting
+
+- **Smart Data Transformation**
+  - **MongoDB Aggregation Pipelines**: Efficiently transform and shape data at the database level
+  - **Type-Safe Responses**: Consistent data structures with MessageResponseType and ChatResponseType
+  - **Efficient Data Loading**: Optimized queries with pagination and selective field projection
+  - **Real-time Data Synchronization**: Immediate updates across all connected clients
 
 - **User Interface**
   - **Modern and Responsive**: Built with [shadcn/ui](https://ui.shadcn.com/) components
@@ -92,14 +101,25 @@ ChatApp is built with a thoughtfully selected set of technologies to ensure perf
   - **[Next.js API Routes](https://nextjs.org/docs/api-routes/introduction)**: API endpoints
   - **[Prisma](https://www.prisma.io/)**: PostgreSQL ORM
   - **[MongoDB](https://www.mongodb.com/)**: Chat data storage
+  - **[Mongoose](https://mongoosejs.com/)**: MongoDB ODM with typed schema support
+  - **[MongoDB Aggregation Pipeline](https://www.mongodb.com/docs/manual/core/aggregation-pipeline/)**: For efficient data transformations
   - **[Socket.io](https://socket.io/)**: WebSocket server
   - **[Auth.js v5](https://authjs.dev/)**: Authentication
   - **[Resend](https://resend.com/)**: Email service
+
+- **Business Logic & Data Processing**:
+  - **Strongly-Typed Models**: Mongoose schemas with TypeScript interfaces
+  - **Aggregation Pipelines**: Transform MongoDB ObjectIds to strings for API responses
+  - **Type Conversion Logic**: Consistent field transformations for frontend consumption
+  - **Stateless Architecture**: Clean separation of database entities and API responses
+  - **Error Resilience**: Retry mechanisms for critical operations
+  - **Real-time Event Dispatching**: Efficient socket event broadcasting
 
 - **Development Tools**:
   - **[Turbopack](https://turbo.build/pack)**: Fast development server
   - **[ESLint](https://eslint.org/)**: Code linting
   - **[Prettier](https://prettier.io/)**: Code formatting
+  - **[TypeScript](https://www.typescriptlang.org/)**: End-to-end type safety
 
 ---
 
@@ -132,6 +152,8 @@ ChatApp's codebase is organized for clarity and scalability. Here's an overview:
 ├── services/            # API service functions
 ├── hooks/               # Custom React hooks
 ├── types/               # TypeScript type definitions
+│   ├── chat.ts         # Chat-related types
+│   └── message.ts      # Message-related types
 └── public/             # Static assets
 ```
 
@@ -261,6 +283,14 @@ The API documentation is available at `/api-docs` when running in development mo
 - `GET /api/messages/:chatId` - Fetch chat messages
 - `POST /api/messages` - Send new message
 - `GET /api/friends` - Manage friend connections
+
+The backend uses standardized response types for consistency:
+- `MessageResponseType` - Used for all message-related responses
+- `ChatResponseType` - Used for all chat-related responses
+
+These types ensure strong typing throughout the application and provide a predictable API surface for frontend integration.
+
+For detailed API documentation, see [API_DOC.md](chat-backend/API_DOC.md).
 
 ---
 

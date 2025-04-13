@@ -6,6 +6,17 @@ export interface MessageReaction {
   timestamp: Date;
 }
 
+export interface ReadReceipt {
+  userId: string;
+  readAt: Date;
+}
+
+export interface MessageEdit {
+  content: string;
+  editedAt: Date;
+  editedBy: string;
+}
+
 export interface AttachmentResponse {
   name: string;
   url: string;
@@ -40,10 +51,13 @@ export interface MessageType {
   edited: {
     isEdited: boolean;
     editedAt: Date;
-    PreviousContent: string[];
+    previousContent: string[];
   };
+  edits?: MessageEdit[];
+  readBy?: ReadReceipt[];
   isDeleted: boolean;
   replyToId?: string;
+  formatting?: Record<string, string>;
   createdAt: Date;
   updatedAt: Date;
 }

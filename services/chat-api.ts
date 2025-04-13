@@ -7,7 +7,15 @@ interface ApiResponse<T> {
   data: T;
   message: string;
   success: boolean;
+  errors?: string[];
 }
+
+interface ApiErrorData {
+  statusCode: number;
+  errors?: string[];
+}
+
+let isConnectionIssue = false;
 
 console.log("API Base URL:", config.chatApiUrl);
 
@@ -16,21 +24,51 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true
+  withCredentials: true,
+  timeout: 15000,
 });
+
+const handleApiResponse = <T>(response: { data: ApiResponse<T> }): T => {
+  if (!response.data) {
+    throw new Error("No response data received");
+  }
+  
+  if (!response.data.success) {
+    const errorMessage = response.data.message || "API request failed";
+    const error = new Error(errorMessage) as Error & ApiErrorData;
+    error.statusCode = response.data.statusCode;
+    error.errors = response.data.errors;
+    throw error;
+  }
+
+  return response.data.data;
+};
+
+const handleApiError = (error: unknown): never => {
+  console.log(error);
+  // For other types of errors
+  if (error instanceof Error) {
+    console.log(error.message);
+    throw error;
+  }
+  
+  throw new Error("An unknown error occurred");
+};
 
 api.interceptors.response.use(
   (response) => {
     console.log("Response received:", response.status, response.config.url);
+    isConnectionIssue = false;
     return response;
   },
   (error) => {
-    if (error.response) {
+    if (!error.response) {
+      isConnectionIssue = true;
+      console.error('Network error:', error.message);
+      return Promise.reject(new Error('No response received from server'));
+    } else if (error.response) {
       console.error('Error response:', error.response.status, error.response.data);
       return Promise.reject(error.response.data);
-    } else if (error.request) {
-      console.error('Error request:', error.request);
-      return Promise.reject(new Error('No response received from server'));
     } else {
       console.error('Error message:', error.message);
       return Promise.reject(error);
@@ -42,30 +80,18 @@ export const setAuthToken = (token: string) => {
   api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 };
 
+export const isConnectionHealthy = (): boolean => {
+  return !isConnectionIssue;
+};
+
 // Fetch all chats
 export const fetchChats = async (): Promise<ChatType[]> => {
   try {
     const response = await api.get<ApiResponse<ChatType[]>>("/chats");
-    
-    if (!response.data?.success) {
-      console.warn("API request was not successful:", response.data?.message);
-      return [];
-    }
-
-    if (!response.data?.data) {
-      console.warn("No chats data in response");
-      return [];
-    }
-
-    return response.data.data;
+    return handleApiResponse(response);
   } catch (error) {
     console.error("Error fetching chats:", error);
-    
-    if (error instanceof Error) {
-      throw error;
-    }
-    
-    throw new Error("Failed to fetch chats. Please try again later.");
+    return handleApiError(error);
   }
 };
 
@@ -360,10 +386,34 @@ export const unpinMessage = async ({
   }
 };
 
-export const getAllMessages = async ({ chatId }: { chatId: string }) => {
+// Get all messages with pagination support
+export const getAllMessages = async ({ 
+  chatId, 
+  page, 
+  limit,
+  before,
+  after
+}: { 
+  chatId: string;
+  page?: number;
+  limit?: number;
+  before?: string;
+  after?: string;
+}) => {
   try {
-    const response = await api.get<ApiResponse<MessageType>>(
-      `/messages/${chatId}`,
+    const params = new URLSearchParams();
+    if (page) params.append('page', page.toString());
+    if (limit) params.append('limit', limit.toString());
+    if (before) params.append('before', before);
+    if (after) params.append('after', after);
+
+    const queryString = params.toString();
+    const url = queryString 
+      ? `/messages/${chatId}?${queryString}` 
+      : `/messages/${chatId}`;
+
+    const response = await api.get<ApiResponse<MessageType[]>>(
+      url,
       { withCredentials: true }
     );
 
@@ -502,5 +552,52 @@ export const replyMessage = async ({
       throw new Error(error.message);
     }
     throw error;
+  }
+};
+
+// Edit a message
+export const editMessage = async ({
+  chatId,
+  messageId,
+  content,
+}: {
+  chatId: string;
+  messageId: string;
+  content: string;
+}) => {
+  try {
+    const response = await api.patch<ApiResponse<MessageType>>(
+      `/messages/${chatId}/${messageId}/edit`,
+      { content },
+      { withCredentials: true }
+    );
+    return response.data.data;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log(error.message);
+      throw new Error(error.message);
+    }
+    throw error;
+  }
+};
+
+// Mark messages as read with improved error handling
+export const markMessagesAsRead = async ({
+  chatId,
+  messageIds,
+}: {
+  chatId: string;
+  messageIds?: string[];
+}) => {
+  try {
+    const response = await api.post<ApiResponse<MessageType[]>>(
+      `/messages/${chatId}/read`,
+      { messageIds },
+      { withCredentials: true }
+    );
+    return handleApiResponse(response);
+  } catch (error) {
+    console.error("Error marking messages as read:", error);
+    return handleApiError(error);
   }
 };
