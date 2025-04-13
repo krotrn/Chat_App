@@ -177,15 +177,13 @@ Before you begin, ensure you have the following installed:
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/yourusername/chat-app.git
+   git clone https://github.com/krotrn/chat-app.git
    cd chat-app
    ```
 
 2. **Install Dependencies**
    ```bash
-   npm install
-   # or
-   yarn install
+   npm install --force
    ```
 
 3. **Environment Setup**
@@ -193,7 +191,6 @@ Before you begin, ensure you have the following installed:
    ```env
    # Database
    DATABASE_URL="postgresql://user:password@localhost:5432/chat_app"
-   MONGODB_URI="mongodb://localhost:27017/chat_app"
 
    # Authentication
    NEXTAUTH_URL="http://localhost:3000"
@@ -231,10 +228,7 @@ Before you begin, ensure you have the following installed:
 2. **Production Build**
    ```bash
    npm run build
-   npm start
-   # or
-   yarn build
-   yarn start
+
    ```
 
 ---
@@ -267,8 +261,6 @@ To deploy ChatApp to a production environment:
      npx prisma migrate deploy
      ```
 
-   - **MongoDB**: Verify connectivity from your production server.
-
 Consider using a platform like Vercel for Next.js hosting or a custom server with Nginx for more control.
 
 ---
@@ -300,7 +292,7 @@ We'd love your help to make ChatApp even better! To contribute:
 
 1. **Fork the Repository**
    ```bash
-   git clone https://github.com/yourusername/chat-app.git
+   git clone https://github.com/krotrn/chat-app.git
    ```
 
 2. **Create a Feature Branch**
