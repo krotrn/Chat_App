@@ -103,7 +103,7 @@ export default function useChatActions(
           const updatedMessages = prev.map((msg) => {
             if (
               (!messageIds || messageIds.includes(msg._id)) && 
-              msg.sender !== currentUserId && 
+              msg.sender.userId !== currentUserId && 
               (!msg.readBy || !msg.readBy.some(r => r.userId === currentUserId))
             ) {
               return {

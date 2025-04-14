@@ -1,8 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// This is your Prisma schema file.
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
@@ -27,14 +24,19 @@ enum AccountType {
 enum FriendshipStatus {
   PENDING
   ACCEPTED
+  FRIENDS
   REJECTED
   BLOCKED
+  NONE
 }
 
 enum ActivityType {
   MESSAGE
+  FRIENDACCEPTED
   FRIENDREQUEST
+  FRIENDREJECTED
   NEWFRIEND
+  BLOCKED
 }
 
 enum RecommendationType {
@@ -144,8 +146,8 @@ model Recommendations {
   id                 String             @id @default(cuid())
   userId             String
   type               RecommendationType
-  recommendedUserId  String             @default("")
-  recommendedGroupId String             @default("")
+  recommendedUserId  String?  
+  recommendedGroupId String?  
   title              String?
   description        String?
   avatarUrl          String?

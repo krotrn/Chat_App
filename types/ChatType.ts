@@ -27,8 +27,8 @@ export interface AttachmentResponse {
 
 export interface ParticipantsType {
   userId: string;
-  name: string;
-  avatarUrl: string;
+  name?: string;
+  avatarUrl?: string;
   role: "member" | "admin";
   joinedAt: Date;
 }
@@ -41,7 +41,7 @@ export enum StatusEnum {
 
 export interface MessageType {
   _id: string;
-  sender: string;
+  sender: ParticipantsType;
   receivers: ParticipantsType[];
   chatId: string;
   content: string;
@@ -51,13 +51,12 @@ export interface MessageType {
   edited: {
     isEdited: boolean;
     editedAt: Date;
-    previousContent: string[];
   };
-  edits?: MessageEdit[];
-  readBy?: ReadReceipt[];
-  isDeleted: boolean;
-  replyToId?: string;
-  formatting?: Record<string, string>;
+  edits: MessageEdit[];
+  readBy: ReadReceipt[];
+  deletedFor: DeletedForEntry[];
+  replyToId: string | null;
+  formatting: Map<string, string>;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -70,18 +69,18 @@ export interface DeletedForEntry {
 export interface ChatType {
   _id: string;
   name: string;
-  lastMessage?: MessageType | null;
-  messages?: MessageType[];
-  avatar: string;
+  lastMessage: MessageType | null;
+  avatarUrl: string;
   participants: ParticipantsType[];
   admin: string;
   type: "direct" | "group" | "channel";
   createdBy: string;
   deletedFor: DeletedForEntry[];
-  metadata: {
+  metadata?: {
     pinnedMessage: string[];
     customePermissions?: unknown;
   };
+  messages: MessageType[];
   createdAt: Date;
   updatedAt: Date;
 }

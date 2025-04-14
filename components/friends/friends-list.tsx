@@ -15,6 +15,9 @@ import { FormattedFriendType } from "@/types/formattedDataTypes";
 import { useState, useTransition, useEffect } from "react";
 import { removeFriend } from "@/actions/userUtils";
 import { toast } from "sonner";
+import { createOrGetAOneOnOneChat } from "@/services/chat-api";
+import { ParticipantsType } from "@/types/ChatType";
+import { useRouter } from "next/navigation";
 interface FriendsListProps {
   friends: FormattedFriendType[];
   userId: string;
@@ -24,6 +27,8 @@ export default function FriendsList({ friends, userId }: FriendsListProps) {
   const [searchQuery, setSearchQuery] = useSearchQuery("fr", "");
   const [isPending, startTransition] = useTransition();
   const [filteredFriends, setFilteredFriends] = useState(friends);
+
+  const router = useRouter();
 
   useEffect(() => {
     setFilteredFriends(
@@ -55,6 +60,21 @@ export default function FriendsList({ friends, userId }: FriendsListProps) {
         toast.error(error.message);
       } else {
         toast.error("Error removing friend");
+      }
+    }
+  };
+  const handleGetChat = (participants: ParticipantsType[], name: string) => {
+    try {
+      startTransition(async () => {
+        const response = await createOrGetAOneOnOneChat({ participants, name });
+        router.push(`/chats?chat=${response._id}`);
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(error.message);
+        toast.error(error.message);
+      } else {
+        toast.error("Error creating chat");
       }
     }
   };
@@ -90,7 +110,9 @@ export default function FriendsList({ friends, userId }: FriendsListProps) {
               {filteredFriends?.map((friend) => (
                 <FriendCard
                   handleRemoveFriend={handleRemoveFriend}
+                  handleGetChat={handleGetChat}
                   isPending={isPending}
+                  userId={userId}
                   friend={friend}
                   key={friend.id}
                 />

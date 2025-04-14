@@ -5,17 +5,52 @@ import { Button } from "@/components/ui/button";
 import { MessageSquareMore, UserMinus } from "lucide-react";
 import { FormattedFriendType } from "@/types/formattedDataTypes";
 import { friendCardVariant } from "@/animations/friends/friend-card-variant";
+import { ParticipantsType } from "@/types/ChatType";
+import { getUserDataById } from "@/actions/userUtils";
 interface FriendCardProps {
   friend: FormattedFriendType;
   handleRemoveFriend: (friendId: string) => void;
+  handleGetChat: (participants: ParticipantsType[], name: string) => void;
+  userId: string;
   isPending: boolean;
 }
 
 export default function FriendCard({
   friend,
   handleRemoveFriend,
+  handleGetChat,
+  userId,
   isPending,
 }: FriendCardProps) {
+  const handleMessageClick = async () => {
+    const participant: ParticipantsType = {
+      avatarUrl: friend.avatarUrl,
+      joinedAt: new Date(),
+      name: friend.name,
+      role: "member",
+      userId: friend.id,
+    };
+
+    const user = await getUserDataById(userId, {
+      avatarUrl: true,
+      name: true,
+      role: true,
+      id: true,
+      username: true,
+    });
+    const participant2: ParticipantsType = {
+      avatarUrl: user.avatarUrl ?? undefined,
+      name: user.name ?? undefined,
+      userId: user.id,
+      role: "member",
+      joinedAt: new Date(),
+    };
+    handleGetChat(
+      [participant, participant2],
+      `${user.username} and ${friend.username}`
+    );
+  };
+
   return (
     <motion.div
       variants={friendCardVariant}
@@ -38,7 +73,12 @@ export default function FriendCard({
         </div>
       </div>
       <div className="flex space-x-2">
-        <Button variant="ghost" size="icon" disabled={isPending}>
+        <Button
+          variant="ghost"
+          size="icon"
+          disabled={isPending}
+          onClick={handleMessageClick}
+        >
           <MessageSquareMore className="h-4 w-4" />
           <span className="sr-only">Message</span>
         </Button>

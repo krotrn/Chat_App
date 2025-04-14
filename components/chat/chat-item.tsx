@@ -26,7 +26,7 @@ export default function ChatItem({
   onClick,
   onDelete,
 }: ChatItemProps) {
-  const { name, avatar, lastMessage } = chat;
+  const { name, avatarUrl, lastMessage } = chat;
 
   return (
     <motion.div
@@ -40,7 +40,7 @@ export default function ChatItem({
       layout
     >
       <Avatar>
-        <AvatarImage src={avatar} alt={name} />
+        <AvatarImage src={avatarUrl} alt={name} />
         <AvatarFallback>{name.slice(0, 2).toUpperCase()}</AvatarFallback>
       </Avatar>
       <div className="flex-1 overflow-hidden">
