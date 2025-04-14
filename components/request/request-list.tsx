@@ -31,7 +31,7 @@ export function RequestsList({ requests, userId, pending }: RequestsListProps) {
     ) => {
       setPendingRequests((prev) => [...prev, requestId]);
       try {
-        await handleFriendRequest(requestId, userId, action, status);
+        await handleFriendRequest(requestId, userId, action);
         setProcessedRequests((prev) => [...prev, requestId]);
         toast.success(actionMessages[action === status ? "PENDING" : action]);
       } catch (error) {

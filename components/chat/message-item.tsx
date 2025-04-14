@@ -69,9 +69,9 @@ export default function MessageItem({
   const [showReactions, setShowReactions] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editContent, setEditContent] = useState(message.content);
-  const sender = participants.find((user) => user.userId === message.sender);
+  const sender = participants.find((user) => user.userId === message.sender.userId);
   const replySender = replyMessage
-    ? participants.find((user) => user.userId === replyMessage.sender)
+    ? participants.find((user) => user.userId === replyMessage.sender.userId)
     : null;
   const longPressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isLongPressed, setIsLongPressed] = useState(false);

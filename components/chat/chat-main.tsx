@@ -51,7 +51,7 @@ export default function ChatMain({
     handleEditMessage,
     handleMarkAsRead,
     isLoading,
-  } = useChatActions(chat._id, replyToMessage, setReplyToMessage, setMessages, currentUser.id);
+  } = useChatActions({chatId:chat._id, replyToMessage, setReplyToMessage, setMessages, currentUserId:currentUser.id});
 
   useEffect(() => {
     if (chat._id) {

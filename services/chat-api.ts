@@ -32,7 +32,7 @@ const handleApiResponse = <T>(response: { data: ApiResponse<T> }): T => {
   if (!response.data) {
     throw new Error("No response data received");
   }
-  
+
   if (!response.data.success) {
     const errorMessage = response.data.message || "API request failed";
     const error = new Error(errorMessage) as Error & ApiErrorData;
@@ -50,7 +50,7 @@ const handleApiError = (error: unknown): never => {
     console.log(error.message);
     throw error;
   }
-  
+
   throw new Error("An unknown error occurred");
 };
 
@@ -63,13 +63,17 @@ api.interceptors.response.use(
   (error) => {
     if (!error.response) {
       isConnectionIssue = true;
-      console.error('Network error:', error.message);
-      return Promise.reject(new Error('No response received from server'));
+      console.error("Network error:", error.message);
+      return Promise.reject(new Error("No response received from server"));
     } else if (error.response) {
-      console.error('Error response:', error.response.status, error.response.data);
+      console.error(
+        "Error response:",
+        error.response.status,
+        error.response.data
+      );
       return Promise.reject(error.response.data);
     } else {
-      console.error('Error message:', error.message);
+      console.error("Error message:", error.message);
       return Promise.reject(error);
     }
   }
@@ -121,9 +125,12 @@ export const getChatById = async ({
   chatId: string;
 }): Promise<ChatType> => {
   try {
-    const response = await api.get<ApiResponse<ChatType>>(`/chats/chat/${chatId}`, {
-      withCredentials: true,
-    });
+    const response = await api.get<ApiResponse<ChatType>>(
+      `/chats/chat/${chatId}`,
+      {
+        withCredentials: true,
+      }
+    );
     return handleApiResponse(response);
   } catch (error) {
     console.error("Error fetching chat by ID:", error);
@@ -346,13 +353,13 @@ export const unpinMessage = async ({
 };
 
 // Get all messages with pagination support
-export const getAllMessages = async ({ 
-  chatId, 
-  page, 
+export const getAllMessages = async ({
+  chatId,
+  page,
   limit,
   before,
-  after
-}: { 
+  after,
+}: {
   chatId: string;
   page?: number;
   limit?: number;
@@ -361,20 +368,19 @@ export const getAllMessages = async ({
 }) => {
   try {
     const params = new URLSearchParams();
-    if (page) params.append('page', page.toString());
-    if (limit) params.append('limit', limit.toString());
-    if (before) params.append('before', before);
-    if (after) params.append('after', after);
+    if (page) params.append("page", page.toString());
+    if (limit) params.append("limit", limit.toString());
+    if (before) params.append("before", before);
+    if (after) params.append("after", after);
 
     const queryString = params.toString();
-    const url = queryString 
-      ? `/messages/${chatId}?${queryString}` 
+    const url = queryString
+      ? `/messages/${chatId}?${queryString}`
       : `/messages/${chatId}`;
 
-    const response = await api.get<ApiResponse<MessageType[]>>(
-      url,
-      { withCredentials: true }
-    );
+    const response = await api.get<ApiResponse<MessageType[]>>(url, {
+      withCredentials: true,
+    });
 
     return handleApiResponse(response);
   } catch (error) {
@@ -424,16 +430,26 @@ export const sendMessage = async ({
 export const deleteMessage = async ({
   chatId,
   messageId,
+  forEveryone,
 }: {
   chatId: string;
   messageId: string;
+  forEveryone?: boolean;
 }) => {
   try {
-    const response = await api.delete<ApiResponse<MessageType>>(
-      `/messages/${chatId}/${messageId}`,
-      { withCredentials: true }
-    );
-    return handleApiResponse(response);
+    if (forEveryone) {
+      const response = await api.delete<ApiResponse<MessageType>>(
+        `/messages/${chatId}/${messageId}`,
+        { withCredentials: true }
+      );
+      return handleApiResponse(response);
+    } else {
+      const response = await api.delete<ApiResponse<MessageType>>(
+        `/messages/${chatId}/${messageId}/me`,
+        { withCredentials: true }
+      );
+      return handleApiResponse(response);
+    }
   } catch (error) {
     console.error("Error deleting message:", error);
     return handleApiError(error);

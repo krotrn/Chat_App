@@ -41,8 +41,7 @@ export default function ChatSidebar({
         const filtered = initialChats.filter(
           (chat) =>
             chat.name.toLowerCase().includes(value) ||
-            chat.lastMessage?.content
-              .includes(value)
+            chat.lastMessage?.content.includes(value)
         );
         setChats(filtered);
       }
@@ -106,7 +105,9 @@ export default function ChatSidebar({
                   chat={chat}
                   isSelected={chat._id === selectedChatId}
                   onClick={() => handleChatSelect(chat._id)}
-                  onDelete={(forEveryone) => handleDeleteChat(chat._id, forEveryone)}
+                  onDelete={(forEveryone) =>
+                    handleDeleteChat(chat._id, forEveryone)
+                  }
                 />
               ))
             ) : (

@@ -101,7 +101,7 @@ export default function MessageInput({
   }, []);
 
   const replyToUser = replyToMessage
-    ? participants.find((user) => user.userId === replyToMessage.sender)
+    ? participants.find((user) => user.userId === replyToMessage.sender.userId)
     : null;
 
   return (

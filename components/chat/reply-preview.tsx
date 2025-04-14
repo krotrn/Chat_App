@@ -16,7 +16,7 @@ export function ReplyPreview({ replyMessage, replySender, isOwn }: {
       )}
     >
       <p className="font-medium text-xs">
-        {replySender?.userId === replyMessage.sender
+        {replySender?.userId === replyMessage.sender.userId
           ? "Replying to themselves"
           : `Replying to ${replySender?.name}`}
       </p>

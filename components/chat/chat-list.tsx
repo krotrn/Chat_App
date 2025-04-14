@@ -28,7 +28,6 @@ export default function ChatList({
       if (forEveryone) {
         console.log("deleted for everyone");
       }
-      console.log("deleted");
     } catch (error) {
       if (error instanceof Error) {
         console.log(error.message);

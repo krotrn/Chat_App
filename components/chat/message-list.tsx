@@ -56,7 +56,7 @@ export default function MessageList({
                 participants={participants}
                 key={message._id}
                 message={message}
-                isOwn={message.sender === currentUser?.id}
+                isOwn={message.sender.userId === currentUser?.id}
                 showAvatar={showAvatar}
                 onDelete={onDeleteMessage}
                 onReply={onReplyMessage}

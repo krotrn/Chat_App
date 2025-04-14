@@ -13,11 +13,14 @@ interface HeaderActionsProps {
   isAdmin: boolean;
   onToggleDetails: () => void;
   onDeleteChat: (chatId: string, forEveryone: boolean) => void;
+  chatId: string;
 }
 
 export default function HeaderActions({
   isAdmin,
   onToggleDetails,
+  onDeleteChat,
+  chatId,
 }: HeaderActionsProps) {
   return (
     <div className="flex items-center gap-2">
@@ -43,9 +46,19 @@ export default function HeaderActions({
           {isAdmin && (
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"
+              onClick={() => onDeleteChat(chatId, true)}
             >
               <Trash2 className="mr-2 h-4 w-4" />
               Delete chat
+            </DropdownMenuItem>
+          )}
+          {!isAdmin && (
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive"
+              onClick={() => onDeleteChat(chatId, false)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Leave chat
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>
