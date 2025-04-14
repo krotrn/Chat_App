@@ -282,7 +282,7 @@ The backend uses standardized response types for consistency:
 
 These types ensure strong typing throughout the application and provide a predictable API surface for frontend integration.
 
-For detailed API documentation, see [API_DOC.md](chat-backend/API_DOC.md).
+For detailed API documentation, see [API_DOC.md](https://github.com/krotrn/ChatApp-backend/API_DOC.md).
 
 ---
 
