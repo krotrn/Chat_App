@@ -130,6 +130,7 @@ model UserFriends {
   userId    String
   friendId  String
   createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   user   User @relation("UserFriends", fields: [userId], references: [id], onDelete: Cascade)
   friend User @relation("UserFriendsFriend", fields: [friendId], references: [id], onDelete: Cascade)

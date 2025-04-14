@@ -46,7 +46,6 @@ const handleApiResponse = <T>(response: { data: ApiResponse<T> }): T => {
 
 const handleApiError = (error: unknown): never => {
   console.log(error);
-  // For other types of errors
   if (error instanceof Error) {
     console.log(error.message);
     throw error;
@@ -109,13 +108,9 @@ export const createOrGetAOneOnOneChat = async ({
       { participants, name },
       { withCredentials: true }
     );
-    return response.data.data;
+    return handleApiResponse(response);
   } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message);
-      throw new Error(error.message);
-    }
-    throw error;
+    return handleApiError(error);
   }
 };
 
@@ -129,13 +124,10 @@ export const getChatById = async ({
     const response = await api.get<ApiResponse<ChatType>>(`/chats/chat/${chatId}`, {
       withCredentials: true,
     });
-    return response.data.data;
+    return handleApiResponse(response);
   } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message);
-      throw new Error(error.message);
-    }
-    throw error;
+    console.error("Error fetching chat by ID:", error);
+    return handleApiError(error);
   }
 };
 
@@ -152,11 +144,8 @@ export const deleteOneOnOneChat = async ({
     );
     return response.data;
   } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message);
-      throw new Error(error.message);
-    }
-    throw error;
+    console.error("Error deleting chat:", error);
+    return handleApiError(error);
   }
 };
 
@@ -173,11 +162,8 @@ export const deleteChatForMe = async ({
     );
     return response.data;
   } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message);
-      throw new Error(error.message);
-    }
-    throw error;
+    console.error("Error deleting chat for me:", error);
+    return handleApiError(error);
   }
 };
 
@@ -195,13 +181,10 @@ export const createAGroupChat = async ({
       { participants, name },
       { withCredentials: true }
     );
-    return response.data.data;
+    return handleApiResponse(response);
   } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message);
-      throw new Error(error.message);
-    }
-    throw error;
+    console.error("Error creating group chat:", error);
+    return handleApiError(error);
   }
 };
 
@@ -216,13 +199,10 @@ export const getGroupChatDetails = async ({
       `/chats/group/${chatId}`,
       { withCredentials: true }
     );
-    return response.data.data;
+    return handleApiResponse(response);
   } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message);
-      throw new Error(error.message);
-    }
-    throw error;
+    console.error("Error fetching group chat details:", error);
+    return handleApiError(error);
   }
 };
 
@@ -240,13 +220,10 @@ export const renameGroupChat = async ({
       { name },
       { withCredentials: true }
     );
-    return response.data.data;
+    return handleApiResponse(response);
   } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message);
-      throw new Error(error.message);
-    }
-    throw error;
+    console.error("Error renaming group chat:", error);
+    return handleApiError(error);
   }
 };
 
@@ -261,13 +238,10 @@ export const deleteGroupChat = async ({
       `/chats/group/${chatId}`,
       { withCredentials: true }
     );
-    return response.data.data;
+    return handleApiResponse(response);
   } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message);
-      throw new Error(error.message);
-    }
-    throw error;
+    console.error("Error deleting group chat:", error);
+    return handleApiError(error);
   }
 };
 
@@ -285,13 +259,10 @@ export const addNewParticipantInGroupChat = async ({
       {},
       { withCredentials: true }
     );
-    return response.data.data;
+    return handleApiResponse(response);
   } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message);
-      throw new Error(error.message);
-    }
-    throw error;
+    console.error("Error adding participant to group chat:", error);
+    return handleApiError(error);
   }
 };
 
@@ -308,13 +279,10 @@ export const removeParticipantFromGroupChat = async ({
       `/chats/group/${chatId}/participant/${participantId}`,
       { withCredentials: true }
     );
-    return response.data.data;
+    return handleApiResponse(response);
   } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message);
-      throw new Error(error.message);
-    }
-    throw error;
+    console.error("Error removing participant from group chat:", error);
+    return handleApiError(error);
   }
 };
 
@@ -329,13 +297,10 @@ export const leaveGroupChat = async ({
       `/chats/group/${chatId}/leave`,
       { withCredentials: true }
     );
-    return response.data.data;
+    return handleApiResponse(response);
   } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message);
-      throw new Error(error.message);
-    }
-    throw error;
+    console.error("Error leaving group chat:", error);
+    return handleApiError(error);
   }
 };
 
@@ -353,13 +318,10 @@ export const pinMessage = async ({
       {},
       { withCredentials: true }
     );
-    return response.data.data;
+    return handleApiResponse(response);
   } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message);
-      throw new Error(error.message);
-    }
-    throw error;
+    console.error("Error pinning message:", error);
+    return handleApiError(error);
   }
 };
 
@@ -376,13 +338,10 @@ export const unpinMessage = async ({
       `/chats/chat/${chatId}/pin/${messageId}`,
       { withCredentials: true }
     );
-    return response.data.data;
+    return handleApiResponse(response);
   } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message);
-      throw new Error(error.message);
-    }
-    throw error;
+    console.error("Error unpinning message:", error);
+    return handleApiError(error);
   }
 };
 
@@ -417,13 +376,10 @@ export const getAllMessages = async ({
       { withCredentials: true }
     );
 
-    return response.data.data;
+    return handleApiResponse(response);
   } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message);
-      throw new Error(error.message);
-    }
-    throw error;
+    console.error("Error fetching messages:", error);
+    return handleApiError(error);
   }
 };
 
@@ -458,13 +414,10 @@ export const sendMessage = async ({
         },
       }
     );
-    return response.data.data;
+    return handleApiResponse(response);
   } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message);
-      throw new Error(error.message);
-    }
-    throw error;
+    console.error("Error sending message:", error);
+    return handleApiError(error);
   }
 };
 
@@ -480,13 +433,10 @@ export const deleteMessage = async ({
       `/messages/${chatId}/${messageId}`,
       { withCredentials: true }
     );
-    return response.data.data;
+    return handleApiResponse(response);
   } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message);
-      throw new Error(error.message);
-    }
-    throw error;
+    console.error("Error deleting message:", error);
+    return handleApiError(error);
   }
 };
 
@@ -505,13 +455,10 @@ export const updateReaction = async ({
       { emoji },
       { withCredentials: true }
     );
-    return response.data.data;
+    return handleApiResponse(response);
   } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message);
-      throw new Error(error.message);
-    }
-    throw error;
+    console.error("Error updating reaction:", error);
+    return handleApiError(error);
   }
 };
 
@@ -545,13 +492,10 @@ export const replyMessage = async ({
         },
       }
     );
-    return response.data.data;
+    return handleApiResponse(response);
   } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message);
-      throw new Error(error.message);
-    }
-    throw error;
+    console.error("Error replying to message:", error);
+    return handleApiError(error);
   }
 };
 
@@ -571,13 +515,10 @@ export const editMessage = async ({
       { content },
       { withCredentials: true }
     );
-    return response.data.data;
+    return handleApiResponse(response);
   } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message);
-      throw new Error(error.message);
-    }
-    throw error;
+    console.error("Error editing message:", error);
+    return handleApiError(error);
   }
 };
 

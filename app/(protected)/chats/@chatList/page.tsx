@@ -16,7 +16,6 @@ export default async function ChatListPage({
       throw new Error("No access token found");
     }
     
-    console.log("Access token:", session.accessToken);
     setAuthToken(session.accessToken);
     const chats = await fetchChats();
     const selectedChatId = (await searchParams).chat || null;

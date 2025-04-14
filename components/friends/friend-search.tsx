@@ -48,7 +48,7 @@ export default function FriendSearch({ userId, pending }: FriendSearchProps) {
         setSearchResult(results);
       } catch (error) {
         console.log(error);
-        toast.error("Faild to search user");
+        toast.error("Failed to search user");
       }
     });
   };

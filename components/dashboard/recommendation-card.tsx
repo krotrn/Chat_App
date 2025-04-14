@@ -1,4 +1,7 @@
-import { RecommendationWithRelations, sendFriendRequest } from "@/actions/userUtils";
+import {
+  RecommendationWithRelations,
+  sendFriendRequest,
+} from "@/actions/userUtils";
 import { Card, CardContent } from "../ui/card";
 import Image from "next/image";
 import { RecommendationType } from "@prisma/client";
@@ -8,10 +11,10 @@ import { toast } from "sonner";
 
 export default function RecommendationCard({
   recommendation,
-  userId
+  userId,
 }: {
-    recommendation: RecommendationWithRelations;
-  userId:string
+  recommendation: RecommendationWithRelations;
+  userId: string;
 }) {
   const avatar =
     recommendation.type === "FRIENDREQUEST"
@@ -41,7 +44,7 @@ export default function RecommendationCard({
         return null;
     }
   };
-  const handleAction = async(recommendation:RecommendationWithRelations) => {
+  const handleAction = async (recommendation: RecommendationWithRelations) => {
     if (recommendation.type === "FRIENDREQUEST") {
       if (!recommendation.recommendedUser?.id) {
         toast.error("User ID is missing");
@@ -59,8 +62,11 @@ export default function RecommendationCard({
         toast.error("somthing went wrong");
       }
     } else if (recommendation.type === "GROUP") {
-      if (!recommendation.recommendedGroup?.id || !recommendation.recommendedGroup.backendId) {
-        toast.error("User ID is missing");
+      if (
+        !recommendation.recommendedGroup?.id ||
+        !recommendation.recommendedGroup.backendId
+      ) {
+        toast.error("Group information is missing");
         return;
       }
       try {

@@ -32,23 +32,21 @@ export default async function RequestsPage() {
   return (
     <div className="w-full flex items-center justify-center py-10">
       <Authorized user={session.user}>
-        <div className="w-full flex items-center justify-center py-10">
-          <main className="w-full max-w-4xl space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">
-                Friend Requests
-              </h1>
-              <p className="text-muted-foreground">
-                Manage your incoming friend requests.
-              </p>
-            </div>
-            <RequestsList
-              requests={requests}
-              userId={session.user.id!}
-              pending={pending.map((p) => p.id)}
-            />
-          </main>
-        </div>
+        <main className="w-full max-w-4xl space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Friend Requests
+            </h1>
+            <p className="text-muted-foreground">
+              Manage your incoming friend requests.
+            </p>
+          </div>
+          <RequestsList
+            requests={requests}
+            userId={session.user.id}
+            pending={pending.map((p) => p.id)}
+          />
+        </main>
       </Authorized>
     </div>
   );

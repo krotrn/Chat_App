@@ -97,13 +97,10 @@ export default function useChatActions(
       if (!currentUserId) return;
       
       startTransition(async () => {
-        // Create a timestamp to use consistently across the operation
         const readAt = new Date();
         
-        // Optimistically update the UI first to avoid race conditions with socket events
         setMessages((prev) => {
           const updatedMessages = prev.map((msg) => {
-            // For messages that need to be marked as read
             if (
               (!messageIds || messageIds.includes(msg._id)) && 
               msg.sender !== currentUserId && 
@@ -122,18 +119,14 @@ export default function useChatActions(
           return updatedMessages;
         });
         
-        // Then send the API request
         try {
           await markMessagesAsRead({
             chatId,
             messageIds,
           });
         } catch (error) {
-          // Log the error but don't revert the UI change to avoid flickering
-          // Only for critical errors, we might want to revert or retry
           console.error("Error marking messages as read:", error);
           
-          // If it's a connection error, we could provide a subtle notification
           if (error instanceof Error && error.message.includes('network')) {
             toast.error("Network issue - read status may not sync", {
               duration: 3000,
@@ -146,7 +139,6 @@ export default function useChatActions(
     [chatId, currentUserId, setMessages]
   );
 
-  // Automatically mark visible messages as read when component mounts
   useEffect(() => {
     if (chatId && currentUserId) {
       handleMarkAsRead();

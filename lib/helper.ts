@@ -1,6 +1,6 @@
 import { FriendshipStatus } from "@prisma/client";
 
-export const handleSuccess = (data: unknown, message: string) => ({
+export const handleSuccess = <T>(data: T, message: string) => ({
   success: true,
   error: false,
   data,

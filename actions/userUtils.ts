@@ -17,10 +17,10 @@ import {
 } from "@prisma/client";
 import { z } from "zod";
 
-interface ResponseType {
+interface ResponseType<T> {
   success: boolean;
   error: boolean;
-  data?: unknown;
+  data?: T;
   message: string;
 }
 
@@ -47,7 +47,7 @@ export const getRecommendations = async (): Promise<
   RecommendationWithRelations[]
 > => {
   const session = await auth();
-  if (!session) throw new Error("Unauthenticated");
+  if (!session) throw new Error("User not authenticated");
 
   try {
     const recommendations = await db.recommendations.findMany({
@@ -77,17 +77,15 @@ export const getRecommendations = async (): Promise<
     });
     return recommendations;
   } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message);
-      throw new Error(error.message);
-    }
-    throw error;
+    const errorMsg = error instanceof Error ? error.message : "Unknown error";
+    console.error("Error fetching recommendations:", errorMsg);
+    throw new Error(errorMsg);
   }
 };
 
 export const getActivities = async () => {
   const session = await auth();
-  if (!session) throw new Error("Unauthotized");
+  if (!session) throw new Error("Unauthorized");
 
   try {
     const activities = await db.activity.findMany({
@@ -96,22 +94,20 @@ export const getActivities = async () => {
     });
     return activities;
   } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message);
-      throw new Error(error.message);
-    }
-    throw error;
+    const errorMsg = error instanceof Error ? error.message : "Unknown error";
+    console.error("Error fetching activities:", errorMsg);
+    throw new Error(errorMsg);
   }
 };
 
 export const getUserStats = async <T extends keyof StatsProps>(fields: T[]) => {
   const session = await auth();
-  if (!session) throw new Error("Unauthotized");
+  if (!session) throw new Error("Unauthorized");
 
   try {
     const select: Partial<Record<keyof StatsProps, boolean>> = fields.reduce(
       (acc, key) => {
-        acc[key as keyof StatsProps] = true;
+        acc[key] = true;
         return acc;
       },
       {} as Partial<Record<keyof StatsProps, boolean>>
@@ -127,30 +123,15 @@ export const getUserStats = async <T extends keyof StatsProps>(fields: T[]) => {
     if (!user) throw new Error("User not found");
     return user;
   } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message);
-      throw new Error(error.message);
-    }
-    throw error;
+    const errorMsg = error instanceof Error ? error.message : "Unknown error";
+    console.error("Error fetching user stats:", errorMsg);
+    throw new Error(errorMsg);
   }
 };
 
-/**
- * Updates the user's profile with the provided data.
- *
- * This function first verifies the user session and then updates the
- * profile's name, bio, and avatar URL in the database. If an avatar is provided,
- * it is uploaded and its URL is stored. If the operation is successful, a success
- * response is returned; otherwise, an error response is returned.
- *
- * @param data - The profile data to update, which should conform to the profileSchema.
- *               This includes the user's name, bio, and optionally an avatar.
- * @returns A Promise that resolves with a ResponseType indicating whether the update
- *          was successful or detailing any errors encountered.
- */
 export const updateProfile = async (
   data: z.infer<typeof profileSchema>
-): Promise<ResponseType> => {
+): Promise<ResponseType<null>> => {
   const session = await auth();
   if (!session || !session.user.id)
     return handleError("User not authenticated.");
@@ -165,34 +146,20 @@ export const updateProfile = async (
     });
 
     return handleSuccess(null, "Profile updated successfully.");
-  } catch {
+  } catch (error) {
+    const errorMsg =
+      error instanceof Error ? error.message : "Error updating profile";
+    console.error("Error updating profile:", errorMsg);
     return handleError("An error occurred while updating the profile.");
   }
 };
 
-/**
- * Uploads an avatar image file.
- *
- * This function uploads the supplied avatar file and returns a URL pointing to the uploaded image.
- * Currently, the implementation is a placeholder that returns a fixed URL.
- *
- * @param avatar - The image file to be uploaded.
- * @returns A promise that resolves to the URL string of the uploaded avatar.
- */
 async function uploadAvatar(avatar: File): Promise<string> {
   // TODO
   void avatar;
   return "https://example.com/avatar.jpg";
 }
 
-/**
- * Retrieves friend requests for the authenticated user, selecting only the specified fields.
- *
- * @template T - A key of the FriendRequest interface that represents a valid field to select.
- * @param {T[]} selectFields - An array of keys from FriendRequest. Only these fields will be included in the result.
- * @returns {Promise<FriendRequest[]>} A promise that resolves to an array of friend requests, each represented as an object with only the selected fields.
- * @throws {Error} If the user is not authenticated or if an error occurs during the database query.
- */
 export const getFriendRequests = async <T extends keyof FriendRequest>(
   selectFields: T[]
 ): Promise<FriendRequest[]> => {
@@ -209,27 +176,21 @@ export const getFriendRequests = async <T extends keyof FriendRequest>(
     );
 
     const friendRequests = await db.friendRequest.findMany({
-      where: { receiverId: session.user.id, status: "PENDING" },
+      where: { receiverId: session.user.id, status: FriendshipStatus.PENDING },
       select,
     });
 
     return friendRequests;
-  } catch {
+  } catch (error) {
+    const errorMsg =
+      error instanceof Error
+        ? error.message
+        : "Error retrieving friend requests";
+    console.error("Error in getFriendRequests:", errorMsg);
     throw new Error("Error Getting Request.");
   }
 };
 
-/**
- * Retrieves user data by its unique identifier with the specified field selection.
- *
- * @template T - A type representing the selection object where each key (from the User model) is a boolean
- * indicating whether that field should be included in the retrieved user object.
- * @param {string} id - The unique identifier of the user.
- * @param {T} select - An object specifying which fields to include in the result.
- * @returns A promise that resolves with the user data if found.
- *
- * @throws {Error} If the user with the specified id is not found or if any error occurs during the database operation.
- */
 export const getUserDataById = async <
   T extends Partial<Record<keyof User, boolean>>,
 >(
@@ -248,11 +209,9 @@ export const getUserDataById = async <
     }
     return user;
   } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message);
-      throw new Error(error.message);
-    }
-    throw error;
+    const errorMsg = error instanceof Error ? error.message : "Unknown error";
+    console.error("Error fetching user data by ID:", errorMsg);
+    throw new Error(errorMsg);
   }
 };
 
@@ -260,42 +219,35 @@ export const getUserFriends = async (
   id: string
 ): Promise<FormattedFriendType[]> => {
   try {
-    const user = await db.user.findUnique({
-      where: { id },
-      select: { friends: { select: { id: true } } },
-    });
-    if (!user || !user.friends) throw new Error("something went wrong");
-    const friends = await Promise.all(
-      user.friends.map(async (f) => {
-        const friend = await db.user.findUnique({
-          where: { id: f.id },
+    const userFriends = await db.userFriends.findMany({
+      where: { userId: id },
+      select: {
+        friend: {
           select: {
-            avatarUrl: true,
-            name: true,
+            id: true,
             username: true,
+            name: true,
+            avatarUrl: true,
             bio: true,
             isOnline: true,
           },
-        });
-        if (!friend) return null;
-        return {
-          id: f.id,
-          avatarUrl: friend.avatarUrl ?? undefined,
-          name: friend.name ?? undefined,
-          username: friend.username,
-          bio: friend.bio ?? undefined,
-          isOnline: friend.isOnline,
-        };
-      })
-    );
+        },
+      },
+    });
 
-    return friends.filter((f) => f !== null);
+    return userFriends.map((userFriend) => ({
+      id: userFriend.friend.id,
+      username: userFriend.friend.username,
+      name: userFriend.friend.name ?? undefined,
+      avatarUrl: userFriend.friend.avatarUrl ?? undefined,
+      bio: userFriend.friend.bio ?? undefined,
+      isOnline: userFriend.friend.isOnline,
+    }));
   } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message);
-      throw new Error(error.message);
-    }
-    throw error;
+    const errorMsg =
+      error instanceof Error ? error.message : "Error fetching user friends";
+    console.error("Error in getUserFriends:", errorMsg);
+    throw new Error(errorMsg);
   }
 };
 
@@ -325,21 +277,16 @@ export const getUserByQuery = async <T extends keyof SearchUserType>(
       select,
     });
 
-    return users
-      .filter((u) => u.id !== session.user.id)
-      .map((u) => {
-        return {
-          ...u,
-          name: u.name ?? undefined,
-          avatarUrl: u.avatarUrl ?? undefined,
-        };
-      });
+    return users.map((user) => ({
+      ...user,
+      name: user.name ?? undefined,
+      avatarUrl: user.avatarUrl ?? undefined,
+    }));
   } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message);
-      throw new Error(error.message);
-    }
-    throw error;
+    const errorMsg =
+      error instanceof Error ? error.message : "Error searching users";
+    console.error("Error in getUserByQuery:", errorMsg);
+    throw new Error(errorMsg);
   }
 };
 
@@ -348,6 +295,19 @@ export const sendFriendRequest = async (
   receiverId: string
 ) => {
   try {
+    const recentRequestsCount = await db.friendRequest.count({
+      where: {
+        senderId,
+        createdAt: {
+          gte: new Date(Date.now() - 24 * 60 * 60 * 1000),
+        },
+      },
+    });
+
+    if (recentRequestsCount > 20) {
+      throw new Error("You've sent too many friend requests recently");
+    }
+
     const existingRequest = await db.friendRequest.findFirst({
       where: {
         senderId,
@@ -355,11 +315,19 @@ export const sendFriendRequest = async (
       },
     });
     if (existingRequest) {
-      throw new Error("Friend request already sent");
+      if (existingRequest.status === FriendshipStatus.BLOCKED) {
+        throw new Error("Cannot send friend request");
+      }
+      throw new Error("Friend request already exists");
     }
 
     const areFriends = await db.userFriends.findFirst({
-      where: { userId: senderId, friendId: receiverId },
+      where: {
+        OR: [
+          { userId: senderId, friendId: receiverId },
+          { userId: receiverId, friendId: senderId },
+        ],
+      },
     });
     if (areFriends) {
       throw new Error("Users are already friends");
@@ -372,11 +340,10 @@ export const sendFriendRequest = async (
     });
     return friendRequest;
   } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message);
-      throw new Error(error.message);
-    }
-    throw error;
+    const errorMsg =
+      error instanceof Error ? error.message : "Error sending friend request";
+    console.error("Error in sendFriendRequest:", errorMsg);
+    throw new Error(errorMsg);
   }
 };
 
@@ -385,41 +352,397 @@ export const getPendingRequests = async (senderId: string) => {
     const pendingRequests = await db.friendRequest.findMany({
       where: {
         senderId,
-        status: "PENDING",
+        status: FriendshipStatus.PENDING,
       },
       select: { id: true, receiverId: true },
     });
-
     return pendingRequests;
   } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message);
-      throw new Error(error.message);
-    }
-    throw error;
+    const errorMsg =
+      error instanceof Error
+        ? error.message
+        : "Error retrieving pending requests";
+    console.error("Error in getPendingRequests:", errorMsg);
+    throw new Error(errorMsg);
   }
 };
 
 export const handleFriendRequest = async (
-  senderId: string,
+  requestId: string,
   receiverId: string,
   action: FriendshipStatus,
   status: FriendshipStatus
 ) => {
   try {
-    await db.friendRequest.update({
-      where: {
-        senderId_receiverId: { senderId, receiverId },
-      },
+    // Wrap multi-step operations in a transaction.
+    const result = await db.$transaction(async (tx) => {
+      const existingRequest = await tx.friendRequest.findFirst({
+        where: { id: requestId },
+        select: {
+          id: true,
+          senderId: true,
+          receiverId: true,
+          status: true,
+        },
+      });
+
+      if (!existingRequest) {
+        throw new Error("Friend request not found");
+      }
+
+      // Fetch sender and receiver details
+      const [sender, receiver] = await Promise.all([
+        tx.user.findUnique({
+          where: { id: existingRequest.senderId },
+          select: { name: true, username: true, avatarUrl: true },
+        }),
+        tx.user.findUnique({
+          where: { id: existingRequest.receiverId },
+          select: { name: true, username: true, avatarUrl: true },
+        }),
+      ]);
+
+      if (!sender || !receiver) {
+        throw new Error("User not found");
+      }
+
+      // Update friend request status
+      await tx.friendRequest.update({
+        where: { id: requestId },
+        data: {
+          status: action === status ? FriendshipStatus.PENDING : action,
+        },
+      });
+
+      // Process based on action
+      if (action === FriendshipStatus.ACCEPTED) {
+        // Create bidirectional friendship entries.
+        await tx.userFriends.createMany({
+          data: [
+            {
+              userId: existingRequest.senderId,
+              friendId: existingRequest.receiverId,
+            },
+            {
+              userId: existingRequest.receiverId,
+              friendId: existingRequest.senderId,
+            },
+          ],
+          skipDuplicates: true,
+        });
+
+        // Create new friend activity records for both users.
+        await tx.activity.createMany({
+          data: [
+            {
+              userId: existingRequest.receiverId,
+              userAvatarUrl: receiver.avatarUrl || "",
+              userName: receiver.name || receiver.username,
+              type: "NEWFRIEND",
+              content: `You accepted a friend request from ${sender.name || sender.username}`,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+            {
+              userId: existingRequest.senderId,
+              userAvatarUrl: sender.avatarUrl || "",
+              userName: sender.name || sender.username,
+              type: "NEWFRIEND",
+              content: `${receiver.name || receiver.username} accepted your friend request`,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+          ],
+        });
+
+        // Remove relevant friend request recommendations.
+        await tx.recommendations.deleteMany({
+          where: {
+            OR: [
+              {
+                userId: existingRequest.senderId,
+                recommendedUserId: existingRequest.receiverId,
+              },
+              {
+                userId: existingRequest.receiverId,
+                recommendedUserId: existingRequest.senderId,
+              },
+            ],
+            type: RecommendationType.FRIENDREQUEST,
+          },
+        });
+      } else if (action === FriendshipStatus.REJECTED) {
+        await tx.activity.create({
+          data: {
+            userId: existingRequest.senderId,
+            userAvatarUrl: sender.avatarUrl || "",
+            userName: sender.name || sender.username,
+            type: "FRIENDREQUEST",
+            content: `${receiver.name || receiver.username} rejected your friend request`,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        });
+      } else if (action === FriendshipStatus.BLOCKED) {
+        await tx.userFriends.deleteMany({
+          where: {
+            OR: [
+              {
+                userId: existingRequest.senderId,
+                friendId: existingRequest.receiverId,
+              },
+              {
+                userId: existingRequest.receiverId,
+                friendId: existingRequest.senderId,
+              },
+            ],
+          },
+        });
+      }
+      return { success: true };
+    });
+    return result;
+  } catch (error) {
+    const errorMsg =
+      error instanceof Error ? error.message : "Error handling friend request";
+    console.error("Error in handleFriendRequest:", errorMsg);
+    throw new Error(errorMsg);
+  }
+};
+
+// Remove friendship between two users using transactions.
+export const removeFriend = async (userId: string, friendId: string) => {
+  const session = await auth();
+  if (!session) throw new Error("Unauthorized");
+
+  try {
+    const result = await db.$transaction(async (tx) => {
+      const friendship = await tx.userFriends.findFirst({
+        where: {
+          OR: [
+            { userId, friendId },
+            { userId: friendId, friendId: userId },
+          ],
+        },
+      });
+
+      if (!friendship) {
+        return { success: false, message: "Friendship not found" };
+      }
+
+      // Delete friendship entries.
+      await tx.userFriends.deleteMany({
+        where: {
+          OR: [
+            { userId, friendId },
+            { userId: friendId, friendId: userId },
+          ],
+        },
+      });
+
+      const [user, friend] = await Promise.all([
+        tx.user.findUnique({
+          where: { id: userId },
+          select: { name: true, username: true, avatarUrl: true },
+        }),
+        tx.user.findUnique({
+          where: { id: friendId },
+          select: { name: true, username: true },
+        }),
+      ]);
+
+      if (!user || !friend) {
+        throw new Error("User or friend not found");
+      }
+
+      await tx.activity.create({
+        data: {
+          userId,
+          userAvatarUrl: user.avatarUrl || "",
+          userName: user.name || user.username,
+          type: "FRIENDREQUEST", // Consider adding a dedicated type if needed.
+          content: `You removed ${friend.name || friend.username} from your friends`,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      });
+
+      // Optionally, record a friend request with a "REJECTED" status.
+      await tx.friendRequest.create({
+        data: {
+          senderId: userId,
+          receiverId: friendId,
+          status: FriendshipStatus.REJECTED,
+        },
+      });
+
+      return { success: true, message: "Friend removed successfully" };
+    });
+    return result;
+  } catch (error) {
+    const errorMsg =
+      error instanceof Error ? error.message : "Error removing friend";
+    console.error("Error in removeFriend:", errorMsg);
+    throw new Error(errorMsg);
+  }
+};
+
+// Block a user by updating or creating a friend request record and deleting any friendship.
+export const blockUser = async (userId: string, blockedUserId: string) => {
+  const session = await auth();
+  if (!session) throw new Error("Unauthorized");
+
+  try {
+    await db.$transaction(async (tx) => {
+      const existingRequest = await tx.friendRequest.findFirst({
+        where: {
+          OR: [
+            { senderId: userId, receiverId: blockedUserId },
+            { senderId: blockedUserId, receiverId: userId },
+          ],
+        },
+      });
+
+      if (existingRequest) {
+        await tx.friendRequest.update({
+          where: { id: existingRequest.id },
+          data: { status: FriendshipStatus.BLOCKED },
+        });
+      } else {
+        await tx.friendRequest.create({
+          data: {
+            senderId: userId,
+            receiverId: blockedUserId,
+            status: FriendshipStatus.BLOCKED,
+          },
+        });
+      }
+
+      await tx.userFriends.deleteMany({
+        where: {
+          OR: [
+            { userId, friendId: blockedUserId },
+            { userId: blockedUserId, friendId: userId },
+          ],
+        },
+      });
+    });
+
+    return { success: true, message: "User blocked successfully" };
+  } catch (error) {
+    const errorMsg =
+      error instanceof Error ? error.message : "Error blocking user";
+    console.error("Error in blockUser:", errorMsg);
+    throw new Error(errorMsg);
+  }
+};
+
+// Create an activity record for friend-related actions.
+export const createFriendActivity = async (
+  userId: string,
+  targetUserId: string,
+  activityType: "FRIENDREQUEST" | "NEWFRIEND",
+  content: string
+) => {
+  try {
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      select: { name: true, username: true, avatarUrl: true },
+    });
+
+    if (!user) throw new Error("User not found");
+
+    await db.activity.create({
       data: {
-        status: action === status ? "PENDING" : action,
+        userId,
+        userAvatarUrl: user.avatarUrl || "",
+        userName: user.name || user.username,
+        type: activityType,
+        content,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
     });
   } catch (error) {
-    if (error instanceof Error) {
-      console.log(error.message);
-      throw new Error(error.message);
+    console.error("Error creating activity:", error);
+  }
+};
+
+// Update recommendations after a friend action.
+export const updateRecommendationsAfterFriendAction = async (
+  userId: string,
+  friendId: string,
+  action: "ACCEPT" | "REJECT" | "BLOCK"
+) => {
+  try {
+    if (action === "ACCEPT" || action === "BLOCK") {
+      await db.recommendations.deleteMany({
+        where: {
+          OR: [
+            { userId, recommendedUserId: friendId },
+            { userId: friendId, recommendedUserId: userId },
+          ],
+          type: RecommendationType.FRIENDREQUEST,
+        },
+      });
+    } else if (action === "REJECT") {
+      await db.recommendations.deleteMany({
+        where: {
+          userId,
+          recommendedUserId: friendId,
+          type: RecommendationType.FRIENDREQUEST,
+        },
+      });
     }
-    throw error;
+  } catch (error) {
+    console.error("Error updating recommendations:", error);
+  }
+};
+
+// Update the user's connection status.
+export const updateUserConnectionStatus = async (userId: string) => {
+  try {
+    await db.user.update({
+      where: { id: userId },
+      data: {
+        lastLogin: new Date(),
+        isOnline: true,
+      },
+    });
+  } catch (error) {
+    console.error("Error updating user connection status:", error);
+  }
+};
+
+export const getFriendshipStatus = async (
+  userId: string,
+  otherUserId: string
+) => {
+  try {
+    const areFriends = await db.userFriends.findFirst({
+      where: { userId, friendId: otherUserId },
+    });
+
+    if (areFriends) return "FRIENDS";
+
+    const pendingRequest = await db.friendRequest.findFirst({
+      where: {
+        OR: [
+          { senderId: userId, receiverId: otherUserId },
+          { senderId: otherUserId, receiverId: userId },
+        ],
+      },
+    });
+
+    if (pendingRequest) return pendingRequest.status;
+
+    return "NONE";
+  } catch (error) {
+    const errorMsg =
+      error instanceof Error
+        ? error.message
+        : "Error retrieving friendship status";
+    console.error("Error in getFriendshipStatus:", errorMsg);
+    throw new Error(errorMsg);
   }
 };

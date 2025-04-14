@@ -1,3 +1,4 @@
+"use client";
 import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -6,16 +7,22 @@ import { FormattedFriendType } from "@/types/formattedDataTypes";
 import { friendCardVariant } from "@/animations/friends/friend-card-variant";
 interface FriendCardProps {
   friend: FormattedFriendType;
+  handleRemoveFriend: (friendId: string) => void;
+  isPending: boolean;
 }
 
-export default function FriendCard({ friend }: FriendCardProps) {
+export default function FriendCard({
+  friend,
+  handleRemoveFriend,
+  isPending,
+}: FriendCardProps) {
   return (
     <motion.div
       variants={friendCardVariant}
       initial="hidden"
       animate="visible"
       exit="leave"
-      className="flex items-center justify-center rounded-lg border p-3"
+      className="flex items-center justify-between rounded-lg border p-3"
     >
       <div className="flex items-center space-x-3">
         <Avatar>
@@ -26,13 +33,21 @@ export default function FriendCard({ friend }: FriendCardProps) {
               : friend.username[0].toUpperCase()}
           </AvatarFallback>
         </Avatar>
+        <div>
+          <p className="font-medium">{friend.username}</p>
+        </div>
       </div>
       <div className="flex space-x-2">
-        <Button variant="ghost" size="icon" asChild>
+        <Button variant="ghost" size="icon" disabled={isPending}>
           <MessageSquareMore className="h-4 w-4" />
           <span className="sr-only">Message</span>
         </Button>
-        <Button variant="ghost" size="icon">
+        <Button
+          variant="ghost"
+          size="icon"
+          disabled={isPending}
+          onClick={() => handleRemoveFriend(friend.id)}
+        >
           <UserMinus className="h-4 w-4" />
           <span className="sr-only">Remove friend</span>
         </Button>

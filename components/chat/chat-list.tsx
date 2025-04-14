@@ -12,7 +12,6 @@ interface ChatListProps {
   aiModels?: AIModel[];
   onAIModelSelect?: (modelId: string) => void;
   selectedAIModelId?: string | null;
-  count: number;
 }
 
 export default function ChatList({
@@ -24,21 +23,21 @@ export default function ChatList({
 }: ChatListProps) {
   const router = useRouter();
 
-  const handleDelete = async (forEveryone:boolean) => {
-   try {
-     if (forEveryone) {
-      console.log("deleted for everyone")
+  const handleDelete = async (forEveryone: boolean) => {
+    try {
+      if (forEveryone) {
+        console.log("deleted for everyone");
+      }
+      console.log("deleted");
+    } catch (error) {
+      if (error instanceof Error) {
+        console.log(error.message);
+        return;
+      }
+      console.log("Error deleting message");
+      return;
     }
-    console.log("deleted")
-   } catch (error) {
-     if (error instanceof Error) {
-       console.log(error.message);
-       return;
-     }
-     console.log("Error deleting message");
-     return;
-   }
- } 
+  };
 
   const handleChatSelect = useCallback(
     (chatId: string) => {

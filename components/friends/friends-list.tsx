@@ -12,18 +12,52 @@ import useSearchQuery from "@/hooks/useSearchQuery";
 import { AnimatePresence } from "framer-motion";
 import FriendCard from "@/components/friends/friend-card";
 import { FormattedFriendType } from "@/types/formattedDataTypes";
+import { useState, useTransition, useEffect } from "react";
+import { removeFriend } from "@/actions/userUtils";
+import { toast } from "sonner";
 interface FriendsListProps {
   friends: FormattedFriendType[];
+  userId: string;
 }
 
-export default function FriendsList({ friends }: FriendsListProps) {
+export default function FriendsList({ friends, userId }: FriendsListProps) {
   const [searchQuery, setSearchQuery] = useSearchQuery("fr", "");
+  const [isPending, startTransition] = useTransition();
+  const [filteredFriends, setFilteredFriends] = useState(friends);
 
-  const filteredFriends = friends.filter((friend) =>
-    (friend.name ? friend.name + friend.username : friend.username)
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    setFilteredFriends(
+      friends.filter((friend) =>
+        (friend.name ? friend.name + friend.username : friend.username)
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase())
+      )
+    );
+  }, [friends, searchQuery]);
+
+  const handleRemoveFriend = (friendId: string) => {
+    try {
+      startTransition(async () => {
+        const response = await removeFriend(userId, friendId);
+        if (!response.success) {
+          toast.error(response.message);
+          return;
+        }
+
+        toast.success(response.message);
+        setFilteredFriends((prev) =>
+          prev.filter((friend) => friend.id !== friendId)
+        );
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(error.message);
+        toast.error(error.message);
+      } else {
+        toast.error("Error removing friend");
+      }
+    }
+  };
 
   return (
     <Card>
@@ -54,7 +88,12 @@ export default function FriendsList({ friends }: FriendsListProps) {
           <div>
             <AnimatePresence>
               {filteredFriends?.map((friend) => (
-                <FriendCard friend={friend} key={friend.id} />
+                <FriendCard
+                  handleRemoveFriend={handleRemoveFriend}
+                  isPending={isPending}
+                  friend={friend}
+                  key={friend.id}
+                />
               ))}
             </AnimatePresence>
           </div>
