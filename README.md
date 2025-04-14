@@ -204,7 +204,7 @@ Before you begin, ensure you have the following installed:
    RESEND_API_KEY="your-resend-api-key"
 
    # Chat API
-   CHAT_API_URL="http://localhost:3001"
+   CHAT_API_URL="http://localhost:8000"
    ```
 
 4. **Database Setup**
@@ -282,7 +282,7 @@ The backend uses standardized response types for consistency:
 
 These types ensure strong typing throughout the application and provide a predictable API surface for frontend integration.
 
-For detailed API documentation, see [API_DOC.md](https://github.com/krotrn/ChatApp-backend/API_DOC.md).
+For detailed API documentation, see [API_DOC.md](https://github.com/krotrn/ChatApp-backend/blob/main/API_DOC.md).
 
 ---
 
