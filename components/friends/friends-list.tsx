@@ -15,15 +15,16 @@ import { FormattedFriendType } from "@/types/formattedDataTypes";
 import { useState, useTransition, useEffect } from "react";
 import { removeFriend } from "@/actions/userUtils";
 import { toast } from "sonner";
-import { createOrGetAOneOnOneChat } from "@/services/chat-api";
+import { createOrGetAOneOnOneChat, setAuthToken } from "@/services/chat-api";
 import { ParticipantsType } from "@/types/ChatType";
 import { useRouter } from "next/navigation";
 interface FriendsListProps {
   friends: FormattedFriendType[];
   userId: string;
+  accessToken:string
 }
 
-export default function FriendsList({ friends, userId }: FriendsListProps) {
+export default function FriendsList({ friends, userId, accessToken }: FriendsListProps) {
   const [searchQuery, setSearchQuery] = useSearchQuery("fr", "");
   const [isPending, startTransition] = useTransition();
   const [filteredFriends, setFilteredFriends] = useState(friends);
@@ -67,6 +68,7 @@ export default function FriendsList({ friends, userId }: FriendsListProps) {
     try {
       startTransition(async () => {
         console.log("Creating chat with friend ID:", participants[0].userId);
+        setAuthToken(accessToken)
         const response = await createOrGetAOneOnOneChat({ participants, name });
         console.log("Chat created/retrieved:", response);
         router.push(`/chats?chat=${response._id}`);

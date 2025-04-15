@@ -79,7 +79,11 @@ api.interceptors.response.use(
   }
 );
 
-export const setAuthToken = (token: string) => {
+export const setAuthToken = (token:string) => {
+  if (!token) {
+    console.error("No access token found");
+    return;
+  }
   api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 };
 
@@ -113,6 +117,7 @@ export const createOrGetAOneOnOneChat = async ({
     );
     return handleApiResponse(response);
   } catch (error) {
+    console.error("Error creating or getting one-on-one chat:", error);
     return handleApiError(error);
   }
 };
