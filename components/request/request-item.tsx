@@ -58,7 +58,9 @@ export default function RequestItem({
           size="sm"
           className="border-green-500 text-green-500 hover:bg-green-50 hover:text-green-600 h-9 min-w-[80px]"
           disabled={isPending}
-          onClick={() => onAction(request.id, "ACCEPTED", request.status)}
+          onClick={() =>
+            onAction(request.id, FriendshipStatus.ACCEPTED, request.status)
+          }
         >
           <CheckIcon className="mr-1 h-4 w-4" />
           <span>Accept</span>
@@ -68,7 +70,9 @@ export default function RequestItem({
           size="sm"
           className="border-red-500 text-red-500 hover:bg-red-50 hover:text-red-600 h-9 min-w-[80px]"
           disabled={isPending}
-          onClick={() => onAction(request.id, "REJECTED", request.status)}
+          onClick={() =>
+            onAction(request.id, FriendshipStatus.REJECTED, request.status)
+          }
         >
           <XIcon className="mr-1 h-4 w-4" />
           <span>Reject</span>
@@ -77,7 +81,9 @@ export default function RequestItem({
           variant="outline"
           size="sm"
           disabled={isPending}
-          onClick={() => onAction(request.id, "BLOCKED", request.status)}
+          onClick={() =>
+            onAction(request.id, FriendshipStatus.BLOCKED, request.status)
+          }
           className="h-9 min-w-[80px]"
         >
           <BanIcon className="mr-1 h-4 w-4" />
