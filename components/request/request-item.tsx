@@ -3,13 +3,17 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { CheckIcon, XIcon, BanIcon } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { FormattedFriendRequestType } from "@/types/formattedDataTypes";
+import { FriendRequestType } from "@/types/formattedDataTypes";
 import { FriendshipStatus } from "@prisma/client";
 
 interface RequestItemProps {
-  request: FormattedFriendRequestType;
+  request: FriendRequestType;
   isPending: boolean;
-  onAction: (requestId: string, action:FriendshipStatus, status:FriendshipStatus) => void;
+  onAction: (
+    requestId: string,
+    action: FriendshipStatus,
+    status: FriendshipStatus
+  ) => void;
 }
 
 export default function RequestItem({
@@ -73,7 +77,7 @@ export default function RequestItem({
           variant="outline"
           size="sm"
           disabled={isPending}
-          onClick={() => onAction(request.id,"BLOCKED", request.status)}
+          onClick={() => onAction(request.id, "BLOCKED", request.status)}
           className="h-9 min-w-[80px]"
         >
           <BanIcon className="mr-1 h-4 w-4" />

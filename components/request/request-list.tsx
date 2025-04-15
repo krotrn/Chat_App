@@ -10,12 +10,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import RequestItem from "@/components/request/request-item";
-import { FormattedFriendRequestType } from "@/types/formattedDataTypes";
+import { FriendRequestType } from "@/types/formattedDataTypes";
 import { handleFriendRequest } from "@/actions/userUtils";
 import { FriendshipStatus } from "@prisma/client";
 import { actionMessages } from "@/lib/helper";
 interface RequestsListProps {
-  requests: FormattedFriendRequestType[];
+  requests: FriendRequestType[];
   userId: string;
   pending: string[];
 }
