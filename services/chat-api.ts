@@ -110,7 +110,6 @@ export const createOrGetAOneOnOneChat = async ({
     const response = await api.post<ApiResponse<ChatType>>(
       "/chats/chat",
       { participants, name },
-      { withCredentials: true }
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -147,7 +146,6 @@ export const deleteOneOnOneChat = async ({
   try {
     const response = await api.delete<ApiResponse<null>>(
       `/chats/chat/${chatId}`,
-      { withCredentials: true }
     );
     return response.data;
   } catch (error) {
@@ -165,7 +163,6 @@ export const deleteChatForMe = async ({
   try {
     const response = await api.delete<ApiResponse<null>>(
       `/chats/chat/${chatId}/me`,
-      { withCredentials: true }
     );
     return response.data;
   } catch (error) {
@@ -186,7 +183,6 @@ export const createAGroupChat = async ({
     const response = await api.post<ApiResponse<ChatType>>(
       "/chats/group",
       { participants, name },
-      { withCredentials: true }
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -204,7 +200,6 @@ export const getGroupChatDetails = async ({
   try {
     const response = await api.get<ApiResponse<ChatType>>(
       `/chats/group/${chatId}`,
-      { withCredentials: true }
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -225,7 +220,6 @@ export const renameGroupChat = async ({
     const response = await api.patch<ApiResponse<ChatType>>(
       `/chats/group/${chatId}`,
       { name },
-      { withCredentials: true }
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -243,7 +237,6 @@ export const deleteGroupChat = async ({
   try {
     const response = await api.delete<ApiResponse<ChatType>>(
       `/chats/group/${chatId}`,
-      { withCredentials: true }
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -255,16 +248,15 @@ export const deleteGroupChat = async ({
 // Add a new participant to a group chat
 export const addNewParticipantInGroupChat = async ({
   chatId,
-  participantId,
+  participants,
 }: {
   chatId: string;
-  participantId: string;
+  participants: string[];
 }): Promise<ChatType> => {
   try {
     const response = await api.post<ApiResponse<ChatType>>(
-      `/chats/group/${chatId}/participant/${participantId}`,
-      {},
-      { withCredentials: true }
+      `/chats/group/${chatId}/participant`,
+      { participants },
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -284,7 +276,6 @@ export const removeParticipantFromGroupChat = async ({
   try {
     const response = await api.delete<ApiResponse<ChatType>>(
       `/chats/group/${chatId}/participant/${participantId}`,
-      { withCredentials: true }
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -302,7 +293,6 @@ export const leaveGroupChat = async ({
   try {
     const response = await api.delete<ApiResponse<ChatType>>(
       `/chats/group/${chatId}/leave`,
-      { withCredentials: true }
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -323,7 +313,6 @@ export const pinMessage = async ({
     const response = await api.post<ApiResponse<ChatType>>(
       `/chats/chat/${chatId}/pin/${messageId}`,
       {},
-      { withCredentials: true }
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -343,7 +332,6 @@ export const unpinMessage = async ({
   try {
     const response = await api.delete<ApiResponse<ChatType>>(
       `/chats/chat/${chatId}/pin/${messageId}`,
-      { withCredentials: true }
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -469,7 +457,6 @@ export const updateReaction = async ({
     const response = await api.post<ApiResponse<MessageType>>(
       `/messages/${chatId}/${messageId}/reaction`,
       { emoji },
-      { withCredentials: true }
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -529,7 +516,6 @@ export const editMessage = async ({
     const response = await api.patch<ApiResponse<MessageType>>(
       `/messages/${chatId}/${messageId}/edit`,
       { content },
-      { withCredentials: true }
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -550,7 +536,6 @@ export const markMessagesAsRead = async ({
     const response = await api.post<ApiResponse<MessageType[]>>(
       `/messages/${chatId}/read`,
       { messageIds },
-      { withCredentials: true }
     );
     return handleApiResponse(response);
   } catch (error) {

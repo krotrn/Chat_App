@@ -68,7 +68,7 @@ export default {
           username: user.username,
           role: user.role,
           bio: user.bio,
-          exp: Math.floor(Date.now() / 1000) + 3600*24*30,
+          exp: Math.floor(Date.now() / 1000) + 3600 * 24 * 30,
         };
       }
       if (Date.now() < (token.exp as number) * 1000) {
@@ -162,10 +162,11 @@ export default {
           return {
             id: user.id,
             username: user.username,
-            avatarUrl: user.avatarUrl || null,
+            avatarUrl: user.avatarUrl,
             email: user.email,
             role: user.role,
             emailVerified: user.emailVerified,
+            bio: user.bio ?? undefined,
           };
         } catch (error) {
           console.error("Error in credentials authorization:", error);

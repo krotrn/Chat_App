@@ -4,7 +4,6 @@ import { config } from "@/config";
 import { getFriendRequests, getPendingRequests } from "@/actions/userUtils";
 import { auth } from "@/auth";
 import Authorized from "@/components/authorized";
-import { formatRequests } from "@/lib/utils/dataFormating";
 
 export const metadata: Metadata = {
   title: `Friend Requests | ${config.appName}`,
@@ -17,16 +16,7 @@ export default async function RequestsPage() {
     throw new Error("User is not authenticated");
   }
 
-  const friendRequestResponse = await getFriendRequests([
-    "id",
-    "senderId",
-    "receiverId",
-    "status",
-    "createdAt",
-    "updatedAt",
-    "expiresAt",
-  ]);
-  const requests = await formatRequests(friendRequestResponse);
+  const requests = await getFriendRequests();
   const pending = await getPendingRequests(session.user.id);
 
   return (

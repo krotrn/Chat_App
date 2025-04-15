@@ -1,6 +1,6 @@
 import { FriendRequest, UserFriends } from "@prisma/client";
 
-export interface FormattedFriendRequestType extends FriendRequest {
+export interface FriendRequestType extends FriendRequest {
   senderAvatar: string | null;
   senderName: string | null;
   senderUsername: string;

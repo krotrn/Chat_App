@@ -66,7 +66,9 @@ export default function FriendsList({ friends, userId }: FriendsListProps) {
   const handleGetChat = (participants: ParticipantsType[], name: string) => {
     try {
       startTransition(async () => {
+        console.log("Creating chat with friend ID:", participants[0].userId);
         const response = await createOrGetAOneOnOneChat({ participants, name });
+        console.log("Chat created/retrieved:", response);
         router.push(`/chats?chat=${response._id}`);
       });
     } catch (error) {

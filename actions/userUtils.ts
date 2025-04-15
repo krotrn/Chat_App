@@ -5,13 +5,13 @@ import { handleError, handleSuccess } from "@/lib/helper";
 import { db } from "@/prisma";
 import { profileSchema } from "@/schemas/profileSchema";
 import {
+  FriendRequestType,
   FormattedFriendType,
   SearchUserType,
   StatsProps,
 } from "@/types/formattedDataTypes";
 import {
   ActivityType,
-  FriendRequest,
   FriendshipStatus,
   RecommendationType,
   User,
@@ -179,25 +179,46 @@ async function uploadAvatar(avatar: File): Promise<string> {
 /**
  * Retrieve pending friend requests for the authenticated user.
  */
-export const getFriendRequests = async <T extends keyof FriendRequest>(
-  selectFields: T[]
-): Promise<FriendRequest[]> => {
+export const getFriendRequests = async (): Promise<
+  FriendRequestType[]
+> => {
   const session = await auth();
   if (!session || !session.user.id) throw new Error("Unauthorized");
 
   try {
-    const select = selectFields.reduce(
-      (acc, field) => {
-        acc[field] = true;
-        return acc;
-      },
-      {} as Partial<Record<keyof FriendRequest, boolean>>
-    );
-
-    const friendRequests = await db.friendRequest.findMany({
+    const response = await db.friendRequest.findMany({
       where: { receiverId: session.user.id, status: FriendshipStatus.PENDING },
-      select,
+      select: {
+        id: true,
+        senderId: true,
+        receiverId: true,
+        sender: {
+          select: {
+            id: true,
+            username: true,
+            name: true,
+            avatarUrl: true,
+          },
+        },
+        createdAt: true,
+        updatedAt: true,
+        expiresAt: true,
+      },
     });
+
+    const friendRequests = response.map((request) => ({
+      senderAvatar: null,
+      senderName: null,
+      senderUsername: request.sender.username,
+      requestCreatedAt: new Date(),
+      status: FriendshipStatus.PENDING,
+      id: request.id,
+      createdAt: request.createdAt,
+      updatedAt: request.updatedAt,
+      senderId: request.senderId,
+      receiverId: request.receiverId,
+      expiresAt: request.expiresAt,
+    }));
 
     return friendRequests;
   } catch (error) {
@@ -415,7 +436,7 @@ export const handleFriendRequest = async (
   if (!requestId || !receiverId || !action) {
     throw new Error("Missing required parameters");
   }
-  
+
   try {
     const result = await db.$transaction(async (tx) => {
       // Validate the friend request exists
@@ -435,10 +456,12 @@ export const handleFriendRequest = async (
 
       // Security check: Ensure the receiver matches
       if (existingRequest.receiverId !== receiverId) {
-        console.warn(`Unauthorized friend request action attempt for request ${requestId}`);
+        console.warn(
+          `Unauthorized friend request action attempt for request ${requestId}`
+        );
         throw new Error("Unauthorized action");
       }
-      
+
       // Validate request status
       if (existingRequest.status !== FriendshipStatus.PENDING) {
         throw new Error("Friend request is not pending");
@@ -482,7 +505,7 @@ export const handleFriendRequest = async (
           ],
           skipDuplicates: true,
         });
-        
+
         // Clean up any existing friend request records between the two users
         await tx.friendRequest.deleteMany({
           where: {
@@ -498,7 +521,7 @@ export const handleFriendRequest = async (
             ],
           },
         });
-        
+
         // Log the new friendship as activities for both users
         const currentTime = new Date();
         await tx.activity.createMany({
@@ -540,7 +563,6 @@ export const handleFriendRequest = async (
             type: RecommendationType.FRIENDREQUEST,
           },
         });
-        
       } else if (action === FriendshipStatus.REJECTED) {
         // Log activity for a rejected friend request
         await tx.activity.create({
@@ -554,7 +576,6 @@ export const handleFriendRequest = async (
             updatedAt: new Date(),
           },
         });
-        
       } else if (action === FriendshipStatus.BLOCKED) {
         // Remove any existing friendship between the users
         await tx.userFriends.deleteMany({
@@ -585,27 +606,26 @@ export const handleFriendRequest = async (
           },
         });
       }
-      
-      return { 
+
+      return {
         success: true,
         actionTaken: action,
         sender: {
           id: existingRequest.senderId,
-          name: sender.name || sender.username
+          name: sender.name || sender.username,
         },
         receiver: {
           id: existingRequest.receiverId,
-          name: receiver.name || receiver.username
-        }
+          name: receiver.name || receiver.username,
+        },
       };
     });
-    
+
     return result;
   } catch (error) {
-    const errorMsg = error instanceof Error 
-      ? error.message 
-      : "Error handling friend request";
-      
+    const errorMsg =
+      error instanceof Error ? error.message : "Error handling friend request";
+
     console.error("Error in handleFriendRequest:", error);
     throw new Error(errorMsg);
   }

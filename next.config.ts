@@ -9,11 +9,13 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: "Access-Control-Allow-Origin",
-            value: process.env.CHAT_API_URL || "https://chat-backend-kr.vercel.app",
+            value:
+              process.env.CHAT_API_URL ||
+              "https://chatapp-backend-8wl9.onrender.com",
           },
           {
             key: "Access-Control-Allow-Methods",
-            value: "GET, POST, PUT, DELETE, OPTIONS",
+            value: "POST",
           },
           {
             key: "Access-Control-Allow-Headers",
@@ -27,14 +29,5 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  async rewrites() {
-    return [
-      {
-        source: "/api/v1/:path*",
-        destination: `${process.env.CHAT_API_URL || "https://chat-backend-kr.vercel.app"}/api/v1/:path*`,
-      },
-    ];
-  },
 };
-
 export default nextConfig;
