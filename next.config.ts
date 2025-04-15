@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
           {
             key: "Access-Control-Allow-Origin",
             value:
-              process.env.CHAT_API_URL ||
+              process.env.NEXT_PUBLIC_CHAT_API_URL ||
               "https://chatapp-backend-8wl9.onrender.com",
           },
           {

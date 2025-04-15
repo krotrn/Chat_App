@@ -108,7 +108,7 @@ export const createOrGetAOneOnOneChat = async ({
 }): Promise<ChatType> => {
   try {
     const response = await api.post<ApiResponse<ChatType>>(
-      "/chats/chat",
+      "/chats",
       { participants, name },
     );
     return handleApiResponse(response);

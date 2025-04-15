@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/prisma";
 
-export async function GET(req: NextRequest) {
+export async function POST(req: NextRequest) {
   const apiKey = req.headers.get("x-internal-api-key");
   if (apiKey !== process.env.INTERNAL_API_KEY) {
     return NextResponse.json(

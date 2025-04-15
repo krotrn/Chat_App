@@ -28,6 +28,7 @@ This project is perfect for developers looking to explore a full-stack applicati
 ChatApp is packed with functionality to enhance user experience and provide flexibility for future growth. Here's what it offers:
 
 - **Authentication & Authorization**
+
   - **Credential Authentication**: Securely log in with an email and password combination
   - **Social Authentication**: Sign in effortlessly using Google or GitHub accounts
   - **Email Verification**: Powered by [Resend](https://resend.com/), ensuring only verified users gain access
@@ -35,6 +36,7 @@ ChatApp is packed with functionality to enhance user experience and provide flex
   - **Session Management**: Robust session handling with access token persistence
 
 - **Real-Time Chat Functionality**
+
   - **Group Chats**: Create and participate in multi-user conversations
   - **One-on-One Chats**: Enjoy private messaging with friends
   - **Friend Requests**: Build your network by sending, accepting, or declining friend requests
@@ -51,17 +53,20 @@ ChatApp is packed with functionality to enhance user experience and provide flex
     - Rich text formatting
 
 - **Smart Data Transformation**
+
   - **MongoDB Aggregation Pipelines**: Efficiently transform and shape data at the database level
   - **Type-Safe Responses**: Consistent data structures with MessageResponseType and ChatResponseType
   - **Efficient Data Loading**: Optimized queries with pagination and selective field projection
   - **Real-time Data Synchronization**: Immediate updates across all connected clients
 
 - **User Interface**
+
   - **Modern and Responsive**: Built with [shadcn/ui](https://ui.shadcn.com/) components
   - **Dark/Light Mode**: Seamless theme switching
   - **Error Handling**: Graceful error states and user feedback
 
 - **User Profiles & Privacy**
+
   - **Personalization**: Edit your name, avatar, and status
   - **Online Status**: See when your friends are available
   - **Privacy Controls**:
@@ -71,6 +76,7 @@ ChatApp is packed with functionality to enhance user experience and provide flex
     - Data collection preferences
 
 - **File Management**
+
   - **Drag & Drop**: Easy file uploads
   - **Multiple File Support**: Upload up to 5 files simultaneously
   - **File Type Validation**: Automatic file type checking
@@ -89,6 +95,7 @@ ChatApp is packed with functionality to enhance user experience and provide flex
 ChatApp is built with a thoughtfully selected set of technologies to ensure performance, maintainability, and developer-friendliness:
 
 - **Frontend**:
+
   - **[Next.js 15](https://nextjs.org/)**: App Router for server-side rendering and routing
   - **[React 19](https://reactjs.org/)**: UI components and state management
   - **[TypeScript](https://www.typescriptlang.org/)**: Type-safe code
@@ -98,6 +105,7 @@ ChatApp is built with a thoughtfully selected set of technologies to ensure perf
   - **[Socket.io Client](https://socket.io/)**: Real-time communication
 
 - **Backend**:
+
   - **[Next.js API Routes](https://nextjs.org/docs/api-routes/introduction)**: API endpoints
   - **[Prisma](https://www.prisma.io/)**: PostgreSQL ORM
   - **[MongoDB](https://www.mongodb.com/)**: Chat data storage
@@ -108,6 +116,7 @@ ChatApp is built with a thoughtfully selected set of technologies to ensure perf
   - **[Resend](https://resend.com/)**: Email service
 
 - **Business Logic & Data Processing**:
+
   - **Strongly-Typed Models**: Mongoose schemas with TypeScript interfaces
   - **Aggregation Pipelines**: Transform MongoDB ObjectIds to strings for API responses
   - **Type Conversion Logic**: Consistent field transformations for frontend consumption
@@ -168,6 +177,7 @@ Follow these steps to set up ChatApp on your local machine.
 ### Prerequisites
 
 Before you begin, ensure you have the following installed:
+
 - Node.js 18.x or later
 - PostgreSQL 14.x or later
 - MongoDB 6.x or later
@@ -176,18 +186,21 @@ Before you begin, ensure you have the following installed:
 ### Installation
 
 1. **Clone the Repository**
+
    ```bash
    git clone https://github.com/krotrn/chat-app.git
    cd chat-app
    ```
 
 2. **Install Dependencies**
+
    ```bash
    npm install --force
    ```
 
 3. **Environment Setup**
    Create a `.env` file in the root directory with the following variables:
+
    ```env
    # Database
    DATABASE_URL="postgresql://user:password@localhost:5432/chat_app"
@@ -204,7 +217,7 @@ Before you begin, ensure you have the following installed:
    RESEND_API_KEY="your-resend-api-key"
 
    # Chat API
-   CHAT_API_URL="http://localhost:8000"
+   NEXT_PUBLIC_CHAT_API_URL="http://localhost:8000"
    ```
 
 4. **Database Setup**
@@ -218,14 +231,17 @@ Before you begin, ensure you have the following installed:
 ## Running the Application
 
 1. **Development Mode**
+
    ```bash
    npm run dev
    # or
    yarn dev
    ```
+
    The application will be available at `http://localhost:3000`
 
 2. **Production Build**
+
    ```bash
    npm run build
 
@@ -277,6 +293,7 @@ The API documentation is available at `/api-docs` when running in development mo
 - `GET /api/friends` - Manage friend connections
 
 The backend uses standardized response types for consistency:
+
 - `MessageResponseType` - Used for all message-related responses
 - `ChatResponseType` - Used for all chat-related responses
 
@@ -291,21 +308,25 @@ For detailed API documentation, see [API_DOC.md](https://github.com/krotrn/ChatA
 We'd love your help to make ChatApp even better! To contribute:
 
 1. **Fork the Repository**
+
    ```bash
    git clone https://github.com/krotrn/chat-app.git
    ```
 
 2. **Create a Feature Branch**
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
 
 3. **Commit Your Changes**
+
    ```bash
    git commit -m "Add your feature description"
    ```
 
 4. **Push to Your Fork**
+
    ```bash
    git push origin feature/your-feature-name
    ```
