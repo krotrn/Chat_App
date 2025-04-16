@@ -22,7 +22,7 @@ export interface AttachmentResponse {
   url: string;
   localPath: string;
   type: string;
-  status: "sent" | "delivered" | "read";
+  status: StatusEnum;
 }
 
 export interface ParticipantsType {

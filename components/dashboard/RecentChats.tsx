@@ -57,7 +57,12 @@ export function RecentActivity({ activities }: RecentActivityProps) {
                 <div className="flex-1">
                   <p className="text-sm">{activity.content}</p>
                   <p className="text-xs text-muted-foreground">
-                    {format(new Date(activity.updatedAt), "PPP")}
+                    {activity.updatedAt 
+                      ? format(
+                          new Date(activity.updatedAt), 
+                          "PPP"
+                        ) 
+                      : "Unknown date"}
                   </p>
                 </div>
               </div>

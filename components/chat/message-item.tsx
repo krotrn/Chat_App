@@ -295,7 +295,7 @@ export default function MessageItem({
                     <MessageTimestampStatus
                       isOwn={isOwn}
                       status={message.status}
-                      timestamp={message.updatedAt.toLocaleString()}
+                      timestamp={message.updatedAt}
                     />
 
                     {/* Add status indicators here */}

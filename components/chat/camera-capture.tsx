@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef } from "react";
 import { Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,59 +8,58 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetTrigger,
 } from "@/components/ui/sheet";
 
 interface CameraCaptureProps {
   onCapture: (file: File) => void;
+  disabled?: boolean;
 }
 
-export default function CameraCapture({ onCapture }: CameraCaptureProps) {
+export default function CameraCapture({ onCapture, disabled = false }: CameraCaptureProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [stream, setStream] = useState<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
-  const startCamera = useCallback(async () => {
+  const startCamera = async () => {
     try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
+      const stream = await navigator.mediaDevices.getUserMedia({
         video: true,
         audio: false,
       });
-      setStream(mediaStream);
+      streamRef.current = stream;
+      
       if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
+        videoRef.current.srcObject = stream;
       }
     } catch (error) {
       console.error("Error accessing camera:", error);
     }
-  }, []);
+  };
 
-  const stopCamera = useCallback(() => {
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
-      setStream(null);
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
     }
-  }, [stream]);
+  };
 
-  useEffect(() => {
-    if (isOpen) {
-      startCamera();
-    } else {
-      stopCamera();
-    }
-    return () => stopCamera();
-  }, [isOpen, startCamera, stopCamera]);
-
-  const captureImage = useCallback(() => {
+  const capturePhoto = () => {
     if (videoRef.current && canvasRef.current) {
-      const context = canvasRef.current.getContext("2d");
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      const context = canvas.getContext("2d");
       if (context) {
-        canvasRef.current.width = videoRef.current.videoWidth;
-        canvasRef.current.height = videoRef.current.videoHeight;
-        context.drawImage(videoRef.current, 0, 0);
-        canvasRef.current.toBlob((blob) => {
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        canvas.toBlob((blob) => {
           if (blob) {
-            const file = new File([blob], "camera-capture.jpg", {
+            const file = new File([blob], `camera-capture-${Date.now()}.jpg`, {
               type: "image/jpeg",
             });
             onCapture(file);
@@ -69,42 +68,37 @@ export default function CameraCapture({ onCapture }: CameraCaptureProps) {
         }, "image/jpeg");
       }
     }
-  }, [onCapture]);
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (open) {
+      startCamera();
+    } else {
+      stopCamera();
+    }
+  };
 
   return (
-    <>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-9 w-9"
-        onClick={() => setIsOpen(true)}
-      >
-        <Camera className="h-5 w-5" />
-        <span className="sr-only">Open camera</span>
-      </Button>
-      <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetContent className="sm:max-w-md">
-          <SheetHeader>
-            <SheetTitle>Camera Capture</SheetTitle>
-          </SheetHeader>
-          <div className="relative aspect-video overflow-hidden rounded-lg">
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className="h-full w-full object-cover"
-            />
+    <Sheet open={isOpen} onOpenChange={handleOpenChange}>
+      <SheetTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-9 w-9" disabled={disabled}>
+          <Camera className="h-5 w-5" />
+          <span className="sr-only">Take photo</span>
+        </Button>
+      </SheetTrigger>
+      <SheetContent>
+        <SheetHeader>
+          <SheetTitle>Take a Photo</SheetTitle>
+        </SheetHeader>
+        <div className="grid gap-4">
+          <div className="relative rounded overflow-hidden">
+            <video ref={videoRef} autoPlay playsInline className="w-full" />
             <canvas ref={canvasRef} className="hidden" />
           </div>
-          <div className="mt-4 flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setIsOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={captureImage}>Capture</Button>
-          </div>
-        </SheetContent>
-      </Sheet>
-    </>
+          <Button onClick={capturePhoto}>Capture</Button>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }

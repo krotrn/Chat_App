@@ -39,8 +39,8 @@ export async function POST(req: NextRequest) {
       message: "Users found",
       users: validUsers.map((user) => ({
         id: user.id,
-        fullName: user.name || user.username,
-        avatar: user.avatarUrl,
+        name: user.name || user.username,
+        avatarUrl: user.avatarUrl,
       })),
     });
   } catch (error) {

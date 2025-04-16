@@ -24,6 +24,7 @@ interface MessageInputProps {
   ) => void;
   replyToMessage: MessageType | null;
   onCancelReply: () => void;
+  disabled?: boolean;
 }
 
 export default function MessageInput({
@@ -31,6 +32,7 @@ export default function MessageInput({
   onSendMessage,
   replyToMessage,
   onCancelReply,
+  disabled = false,
 }: MessageInputProps) {
   const [message, setMessage] = useState<string>("");
   const [attachments, setAttachments] = useState<File[]>([]);
@@ -152,6 +154,7 @@ export default function MessageInput({
               variant="ghost"
               size="icon"
               className="h-9 w-9"
+              disabled={disabled}
             >
               <Paperclip className="h-5 w-5" />
             </Button>
@@ -167,20 +170,25 @@ export default function MessageInput({
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={
-              replyToMessage ? "Type your reply..." : "Type a message..."
+              disabled 
+                ? "Connection lost. Reconnecting..." 
+                : replyToMessage 
+                  ? "Type your reply..." 
+                  : "Type a message..."
             }
             className="min-h-10 resize-none"
             rows={1}
+            disabled={disabled}
           />
         </div>
         <div className="flex items-center gap-1">
-          <EmojiPicker onEmojiSelect={handleEmojiSelect} />
-          <CameraCapture onCapture={handleCameraCapture} />
+          <EmojiPicker onEmojiSelect={handleEmojiSelect} disabled={disabled} />
+          <CameraCapture onCapture={handleCameraCapture} disabled={disabled} />
           <Button
             type="submit"
             size="icon"
             className="h-9 w-9"
-            disabled={!message.trim() && attachments.length === 0}
+            disabled={disabled || (!message.trim() && attachments.length === 0)}
           >
             <Send className="h-5 w-5" />
           </Button>

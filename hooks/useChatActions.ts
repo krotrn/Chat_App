@@ -41,7 +41,10 @@ export default function useChatActions({
         return;
       }
 
-      const optimisticId = `temp-${Date.now()}`;
+      // Generate a unique ID for this message attempt
+      const optimisticId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      console.log(`Creating optimistic message with ID: ${optimisticId}`);
+      
       const optimisticMessage: MessageType = {
         _id: optimisticId,
         content,
@@ -53,7 +56,7 @@ export default function useChatActions({
         chatId,
         createdAt: new Date(),
         updatedAt: new Date(),
-        status: StatusEnum.sent,
+        status: StatusEnum.sending, // Start with sending state
         reactions: [],
         receivers: [],
         attachments: attachments
@@ -62,7 +65,7 @@ export default function useChatActions({
               url: URL.createObjectURL(file),
               type: file.type,
               localPath: file.name,
-              status: "sent",
+              status: StatusEnum.sending,
             }))
           : [],
         edited: {
@@ -81,15 +84,25 @@ export default function useChatActions({
         replyToId,
       });
 
+      // Add optimistic message to UI
       startTransition(() => {
         addOptimisticMessage(optimisticMessage);
       });
+      
+      // Clear reply state if this was a reply
       if (replyToId && replyToMessage?._id === replyToId) {
         setReplyToMessage(null);
       }
 
       try {
+        // Set auth token and send message
         setAuthToken(token);
+        console.log(`Sending message to API for chat ${chatId}:`, {
+          content,
+          hasAttachments: !!attachments?.length,
+          replyToId: replyToId || null
+        });
+        
         const response = await sendMessage({
           chatId,
           content,
@@ -97,31 +110,67 @@ export default function useChatActions({
           replyToId,
         });
 
+        console.log(`Message sent successfully, received response:`, response);
+
         if (response) {
           pendingSendMessages.current.delete(optimisticId);
 
-          setMessages((prev) =>
-            prev.map((msg) => (msg._id === optimisticId ? response : msg)),
-          );
+          // Update optimistic message with real message data from server
+          setMessages((prev) => {
+            // First check if the message is still in the list
+            const messageExists = prev.some(msg => msg._id === optimisticId);
+            
+            if (!messageExists) {
+              console.log(`Message ${optimisticId} not found in state, adding response directly`);
+              // If message was somehow removed, add the response directly
+              return [...prev, response];
+            }
+            
+            // Replace the optimistic message with the real one
+            return prev.map((msg) => {
+              if (msg._id === optimisticId) {
+                console.log(`Replacing optimistic message ${optimisticId} with server message ${response._id}`);
+                return response;
+              }
+              return msg;
+            });
+          });
+        } else {
+          console.error("Empty response received from server");
+          throw new Error("Failed to send message: empty response from server");
         }
       } catch (error) {
         console.error("Failed to send message:", error);
 
-        // Mark as failed
+        // Mark as failed but don't remove the message
         startTransition(() => {
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg._id === optimisticId
-                ? { ...msg, status: StatusEnum.failed }
-                : msg,
-            ),
-          );
+          setMessages((prev) => {
+            // First check if the message is still in the list
+            const messageExists = prev.some(msg => msg._id === optimisticId);
+            
+            if (!messageExists) {
+              console.log(`Failed message ${optimisticId} not found in state, can't update status`);
+              return prev;
+            }
+            
+            return prev.map((msg) => {
+              if (msg._id === optimisticId) {
+                console.log(`Marking message ${optimisticId} as failed`);
+                return { 
+                  ...msg, 
+                  status: StatusEnum.failed,
+                  attachments: msg.attachments?.map(att => ({...att, status: StatusEnum.failed}))
+                };
+              }
+              return msg;
+            });
+          });
         });
 
         toast.error(
           error instanceof Error && error.message
             ? error.message
-            : "Failed to send message",
+            : "Failed to send message"
         );
       }
     },
@@ -278,6 +327,7 @@ export default function useChatActions({
     },
     [chatId, setMessages, addOptimisticMessage],
   );
+
   const handleMarkAsRead = useCallback(
     async (messageIds?: string[]) => {
       if (!currentUserId || !chatId) return;

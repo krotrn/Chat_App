@@ -16,10 +16,12 @@ import {
   deleteOneOnOneChat,
   deleteChatForMe,
   setAuthToken,
+  isConnectionHealthy,
 } from "@/services/chat-api";
 
 import useChatSocket from "@/hooks/useChatSocket";
 import useChatActions from "@/hooks/useChatActions";
+import { WifiOff } from "lucide-react";
 
 interface ChatMainProps {
   chat: ChatType;
@@ -39,7 +41,9 @@ export default function ChatMain({
   const [replyToMessage, setReplyToMessage] = useState<MessageType | null>(
     null,
   );
-  const { messages: socketMessages, setMessages: setSocketMessages } =
+  
+  // Get messages from socket and connection status
+  const { messages: socketMessages, setMessages: setSocketMessages, isConnected } =
     useChatSocket(
       initialChat._id,
       currentUser.id!,
@@ -50,18 +54,39 @@ export default function ChatMain({
   const [optimisticMessages, addOptimisticMessage] = useOptimistic(
     socketMessages,
     (state: MessageType[], newMessage: MessageType) => {
+      // Check if we're adding a new message or updating existing one
       if (!state.some((msg) => msg._id === newMessage._id)) {
+        console.log(`Adding optimistic message to state: ${newMessage._id}`);
         return [...state, newMessage];
       }
+      
+      console.log(`Updating existing message in state: ${newMessage._id}`);
       return state.map((msg) =>
         msg._id === newMessage._id ? newMessage : msg,
       );
     },
   );
 
+  // Update chat when initial chat changes
   useEffect(() => {
+    console.log(`Initial chat updated: ${initialChat._id}, messages: ${initialChat.messages?.length || 0}`);
     setChat(initialChat);
   }, [initialChat]);
+  
+  // Connection status notification
+  useEffect(() => {
+    if (!isConnected && isConnectionHealthy() === false) {
+      toast.error("Lost connection to chat server. Reconnecting...", {
+        id: "socket-connection",
+        duration: 3000,
+      });
+    } else if (isConnected) {
+      toast.success("Connected to chat server", {
+        id: "socket-connection",
+        duration: 2000,
+      });
+    }
+  }, [isConnected]);
 
   const {
     handleSendMessage,
@@ -79,6 +104,7 @@ export default function ChatMain({
     token,
   });
 
+  // Mark messages as read when chat changes
   useEffect(() => {
     if (chat._id) {
       handleMarkAsRead();
@@ -131,6 +157,14 @@ export default function ChatMain({
         onDeleteChat={handleDeleteChat}
         onBack={isMobile ? handleBack : undefined}
       />
+      
+      {!isConnected && (
+        <div className="mx-4 mt-2 p-3 bg-destructive/15 text-destructive rounded-md flex items-center gap-2">
+          <WifiOff className="h-4 w-4" />
+          <p>Connection to chat server lost. Messages may not be sent or received.</p>
+        </div>
+      )}
+      
       <div className="flex flex-1 h-screen overflow-hidden">
         <div className="flex flex-1 flex-col">
           <MessageList
@@ -147,6 +181,7 @@ export default function ChatMain({
             onSendMessage={handleSendMessage}
             replyToMessage={replyToMessage}
             onCancelReply={handleCancelReply}
+            disabled={!isConnected}
           />
         </div>
         {showDetails && <ChatDetails onClose={toggleDetails} />}

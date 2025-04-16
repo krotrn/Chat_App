@@ -12,21 +12,45 @@ export default function useChatSocket(
 ) {
   const [messages, setMessages] = useState<MessageType[]>(initialMessages);
   const socketRef = useRef<ReturnType<typeof initSocket> | null>(null);
+  // Track connected state
+  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
     if (!currentUserId || !initialChatId || !token) return;
 
     try {
+      console.log("Initializing socket connection for chat:", initialChatId);
       socketRef.current = initSocket(token);
       joinChat(initialChatId);
 
       const socket = socketRef.current;
 
+      // Track connection status
+      socket.on('connect', () => {
+        console.log('Socket connected!');
+        setIsConnected(true);
+      });
+
+      socket.on('disconnect', () => {
+        console.log('Socket disconnected!');
+        setIsConnected(false);
+      });
+
       socket.on(
         ChatEventEnum.MESSAGE_RECEIVED_EVENT,
         (message: MessageType) => {
+          console.log("Message received via socket:", message);
           if (message.chatId === initialChatId) {
-            setMessages((prev) => [...prev, message]);
+            setMessages((prev) => {
+              // Check if we already have this message (avoid duplicates)
+              const exists = prev.some(msg => msg._id === message._id);
+              if (exists) {
+                // Update the existing message instead of adding a duplicate
+                return prev.map(msg => msg._id === message._id ? message : msg);
+              }
+              // Otherwise add the new message
+              return [...prev, message];
+            });
           }
         },
       );
@@ -34,6 +58,7 @@ export default function useChatSocket(
       socket.on(
         ChatEventEnum.MESSAGE_REACTION_EVENT,
         (updated: MessageType) => {
+          console.log("Message reaction received:", updated);
           if (updated.chatId === initialChatId) {
             setMessages((prev) =>
               prev.map((msg) => (msg._id === updated._id ? updated : msg)),
@@ -44,6 +69,7 @@ export default function useChatSocket(
 
       // Handle deleted messages
       socket.on(ChatEventEnum.MESSAGE_DELETE_EVENT, (deleted: MessageType) => {
+        console.log("Message delete event received:", deleted);
         if (deleted?.chatId === initialChatId) {
           setMessages((prev) => prev.filter((msg) => msg._id !== deleted._id));
         }
@@ -58,6 +84,7 @@ export default function useChatSocket(
           chatId: string;
           editedAt?: Date | string;
         }) => {
+          console.log("Message edit event received:", data);
           if (data.chatId === initialChatId) {
             setMessages((prev) =>
               prev.map((msg) => {
@@ -89,6 +116,7 @@ export default function useChatSocket(
           readBy: { userId: string; readAt: Date | string };
           messageIds: string[];
         }) => {
+          console.log("Message read event received:", data);
           if (data.chatId === initialChatId) {
             setMessages((prev) =>
               prev.map((msg) => {
@@ -131,26 +159,31 @@ export default function useChatSocket(
       // Handle connection error
       socket.on(ChatEventEnum.SOCKET_ERROR_EVENT, (error: Error) => {
         console.error("Socket connection error:", error);
+        setIsConnected(false);
         toast.error("Chat connection failed. Please refresh the page.", {
           duration: 5000,
         });
       });
 
       return () => {
+        console.log("Cleaning up socket connection");
         socket.off(ChatEventEnum.MESSAGE_RECEIVED_EVENT);
         socket.off(ChatEventEnum.MESSAGE_REACTION_EVENT);
         socket.off(ChatEventEnum.MESSAGE_DELETE_EVENT);
         socket.off(ChatEventEnum.MESSAGE_EDITED_EVENT);
         socket.off(ChatEventEnum.MESSAGE_READ_EVENT);
         socket.off(ChatEventEnum.SOCKET_ERROR_EVENT);
+        socket.off('connect');
+        socket.off('disconnect');
       };
     } catch (error) {
       console.error("Socket initialization error:", error);
+      setIsConnected(false);
       toast.error("Failed to connect to chat service", {
         duration: 5000,
       });
     }
   }, [initialChatId, currentUserId, token]);
 
-  return { messages, setMessages };
+  return { messages, setMessages, isConnected };
 }
