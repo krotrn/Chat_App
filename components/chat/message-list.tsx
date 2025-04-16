@@ -16,7 +16,6 @@ interface MessageListProps {
   onReplyMessage: (messageId: string) => void;
   onReactToMessage: (messageId: string, emoji: string) => void;
   onEditMessage?: (messageId: string, content: string) => void;
-  isLoading?: boolean;
 }
 
 export default function MessageList({

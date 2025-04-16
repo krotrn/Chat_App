@@ -1,4 +1,4 @@
-import { useTransition, useCallback, useEffect, useRef } from "react";
+import { startTransition, useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import {
   sendMessage,
@@ -8,7 +8,7 @@ import {
   markMessagesAsRead,
   setAuthToken,
 } from "@/services/chat-api";
-import { MessageType } from "@/types/ChatType";
+import { MessageType, StatusEnum } from "@/types/ChatType";
 
 interface ChatActionsProps {
   chatId: string;
@@ -16,6 +16,7 @@ interface ChatActionsProps {
   setReplyToMessage: React.Dispatch<React.SetStateAction<MessageType | null>>;
   setMessages: React.Dispatch<React.SetStateAction<MessageType[]>>;
   currentUserId?: string;
+  addOptimisticMessage: (message: MessageType) => void;
   token: string;
 }
 
@@ -25,10 +26,11 @@ export default function useChatActions({
   setReplyToMessage,
   setMessages,
   currentUserId,
+  addOptimisticMessage,
   token,
 }: ChatActionsProps) {
-  const [isLoading, startTransition] = useTransition();
   const pendingReadMessages = useRef<Set<string>>(new Set());
+  const pendingSendMessages = useRef<Map<string, { content: string, replyToId?: string }>>(new Map());
 
   const handleSendMessage = useCallback(
     async (content: string, attachments?: File[], replyToId?: string) => {
@@ -37,82 +39,168 @@ export default function useChatActions({
         return;
       }
 
-      startTransition(async () => {
-        try {
-          setAuthToken(token);
-          await sendMessage({ chatId, content, attachments, replyToId });
+      const optimisticId = `temp-${Date.now()}`;
+      const optimisticMessage: MessageType = {
+        _id: optimisticId,
+        content,
+        sender: {
+          userId: currentUserId || "",
+          name: "you",
+          avatarUrl: "https://example.com/avatar.jpg",
+        },
+        chatId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        status: StatusEnum.sent,
+        reactions: [],
+        receivers: [],
+        attachments: attachments
+          ? attachments.map((file) => ({
+              name: file.name,
+              url: URL.createObjectURL(file),
+              type: file.type,
+              localPath: file.name,
+              status: "sent",
+            }))
+          : [],
+        edited: {
+          isEdited: false,
+          editedAt: new Date(),
+        },
+        edits: [],
+        readBy: [],
+        deletedFor: [],
+        formatting: new Map(),
+        replyToId: replyToId || null,
+      };
+
+      pendingSendMessages.current.set(optimisticId, { 
+        content, 
+        replyToId 
+      });
+
+      startTransition(() => {
+        addOptimisticMessage(optimisticMessage);
+      });
+      if (replyToId && replyToMessage?._id === replyToId) {
+        setReplyToMessage(null);
+      }
+
+      try {
+        setAuthToken(token);
+        const response = await sendMessage({
+          chatId,
+          content,
+          attachments,
+          replyToId,
+        });
+
+        if (response) {
+          pendingSendMessages.current.delete(optimisticId);
           
-          // Clear reply if it was used
-          if (replyToId && replyToMessage?._id === replyToId) {
-            setReplyToMessage(null);
-          }
-        } catch (error) {
-          console.error("Failed to send message:", error);
-          toast.error(
-            error instanceof Error && error.message 
-              ? error.message 
-              : "Failed to send message"
+          setMessages((prev) =>
+            prev.map((msg) => (msg._id === optimisticId ? response : msg))
           );
         }
-      });
+      } catch (error) {
+        console.error("Failed to send message:", error);
+        
+        // Mark as failed
+        startTransition(() => {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg._id === optimisticId
+                ? { ...msg, status: StatusEnum.failed }
+                : msg
+            )
+          );
+        });
+        
+        toast.error(
+          error instanceof Error && error.message
+            ? error.message
+            : "Failed to send message"
+        );
+      }
     },
-    [chatId, replyToMessage, setReplyToMessage]
+    [
+      chatId,
+      replyToMessage,
+      setReplyToMessage,
+      token,
+      setMessages,
+      currentUserId,
+      addOptimisticMessage,
+    ]
   );
 
   const handleDeleteMessage = useCallback(
     async (messageId: string, forEveryone: boolean) => {
-      startTransition(async () => {
-        try {
-          await deleteMessage({ 
-            chatId, 
-            messageId,
-            forEveryone
-          });
-          
-          setMessages((prev) => prev.filter((msg) => msg._id !== messageId));
-          
-          if (replyToMessage?._id === messageId) {
-            setReplyToMessage(null);
-          }
-          
-          toast.success("Message deleted successfully");
-        } catch (error) {
-          console.error("Delete message error:", error);
-          toast.error(
-            error instanceof Error && error.message 
-              ? error.message 
-              : "Failed to delete message"
-          );
-        }
-      });
+      // Optimistically remove from UI
+      const deletedMessage = { _id: messageId, chatId, status: StatusEnum.sending };
+      addOptimisticMessage(deletedMessage as MessageType);
+      
+      setMessages((prev) => prev.filter((msg) => msg._id !== messageId));
+
+      if (replyToMessage?._id === messageId) {
+        setReplyToMessage(null);
+      }
+
+      try {
+        await deleteMessage({
+          chatId,
+          messageId,
+          forEveryone,
+        });
+        toast.success("Message deleted successfully");
+      } catch (error) {
+        console.error("Delete message error:", error);
+        
+        // Could restore the message here if needed
+        
+        toast.error(
+          error instanceof Error && error.message
+            ? error.message
+            : "Failed to delete message"
+        );
+      }
     },
-    [chatId, replyToMessage, setReplyToMessage, setMessages]
+    [chatId, replyToMessage, setReplyToMessage, setMessages, addOptimisticMessage]
   );
 
   const handleReactToMessage = useCallback(
     (messageId: string, emoji: string) => {
-      startTransition(async () => {
-        try {
-          const updatedMessage = await updateReaction({
-            chatId,
-            messageId,
+      // Find the existing message
+      setMessages((prev) => {
+        const existingMessage = prev.find(msg => msg._id === messageId);
+        if (!existingMessage) return prev;
+        
+        // Create optimistic update
+        const updatedMessage: MessageType= {
+          ...existingMessage,
+          reactions: [...(existingMessage.reactions || []), {
             emoji,
-          });
-          
-          setMessages((prev) =>
-            prev.map((msg) => (msg._id === messageId ? updatedMessage : msg))
-          );
-        } catch (error) {
-          console.error("Reaction update error:", error);
-          toast.error(
-            error instanceof Error && error.message 
-              ? error.message 
-              : "Failed to update reaction"
-          );
-        }
+            userId: currentUserId || "",
+            timestamp: new Date(),
+          }]
+        };
+        
+        addOptimisticMessage(updatedMessage);
+        
+        return prev;
+      });
+      
+      // Make API call
+      updateReaction({
+        chatId,
+        messageId,
+        emoji,
+      }).catch(error => {
+        console.error("Reaction update error:", error);
+        toast.error("Failed to update reaction");
       });
     },
-    [chatId, setMessages]
+    [chatId, setMessages, currentUserId, addOptimisticMessage]
   );
 
   const handleEditMessage = useCallback(
@@ -121,86 +209,115 @@ export default function useChatActions({
         toast.error("Message cannot be empty");
         return;
       }
-      
-      startTransition(async () => {
-        try {
-          const updatedMessage = await editMessage({
-            chatId,
-            messageId,
-            content,
-          });
-          
+
+      // Optimistic update
+      setMessages((prev) => {
+        const existingMessage = prev.find(msg => msg._id === messageId);
+        if (!existingMessage) return prev;
+        
+        const updatedMessage = {
+          ...existingMessage,
+          content,
+          edited: {
+            isEdited: true,
+            editedAt: new Date(),
+          },
+          status: StatusEnum.sending,
+        };
+        
+        addOptimisticMessage(updatedMessage);
+        
+        return prev;
+      });
+
+      try {
+        const response = await editMessage({
+          chatId,
+          messageId,
+          content,
+        });
+
+        if (response) {
           setMessages((prev) =>
-            prev.map((msg) => (msg._id === messageId ? updatedMessage : msg))
-          );
-          
-          toast.success("Message edited successfully");
-        } catch (error) {
-          console.error("Edit message error:", error);
-          toast.error(
-            error instanceof Error && error.message 
-              ? error.message 
-              : "Failed to edit message"
+            prev.map((msg) => (msg._id === messageId ? response : msg))
           );
         }
-      });
+        
+        toast.success("Message edited successfully");
+      } catch (error) {
+        console.error("Edit message error:", error);
+        
+        // Mark as failed
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg._id === messageId
+              ? { ...msg, status: StatusEnum.failed }
+              : msg
+          )
+        );
+        
+        toast.error(
+          error instanceof Error && error.message
+            ? error.message
+            : "Failed to edit message"
+        );
+      }
     },
-    [chatId, setMessages]
+    [chatId, setMessages, addOptimisticMessage]
   );
-
   const handleMarkAsRead = useCallback(
     async (messageIds?: string[]) => {
       if (!currentUserId || !chatId) return;
-      
+
       // Optimistically update UI
       const readAt = new Date();
       const messagesToMark = new Set<string>();
-      
+
       setMessages((prev) => {
         const updatedMessages = prev.map((msg) => {
           if (
-            (!messageIds || messageIds.includes(msg._id)) && 
-            msg.sender.userId !== currentUserId && 
-            (!msg.readBy || !msg.readBy.some(r => r.userId === currentUserId))
+            (!messageIds || messageIds.includes(msg._id)) &&
+            msg.sender.userId !== currentUserId &&
+            (!msg.readBy || !msg.readBy.some((r) => r.userId === currentUserId))
           ) {
             // Add to the set of messages to mark as read
             messagesToMark.add(msg._id);
-            
+
             return {
               ...msg,
               readBy: [
                 ...(msg.readBy || []),
-                { userId: currentUserId, readAt }
-              ]
+                { userId: currentUserId, readAt },
+              ],
             };
           }
           return msg;
         });
         return updatedMessages;
       });
-      
+
       // Add messages to pending set
-      messageIds?.forEach(id => pendingReadMessages.current.add(id));
-      
+      messageIds?.forEach((id) => pendingReadMessages.current.add(id));
+
       // Debounced API call
       const idsToMark = messageIds || Array.from(messagesToMark);
       if (idsToMark.length === 0) return;
-      
+
       try {
         await markMessagesAsRead({
           chatId,
           messageIds: idsToMark,
         });
-        
+
         // Remove from pending set after success
-        idsToMark.forEach(id => pendingReadMessages.current.delete(id));
+        idsToMark.forEach((id) => pendingReadMessages.current.delete(id));
       } catch (error) {
         console.error("Error marking messages as read:", error);
-        
-        if (error instanceof Error && error.message.includes('network')) {
+
+        if (error instanceof Error && error.message.includes("network")) {
           toast.error("Network issue - read status may not sync", {
             duration: 3000,
-            position: 'bottom-right'
+            position: "bottom-right",
           });
         }
       }
@@ -213,11 +330,11 @@ export default function useChatActions({
     if (chatId && currentUserId) {
       handleMarkAsRead();
     }
-    
+
     // Capture the current values before cleanup
     const currentChatId = chatId;
     const pendingMessages = pendingReadMessages.current;
-    
+
     // Cleanup: attempt to send any pending read statuses
     return () => {
       if (pendingMessages.size > 0 && currentChatId) {
@@ -235,6 +352,5 @@ export default function useChatActions({
     handleSendMessage,
     handleEditMessage,
     handleMarkAsRead,
-    isLoading,
   };
 }

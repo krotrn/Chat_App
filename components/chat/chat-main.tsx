@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useOptimistic } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -39,12 +39,19 @@ export default function ChatMain({
   const [replyToMessage, setReplyToMessage] = useState<MessageType | null>(
     null
   );
-  const { messages, setMessages } = useChatSocket(
+  const { messages:socketMessages, setMessages:setSocketMessages } = useChatSocket(
     initialChat._id,
     currentUser.id!,
     token,
     initialChat.messages || []
   );
+
+  const [optimisticMessages, addOptimisticMessage] = useOptimistic(socketMessages, (state: MessageType[], newMessage: MessageType) =>{
+    if (!state.some(msg => msg._id === newMessage._id)) {
+      return [...state, newMessage];
+    }
+    return state.map(msg => msg._id === newMessage._id ? newMessage : msg);
+  })
 
   useEffect(() => {
     setChat(initialChat);
@@ -56,12 +63,12 @@ export default function ChatMain({
     handleReactToMessage,
     handleEditMessage,
     handleMarkAsRead,
-    isLoading,
   } = useChatActions({
     chatId: chat._id,
     replyToMessage,
     setReplyToMessage,
-    setMessages,
+    setMessages: setSocketMessages,
+    addOptimisticMessage,
     currentUserId: currentUser.id,
     token,
   });
@@ -77,10 +84,10 @@ export default function ChatMain({
 
   const handleReplyToMessage = useCallback(
     (messageId: string) => {
-      const message = messages.find((msg) => msg._id === messageId);
+      const message = optimisticMessages.find((msg) => msg._id === messageId);
       if (message) setReplyToMessage(message);
     },
-    [messages]
+    [optimisticMessages]
   );
 
   const handleCancelReply = useCallback(() => setReplyToMessage(null), []);
@@ -121,14 +128,13 @@ export default function ChatMain({
       <div className="flex flex-1 h-screen overflow-hidden">
         <div className="flex flex-1 flex-col">
           <MessageList
-            messages={messages}
+            messages={optimisticMessages}
             participants={chat.participants}
             currentUser={currentUser}
             onDeleteMessage={handleDeleteMessage}
             onReplyMessage={handleReplyToMessage}
             onReactToMessage={handleReactToMessage}
             onEditMessage={handleEditMessage}
-            isLoading={isLoading}
           />
           <MessageInput
             participants={chat.participants}

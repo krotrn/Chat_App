@@ -1,6 +1,6 @@
 "use client";
 import useTouchActions from "@/hooks/useTouchActions";
-import { MessageType, ParticipantsType } from "@/types/ChatType";
+import { MessageType, ParticipantsType, StatusEnum } from "@/types/ChatType";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -18,7 +18,16 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { messageVariants } from "@/animations/chat/messageVariants";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Copy, Pencil, Reply, Smile, Trash2, Check } from "lucide-react";
+import {
+  Copy,
+  Pencil,
+  Reply,
+  Smile,
+  Trash2,
+  Check,
+  AlertCircle,
+  RefreshCw,
+} from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -47,6 +56,7 @@ interface MessageItemProps {
   onReply: (messageId: string) => void;
   onReact: (messageId: string, emoji: string) => void;
   onEdit?: (messageId: string, content: string) => void;
+  onRetry?: (messageId: string) => void;
   replyMessage?: MessageType | null;
   showDate?: boolean;
   date?: string;
@@ -62,6 +72,7 @@ export default function MessageItem({
   onReply,
   onReact,
   onEdit,
+  onRetry,
   replyMessage,
   showDate,
   date,
@@ -69,7 +80,9 @@ export default function MessageItem({
   const [showReactions, setShowReactions] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editContent, setEditContent] = useState(message.content);
-  const sender = participants.find((user) => user.userId === message.sender.userId);
+  const sender = participants.find(
+    (user) => user.userId === message.sender.userId
+  );
   const replySender = replyMessage
     ? participants.find((user) => user.userId === replyMessage.sender.userId)
     : null;
@@ -87,7 +100,7 @@ export default function MessageItem({
       longPressTimeoutRef,
       setIsLongPressed
     );
-    
+
   const handleEdit = () => {
     if (onEdit && editContent.trim() && editContent !== message.content) {
       onEdit(message._id, editContent);
@@ -172,13 +185,13 @@ export default function MessageItem({
                             className="w-full min-h-[60px] text-sm p-2 rounded bg-background border"
                           />
                           <div className="flex justify-end gap-2">
-                            <button 
+                            <button
                               className="text-xs px-2 py-1 rounded bg-muted hover:bg-muted/80"
                               onClick={() => setEditMode(false)}
                             >
                               Cancel
                             </button>
-                            <button 
+                            <button
                               className="text-xs px-2 py-1 rounded bg-primary text-primary-foreground hover:bg-primary/80"
                               onClick={handleEdit}
                             >
@@ -190,11 +203,13 @@ export default function MessageItem({
                         <>
                           <p className="text-sm">{message.content}</p>
                           {message.edited?.isEdited && (
-                            <span className="text-[10px] opacity-70 ml-1">(edited)</span>
+                            <span className="text-[10px] opacity-70 ml-1">
+                              (edited)
+                            </span>
                           )}
                         </>
                       )}
-                      
+
                       <div className="absolute -right-2 -top-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <TooltipProvider delayDuration={300}>
                           <Tooltip>
@@ -279,9 +294,33 @@ export default function MessageItem({
                   <div className="flex items-center gap-1">
                     <MessageTimestampStatus
                       isOwn={isOwn}
-                      status={"sent"}
+                      status={message.status}
                       timestamp={message.updatedAt.toLocaleString()}
                     />
+
+                    {/* Add status indicators here */}
+                    {message.status === StatusEnum.sending && (
+                      <span className="text-xs text-muted-foreground ml-1 flex items-center">
+                        Sending...
+                      </span>
+                    )}
+
+                    {message.status === StatusEnum.failed && (
+                      <span className="text-xs text-destructive ml-1 flex items-center gap-1">
+                        <AlertCircle size={12} />
+                        Failed
+                        {onRetry && (
+                          <button
+                            className="ml-1 flex items-center gap-1 text-xs underline hover:text-destructive/80"
+                            onClick={() => onRetry(message._id)}
+                          >
+                            <RefreshCw size={10} />
+                            Retry
+                          </button>
+                        )}
+                      </span>
+                    )}
+
                     {isOwn && hasReadReceipts && (
                       <div className="flex items-center ml-1">
                         <TooltipProvider>
@@ -289,11 +328,12 @@ export default function MessageItem({
                             <TooltipTrigger>
                               <div className="flex items-center">
                                 <Check size={12} className="text-green-500" />
-                                {message.readBy && message.readBy.length > 1 && (
-                                  <span className="text-[10px] text-muted-foreground ml-0.5">
-                                    {message.readBy.length}
-                                  </span>
-                                )}
+                                {message.readBy &&
+                                  message.readBy.length > 1 && (
+                                    <span className="text-[10px] text-muted-foreground ml-0.5">
+                                      {message.readBy.length}
+                                    </span>
+                                  )}
                               </div>
                             </TooltipTrigger>
                             <TooltipContent>
@@ -310,41 +350,50 @@ export default function MessageItem({
           </motion.div>
         </ContextMenuTrigger>
         <ContextMenuContent>
-          <ContextMenuItem onClick={() => onReply(message._id)}>
-            <Reply className="mr-2 h-4 w-4" />
-            Reply
-          </ContextMenuItem>
-          <ContextMenuItem onClick={handleCopyToClipboard}>
-            <Copy className="mr-2 h-4 w-4" />
-            Copy
-          </ContextMenuItem>
-          {isOwn && onEdit && (
-            <ContextMenuItem onClick={() => setEditMode(true)}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit
+          {message.status === StatusEnum.failed && onRetry ? (
+            <ContextMenuItem onClick={() => onRetry(message._id)}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Retry sending
             </ContextMenuItem>
+          ) : (
+            <>
+              <ContextMenuItem onClick={() => onReply(message._id)}>
+                <Reply className="mr-2 h-4 w-4" />
+                Reply
+              </ContextMenuItem>
+              <ContextMenuItem onClick={handleCopyToClipboard}>
+                <Copy className="mr-2 h-4 w-4" />
+                Copy
+              </ContextMenuItem>
+              {isOwn && onEdit && (
+                <ContextMenuItem onClick={() => setEditMode(true)}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Edit
+                </ContextMenuItem>
+              )}
+              <ContextMenuSub>
+                <ContextMenuSubTrigger>
+                  <Smile className="mr-2 h-4 w-4" />
+                  React
+                </ContextMenuSubTrigger>
+                <ContextMenuPortal>
+                  <ContextMenuSubContent className="p-2">
+                    <div className="flex flex-wrap gap-2 max-w-48">
+                      {reactionEmoji.map((emoji) => (
+                        <button
+                          key={emoji}
+                          className="text-lg hover:scale-125 transition-transform p-1"
+                          onClick={() => onReact(message._id, emoji)}
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
+                  </ContextMenuSubContent>
+                </ContextMenuPortal>
+              </ContextMenuSub>
+            </>
           )}
-          <ContextMenuSub>
-            <ContextMenuSubTrigger>
-              <Smile className="mr-2 h-4 w-4" />
-              React
-            </ContextMenuSubTrigger>
-            <ContextMenuPortal>
-              <ContextMenuSubContent className="p-2">
-                <div className="flex flex-wrap gap-2 max-w-48">
-                  {reactionEmoji.map((emoji) => (
-                    <button
-                      key={emoji}
-                      className="text-lg hover:scale-125 transition-transform p-1"
-                      onClick={() => onReact(message._id, emoji)}
-                    >
-                      {emoji}
-                    </button>
-                  ))}
-                </div>
-              </ContextMenuSubContent>
-            </ContextMenuPortal>
-          </ContextMenuSub>
           {isOwn && (
             <>
               <ContextMenuSeparator />

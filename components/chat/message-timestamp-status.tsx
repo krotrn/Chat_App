@@ -1,10 +1,11 @@
 import { cn } from "@/lib/utils";
+import { StatusEnum } from "@/types/ChatType";
 import { format } from "date-fns";
 import { Check, CheckCheck } from "lucide-react";
 export function MessageTimestampStatus({ timestamp, isOwn, status }: {
   timestamp: string,
   isOwn: boolean,
-  status: "sent" | "delivered" | "read"
+  status: StatusEnum
 }) {
   return (
     <div

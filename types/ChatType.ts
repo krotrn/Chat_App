@@ -34,15 +34,23 @@ export interface ParticipantsType {
 }
 
 export enum StatusEnum {
-  "sent",
-  "delivered",
-  "read",
+  sending = "sending",
+  sent = "sent",
+  delivered = "delivered",
+  read = "read",
+  failed = "failed",
+}
+
+interface MessageUser {
+  userId: string;
+  name: string;
+  avatarUrl: string;
 }
 
 export interface MessageType {
   _id: string;
-  sender: ParticipantsType;
-  receivers: ParticipantsType[];
+  sender: MessageUser;
+  receivers: MessageUser[];
   chatId: string;
   content: string;
   attachments: AttachmentResponse[];

@@ -22,7 +22,6 @@ export default function useChatSocket(
 
       const socket = socketRef.current;
 
-      // Handle received messages
       socket.on(
         ChatEventEnum.MESSAGE_RECEIVED_EVENT,
         (message: MessageType) => {
@@ -32,7 +31,6 @@ export default function useChatSocket(
         }
       );
 
-      // Handle message reactions
       socket.on(
         ChatEventEnum.MESSAGE_REACTION_EVENT,
         (updated: MessageType) => {

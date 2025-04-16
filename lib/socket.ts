@@ -60,7 +60,7 @@ export const joinChat = (chatId: string) => {
     return false;
   }
 
-  socket.emit(ChatEventEnum.ONLINE_EVENT, { chatId });
+  socket.emit(ChatEventEnum.ONLINE_EVENT, chatId);
   return true;
 };
 
