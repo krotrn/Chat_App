@@ -12,7 +12,11 @@ import ChatDetails from "@/components/chat/chat-details";
 import { ChatType, MessageType } from "@/types/ChatType";
 import { User } from "next-auth";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { deleteOneOnOneChat, deleteChatForMe } from "@/services/chat-api";
+import {
+  deleteOneOnOneChat,
+  deleteChatForMe,
+  setAuthToken,
+} from "@/services/chat-api";
 
 import useChatSocket from "@/hooks/useChatSocket";
 import useChatActions from "@/hooks/useChatActions";
@@ -20,19 +24,21 @@ import useChatActions from "@/hooks/useChatActions";
 interface ChatMainProps {
   chat: ChatType;
   currentUser: User;
-  token:string;
+  token: string;
 }
 
 export default function ChatMain({
   chat: initialChat,
   currentUser,
-  token
+  token,
 }: ChatMainProps) {
   const router = useRouter();
   const isMobile = useIsMobile();
   const [chat, setChat] = useState(initialChat);
   const [showDetails, setShowDetails] = useState(false);
-  const [replyToMessage, setReplyToMessage] = useState<MessageType | null>(null);
+  const [replyToMessage, setReplyToMessage] = useState<MessageType | null>(
+    null
+  );
   const { messages, setMessages } = useChatSocket(
     initialChat._id,
     currentUser.id!,
@@ -51,7 +57,14 @@ export default function ChatMain({
     handleEditMessage,
     handleMarkAsRead,
     isLoading,
-  } = useChatActions({chatId:chat._id, replyToMessage, setReplyToMessage, setMessages, currentUserId:currentUser.id});
+  } = useChatActions({
+    chatId: chat._id,
+    replyToMessage,
+    setReplyToMessage,
+    setMessages,
+    currentUserId: currentUser.id,
+    token,
+  });
 
   useEffect(() => {
     if (chat._id) {
@@ -75,6 +88,7 @@ export default function ChatMain({
   const handleDeleteChat = useCallback(
     async (chatId: string, forEveryone: boolean) => {
       try {
+        setAuthToken(token);
         if (forEveryone) {
           await deleteOneOnOneChat({ chatId });
         } else {
@@ -86,7 +100,7 @@ export default function ChatMain({
         toast.error("Failed to delete chat");
       }
     },
-    [router]
+    [router, token]
   );
 
   return (
@@ -117,7 +131,7 @@ export default function ChatMain({
             isLoading={isLoading}
           />
           <MessageInput
-            participants = {chat.participants}
+            participants={chat.participants}
             onSendMessage={handleSendMessage}
             replyToMessage={replyToMessage}
             onCancelReply={handleCancelReply}

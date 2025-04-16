@@ -9,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import ChatItem from "@/components/chat/chat-item";
 import AIChatItem from "@/components/chat/ai-chat-item";
 import { ChatType, AIModel } from "@/types/ChatType";
-import { deleteOneOnOneChat, deleteChatForMe } from "@/services/chat-api";
+import { deleteOneOnOneChat, deleteChatForMe, setAuthToken } from "@/services/chat-api";
 import { toast } from "sonner";
 
 interface ChatSidebarProps {
@@ -18,6 +18,7 @@ interface ChatSidebarProps {
   aiModels?: AIModel[];
   onAIModelSelect?: (modelId: string) => void;
   selectedAIModelId?: string | null;
+  token: string;
 }
 
 export default function ChatSidebar({
@@ -26,6 +27,7 @@ export default function ChatSidebar({
   aiModels,
   onAIModelSelect,
   selectedAIModelId,
+  token,
 }: ChatSidebarProps) {
   const [chats, setChats] = useState<ChatType[]>(initialChats);
   const [searchQuery, setSearchQuery] = useState("");
@@ -59,6 +61,7 @@ export default function ChatSidebar({
   const handleDeleteChat = useCallback(
     async (chatId: string, forEveryone: boolean) => {
       try {
+        setAuthToken(token);
         if (forEveryone) {
           await deleteOneOnOneChat({ chatId });
         } else {
@@ -73,7 +76,7 @@ export default function ChatSidebar({
         toast.error("Failed to delete chat");
       }
     },
-    [selectedChatId, router]
+    [selectedChatId, router, token]
   );
 
   return (

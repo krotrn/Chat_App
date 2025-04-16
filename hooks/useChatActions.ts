@@ -6,6 +6,7 @@ import {
   updateReaction,
   editMessage,
   markMessagesAsRead,
+  setAuthToken,
 } from "@/services/chat-api";
 import { MessageType } from "@/types/ChatType";
 
@@ -15,6 +16,7 @@ interface ChatActionsProps {
   setReplyToMessage: React.Dispatch<React.SetStateAction<MessageType | null>>;
   setMessages: React.Dispatch<React.SetStateAction<MessageType[]>>;
   currentUserId?: string;
+  token: string;
 }
 
 export default function useChatActions({
@@ -22,7 +24,8 @@ export default function useChatActions({
   replyToMessage,
   setReplyToMessage,
   setMessages,
-  currentUserId
+  currentUserId,
+  token,
 }: ChatActionsProps) {
   const [isLoading, startTransition] = useTransition();
   const pendingReadMessages = useRef<Set<string>>(new Set());
@@ -36,6 +39,7 @@ export default function useChatActions({
 
       startTransition(async () => {
         try {
+          setAuthToken(token);
           await sendMessage({ chatId, content, attachments, replyToId });
           
           // Clear reply if it was used

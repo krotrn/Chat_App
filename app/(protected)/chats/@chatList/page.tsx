@@ -19,7 +19,7 @@ export default async function ChatListPage({
     setAuthToken(session.accessToken);
     const chats = await fetchChats();
     const selectedChatId = (await searchParams).chat || null;
-    return <ChatSidebar chats={chats} selectedChatId={selectedChatId} />;
+    return <ChatSidebar chats={chats} selectedChatId={selectedChatId} token={session.accessToken} />;
   } catch (error) {
     console.error("Error fetching chats:", error);
     return (
