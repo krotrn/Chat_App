@@ -13,11 +13,10 @@ export default async function ChatMainPage({
 
   const chatId = (await searchParams).chat;
   if (!chatId) {
-    return null; // Let the default.tsx handle this case
+    return null;
   }
 
   try {
-    // Set the auth token before making API calls
     if (session.accessToken) {
       setAuthToken(session.accessToken);
     }
@@ -31,7 +30,13 @@ export default async function ChatMainPage({
       );
     }
 
-    return <ChatMain chat={chat} currentUser={session.user} token={session.accessToken} />;
+    return (
+      <ChatMain
+        chat={chat}
+        currentUser={session.user}
+        token={session.accessToken}
+      />
+    );
   } catch (error) {
     console.error("Error fetching chat:", error);
     return (
