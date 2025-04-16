@@ -4,9 +4,10 @@ import { config } from "@/config";
 
 export const metadata: Metadata = {
   title: `Offline | ${config.appName}`,
-  description: "You are currently offline. Please check your internet connection.",
+  description:
+    "You are currently offline. Please check your internet connection.",
 };
 
 export default function OfflineRoute() {
   return <OfflinePage />;
-} 
+}

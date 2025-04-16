@@ -58,7 +58,7 @@ export default function AttachmentPreview({
       <div
         className={cn(
           "group relative flex items-center gap-2 rounded-md border p-2 hover:bg-muted/50",
-          className
+          className,
         )}
       >
         <div className="flex h-10 w-10 items-center justify-center rounded bg-muted">

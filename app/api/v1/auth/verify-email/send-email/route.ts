@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       { message: "Check Your Email", success: true },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error(error);
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
           error instanceof Error ? error.message : "Failed to send email",
         success: false,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

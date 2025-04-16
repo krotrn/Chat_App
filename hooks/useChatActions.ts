@@ -30,7 +30,9 @@ export default function useChatActions({
   token,
 }: ChatActionsProps) {
   const pendingReadMessages = useRef<Set<string>>(new Set());
-  const pendingSendMessages = useRef<Map<string, { content: string, replyToId?: string }>>(new Map());
+  const pendingSendMessages = useRef<
+    Map<string, { content: string; replyToId?: string }>
+  >(new Map());
 
   const handleSendMessage = useCallback(
     async (content: string, attachments?: File[], replyToId?: string) => {
@@ -74,9 +76,9 @@ export default function useChatActions({
         replyToId: replyToId || null,
       };
 
-      pendingSendMessages.current.set(optimisticId, { 
-        content, 
-        replyToId 
+      pendingSendMessages.current.set(optimisticId, {
+        content,
+        replyToId,
       });
 
       startTransition(() => {
@@ -97,29 +99,29 @@ export default function useChatActions({
 
         if (response) {
           pendingSendMessages.current.delete(optimisticId);
-          
+
           setMessages((prev) =>
-            prev.map((msg) => (msg._id === optimisticId ? response : msg))
+            prev.map((msg) => (msg._id === optimisticId ? response : msg)),
           );
         }
       } catch (error) {
         console.error("Failed to send message:", error);
-        
+
         // Mark as failed
         startTransition(() => {
           setMessages((prev) =>
             prev.map((msg) =>
               msg._id === optimisticId
                 ? { ...msg, status: StatusEnum.failed }
-                : msg
-            )
+                : msg,
+            ),
           );
         });
-        
+
         toast.error(
           error instanceof Error && error.message
             ? error.message
-            : "Failed to send message"
+            : "Failed to send message",
         );
       }
     },
@@ -131,15 +133,19 @@ export default function useChatActions({
       setMessages,
       currentUserId,
       addOptimisticMessage,
-    ]
+    ],
   );
 
   const handleDeleteMessage = useCallback(
     async (messageId: string, forEveryone: boolean) => {
       // Optimistically remove from UI
-      const deletedMessage = { _id: messageId, chatId, status: StatusEnum.sending };
+      const deletedMessage = {
+        _id: messageId,
+        chatId,
+        status: StatusEnum.sending,
+      };
       addOptimisticMessage(deletedMessage as MessageType);
-      
+
       setMessages((prev) => prev.filter((msg) => msg._id !== messageId));
 
       if (replyToMessage?._id === messageId) {
@@ -155,52 +161,61 @@ export default function useChatActions({
         toast.success("Message deleted successfully");
       } catch (error) {
         console.error("Delete message error:", error);
-        
+
         // Could restore the message here if needed
-        
+
         toast.error(
           error instanceof Error && error.message
             ? error.message
-            : "Failed to delete message"
+            : "Failed to delete message",
         );
       }
     },
-    [chatId, replyToMessage, setReplyToMessage, setMessages, addOptimisticMessage]
+    [
+      chatId,
+      replyToMessage,
+      setReplyToMessage,
+      setMessages,
+      addOptimisticMessage,
+    ],
   );
 
   const handleReactToMessage = useCallback(
     (messageId: string, emoji: string) => {
       // Find the existing message
       setMessages((prev) => {
-        const existingMessage = prev.find(msg => msg._id === messageId);
+        const existingMessage = prev.find((msg) => msg._id === messageId);
         if (!existingMessage) return prev;
-        
+
         // Create optimistic update
-        const updatedMessage: MessageType= {
+        const updatedMessage: MessageType = {
           ...existingMessage,
-          reactions: [...(existingMessage.reactions || []), {
-            emoji,
-            userId: currentUserId || "",
-            timestamp: new Date(),
-          }]
+          reactions: [
+            ...(existingMessage.reactions || []),
+            {
+              emoji,
+              userId: currentUserId || "",
+              timestamp: new Date(),
+            },
+          ],
         };
-        
+
         addOptimisticMessage(updatedMessage);
-        
+
         return prev;
       });
-      
+
       // Make API call
       updateReaction({
         chatId,
         messageId,
         emoji,
-      }).catch(error => {
+      }).catch((error) => {
         console.error("Reaction update error:", error);
         toast.error("Failed to update reaction");
       });
     },
-    [chatId, setMessages, currentUserId, addOptimisticMessage]
+    [chatId, setMessages, currentUserId, addOptimisticMessage],
   );
 
   const handleEditMessage = useCallback(
@@ -212,9 +227,9 @@ export default function useChatActions({
 
       // Optimistic update
       setMessages((prev) => {
-        const existingMessage = prev.find(msg => msg._id === messageId);
+        const existingMessage = prev.find((msg) => msg._id === messageId);
         if (!existingMessage) return prev;
-        
+
         const updatedMessage = {
           ...existingMessage,
           content,
@@ -224,9 +239,9 @@ export default function useChatActions({
           },
           status: StatusEnum.sending,
         };
-        
+
         addOptimisticMessage(updatedMessage);
-        
+
         return prev;
       });
 
@@ -239,31 +254,29 @@ export default function useChatActions({
 
         if (response) {
           setMessages((prev) =>
-            prev.map((msg) => (msg._id === messageId ? response : msg))
+            prev.map((msg) => (msg._id === messageId ? response : msg)),
           );
         }
-        
+
         toast.success("Message edited successfully");
       } catch (error) {
         console.error("Edit message error:", error);
-        
+
         // Mark as failed
         setMessages((prev) =>
           prev.map((msg) =>
-            msg._id === messageId
-              ? { ...msg, status: StatusEnum.failed }
-              : msg
-          )
+            msg._id === messageId ? { ...msg, status: StatusEnum.failed } : msg,
+          ),
         );
-        
+
         toast.error(
           error instanceof Error && error.message
             ? error.message
-            : "Failed to edit message"
+            : "Failed to edit message",
         );
       }
     },
-    [chatId, setMessages, addOptimisticMessage]
+    [chatId, setMessages, addOptimisticMessage],
   );
   const handleMarkAsRead = useCallback(
     async (messageIds?: string[]) => {
@@ -322,7 +335,7 @@ export default function useChatActions({
         }
       }
     },
-    [chatId, currentUserId, setMessages]
+    [chatId, currentUserId, setMessages],
   );
 
   // Mark messages as read on mount and chat ID change

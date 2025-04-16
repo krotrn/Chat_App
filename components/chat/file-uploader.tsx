@@ -74,7 +74,7 @@ export default function FileUploader({
       setSelectedFiles((prev) => [...prev, ...validFiles]);
       onFileSelect(validFiles);
     },
-    [selectedFiles, maxFiles, maxSize, accept, onFileSelect, simulateUpload]
+    [selectedFiles, maxFiles, maxSize, accept, onFileSelect, simulateUpload],
   );
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
@@ -84,7 +84,7 @@ export default function FileUploader({
       const files = Array.from(e.dataTransfer.files);
       handleFiles(files);
     },
-    [handleFiles]
+    [handleFiles],
   );
 
   const handleFileInput = useCallback(
@@ -92,7 +92,7 @@ export default function FileUploader({
       const files = Array.from(e.target.files || []);
       handleFiles(files);
     },
-    [handleFiles]
+    [handleFiles],
   );
 
   const removeFile = useCallback((fileName: string) => {
@@ -111,7 +111,7 @@ export default function FileUploader({
           "relative rounded-lg border-2 border-dashed p-4 transition-colors",
           isDragging
             ? "border-primary bg-primary/5"
-            : "border-muted-foreground/25"
+            : "border-muted-foreground/25",
         )}
         onDragEnter={handleDragEnter}
         onDragOver={handleDragEnter}

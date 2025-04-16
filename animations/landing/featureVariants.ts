@@ -6,7 +6,7 @@ export const featureVariants = {
     transition: { delay: i * 0.3, duration: 0.6 },
   }),
 };
-  
+
 export const container = {
   hidden: { opacity: 0 },
   visible: {

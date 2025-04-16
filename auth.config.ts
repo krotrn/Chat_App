@@ -55,7 +55,7 @@ export default {
             role: user.role,
           },
           process.env.JWT_SECRET!,
-          { expiresIn: "30d" } as jwt.SignOptions
+          { expiresIn: "30d" } as jwt.SignOptions,
         );
 
         return {

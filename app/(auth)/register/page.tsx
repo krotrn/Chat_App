@@ -5,7 +5,7 @@ const page = () => {
     <div className="min-h-screen flex justify-center items-center">
       <RegisterForm />
     </div>
-  )
-}
+  );
+};
 
-export default page
+export default page;

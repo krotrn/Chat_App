@@ -24,8 +24,9 @@ export function DatabaseOfflinePage() {
           Database Connection Lost
         </h1>
         <p className="text-muted-foreground">
-          We&apos;re having trouble connecting to our database. This might be due to
-          maintenance or a temporary issue. Please try again in a few moments.
+          We&apos;re having trouble connecting to our database. This might be
+          due to maintenance or a temporary issue. Please try again in a few
+          moments.
         </p>
         <Button
           onClick={handleRefresh}
@@ -51,4 +52,4 @@ export function DatabaseOfflinePage() {
       </div>
     </div>
   );
-} 
+}

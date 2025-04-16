@@ -28,6 +28,6 @@ export interface SearchUserType {
   avatarUrl?: string;
 }
 
-export interface PendingRequestsType{
+export interface PendingRequestsType {
   id: string;
 }

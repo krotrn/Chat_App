@@ -11,7 +11,7 @@ export const sendVerificationEmail = async (to: string): Promise<void> => {
 
   // Create verification link
   const verificationLink = `${config.baseUrl}/auth/verify/${encodeURIComponent(
-    to
+    to,
   )}/${encodeURIComponent(encryptedToken)}`;
 
   // Initialize email provider (Resend)

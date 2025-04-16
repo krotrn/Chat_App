@@ -21,10 +21,14 @@ import { useRouter } from "next/navigation";
 interface FriendsListProps {
   friends: FormattedFriendType[];
   userId: string;
-  accessToken:string
+  accessToken: string;
 }
 
-export default function FriendsList({ friends, userId, accessToken }: FriendsListProps) {
+export default function FriendsList({
+  friends,
+  userId,
+  accessToken,
+}: FriendsListProps) {
   const [searchQuery, setSearchQuery] = useSearchQuery("fr", "");
   const [isPending, startTransition] = useTransition();
   const [filteredFriends, setFilteredFriends] = useState(friends);
@@ -36,8 +40,8 @@ export default function FriendsList({ friends, userId, accessToken }: FriendsLis
       friends.filter((friend) =>
         (friend.name ? friend.name + friend.username : friend.username)
           .toLowerCase()
-          .includes(searchQuery.toLowerCase())
-      )
+          .includes(searchQuery.toLowerCase()),
+      ),
     );
   }, [friends, searchQuery]);
 
@@ -52,7 +56,7 @@ export default function FriendsList({ friends, userId, accessToken }: FriendsLis
 
         toast.success(response.message);
         setFilteredFriends((prev) =>
-          prev.filter((friend) => friend.id !== friendId)
+          prev.filter((friend) => friend.id !== friendId),
         );
       });
     } catch (error) {
@@ -68,7 +72,7 @@ export default function FriendsList({ friends, userId, accessToken }: FriendsLis
     try {
       startTransition(async () => {
         console.log("Creating chat with friend ID:", participants[0].userId);
-        setAuthToken(accessToken)
+        setAuthToken(accessToken);
         const response = await createOrGetAOneOnOneChat({ participants, name });
         console.log("Chat created/retrieved:", response);
         router.push(`/chats?chat=${response._id}`);

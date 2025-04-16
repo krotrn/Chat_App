@@ -37,21 +37,27 @@ export default function ChatMain({
   const [chat, setChat] = useState(initialChat);
   const [showDetails, setShowDetails] = useState(false);
   const [replyToMessage, setReplyToMessage] = useState<MessageType | null>(
-    null
+    null,
   );
-  const { messages:socketMessages, setMessages:setSocketMessages } = useChatSocket(
-    initialChat._id,
-    currentUser.id!,
-    token,
-    initialChat.messages || []
-  );
+  const { messages: socketMessages, setMessages: setSocketMessages } =
+    useChatSocket(
+      initialChat._id,
+      currentUser.id!,
+      token,
+      initialChat.messages || [],
+    );
 
-  const [optimisticMessages, addOptimisticMessage] = useOptimistic(socketMessages, (state: MessageType[], newMessage: MessageType) =>{
-    if (!state.some(msg => msg._id === newMessage._id)) {
-      return [...state, newMessage];
-    }
-    return state.map(msg => msg._id === newMessage._id ? newMessage : msg);
-  })
+  const [optimisticMessages, addOptimisticMessage] = useOptimistic(
+    socketMessages,
+    (state: MessageType[], newMessage: MessageType) => {
+      if (!state.some((msg) => msg._id === newMessage._id)) {
+        return [...state, newMessage];
+      }
+      return state.map((msg) =>
+        msg._id === newMessage._id ? newMessage : msg,
+      );
+    },
+  );
 
   useEffect(() => {
     setChat(initialChat);
@@ -87,7 +93,7 @@ export default function ChatMain({
       const message = optimisticMessages.find((msg) => msg._id === messageId);
       if (message) setReplyToMessage(message);
     },
-    [optimisticMessages]
+    [optimisticMessages],
   );
 
   const handleCancelReply = useCallback(() => setReplyToMessage(null), []);
@@ -107,7 +113,7 @@ export default function ChatMain({
         toast.error("Failed to delete chat");
       }
     },
-    [router, token]
+    [router, token],
   );
 
   return (

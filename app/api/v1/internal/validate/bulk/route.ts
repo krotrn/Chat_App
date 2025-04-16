@@ -6,7 +6,7 @@ export async function POST(req: NextRequest) {
   if (apiKey !== process.env.INTERNAL_API_KEY) {
     return NextResponse.json(
       { success: false, message: "Unauthorized", users: [] },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -27,11 +27,11 @@ export async function POST(req: NextRequest) {
             avatarUrl: true,
           },
         });
-      })
+      }),
     );
     const nonNullUser = users.filter((user) => user !== null);
     const validUsers = nonNullUser.filter(
-      (user) => user.emailVerified !== null
+      (user) => user.emailVerified !== null,
     );
 
     return NextResponse.json({
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     console.error("Validation error:", error);
     return NextResponse.json(
       { success: false, message: "Unauthorized", users: [] },
-      { status: 401 }
+      { status: 401 },
     );
   }
 }

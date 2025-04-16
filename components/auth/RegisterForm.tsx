@@ -54,7 +54,7 @@ const RegisterForm = (): React.ReactNode => {
           if (result.sendEmail) {
             setError(result.message);
             router.push(
-              `/auth/verify-email/${encodeURIComponent(credentials.email)}`
+              `/auth/verify-email/${encodeURIComponent(credentials.email)}`,
             );
           } else if (result.success) {
             setSuccess(result.message);

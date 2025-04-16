@@ -37,13 +37,10 @@ const uint8ArrayToBase64 = (array: Uint8Array): string => {
  */
 const getCryptoKey = async (): Promise<CryptoKey> => {
   const keyBuffer = new TextEncoder().encode(ENCRYPTION_KEY);
-  return crypto.subtle.importKey(
-    "raw",
-    keyBuffer,
-    { name: "AES-CBC" },
-    false,
-    ["encrypt", "decrypt"]
-  );
+  return crypto.subtle.importKey("raw", keyBuffer, { name: "AES-CBC" }, false, [
+    "encrypt",
+    "decrypt",
+  ]);
 };
 
 /**
@@ -57,7 +54,7 @@ export const encryptToken = async (text: string): Promise<string> => {
   const encrypted = await crypto.subtle.encrypt(
     { name: "AES-CBC", iv },
     key,
-    encodedText
+    encodedText,
   );
 
   return `${uint8ArrayToBase64(iv)}:${uint8ArrayToBase64(new Uint8Array(encrypted))}`;
@@ -77,7 +74,7 @@ export const decryptToken = async (text: string): Promise<string> => {
   const decrypted = await crypto.subtle.decrypt(
     { name: "AES-CBC", iv: base64ToUint8Array(iv) },
     key,
-    base64ToUint8Array(encrypted)
+    base64ToUint8Array(encrypted),
   );
 
   return new TextDecoder().decode(decrypted);

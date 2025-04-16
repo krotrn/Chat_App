@@ -35,10 +35,13 @@ export default function OfflinePage() {
           </div>
         </div>
 
-        <h1 className="text-2xl font-bold tracking-tight">You&apos;re Offline</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          You&apos;re Offline
+        </h1>
 
         <p className="text-muted-foreground">
-          It looks like you&apos;ve lost your internet connection. Please check your connection and try again.
+          It looks like you&apos;ve lost your internet connection. Please check
+          your connection and try again.
         </p>
 
         <Button
@@ -46,10 +49,16 @@ export default function OfflinePage() {
           className="w-full"
           disabled={!isOnline || isRefreshing}
         >
-          <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-          {isRefreshing ? "Refreshing..." : isOnline ? "Reconnecting..." : "Try Again"}
+          <RefreshCw
+            className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+          />
+          {isRefreshing
+            ? "Refreshing..."
+            : isOnline
+              ? "Reconnecting..."
+              : "Try Again"}
         </Button>
       </div>
     </div>
   );
-} 
+}

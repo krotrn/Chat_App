@@ -7,7 +7,9 @@ interface ChatSideBarSkeletonProps {
   count?: number;
 }
 
-export default function ChatSideBarSkeleton({ count = 5 }: ChatSideBarSkeletonProps) {
+export default function ChatSideBarSkeleton({
+  count = 5,
+}: ChatSideBarSkeletonProps) {
   return (
     <div className="flex h-full w-full md:w-80 flex-col border-r">
       <div className="p-4">

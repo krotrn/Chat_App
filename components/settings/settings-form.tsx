@@ -87,7 +87,9 @@ export default function SettingsForm() {
           </SettingsCard>
         </TabsContent>
       </Tabs>
-      <Button variant="destructive" className="w-full mt-4" onClick={signout}>Sign Out</Button>
+      <Button variant="destructive" className="w-full mt-4" onClick={signout}>
+        Sign Out
+      </Button>
     </motion.div>
   );
 }

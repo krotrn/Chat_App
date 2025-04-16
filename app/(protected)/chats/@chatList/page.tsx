@@ -15,11 +15,17 @@ export default async function ChatListPage({
     if (!session.accessToken) {
       throw new Error("No access token found");
     }
-    
+
     setAuthToken(session.accessToken);
     const chats = await fetchChats();
     const selectedChatId = (await searchParams).chat || null;
-    return <ChatSidebar chats={chats} selectedChatId={selectedChatId} token={session.accessToken} />;
+    return (
+      <ChatSidebar
+        chats={chats}
+        selectedChatId={selectedChatId}
+        token={session.accessToken}
+      />
+    );
   } catch (error) {
     console.error("Error fetching chats:", error);
     return (

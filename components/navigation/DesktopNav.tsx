@@ -21,7 +21,7 @@ function DesktopNav({ pathname }: { pathname: string }) {
               "flex items-center text-sm font-medium transition-colors hover:text-primary",
               pathname === item.href
                 ? "text-foreground"
-                : "text-muted-foreground"
+                : "text-muted-foreground",
             )}
           >
             <item.icon className="mr-2 h-4 w-4" />

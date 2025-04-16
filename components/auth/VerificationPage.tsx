@@ -27,10 +27,13 @@ export default function VerificationPage({
         if (result.success) {
           setSuccess(result.message);
           setTimeout(() => router.push("/login"), 2000);
-        } else if(result.reverify){
+        } else if (result.reverify) {
           setError(result.message || "Something went wrong.");
-          setTimeout(() => router.push(`/auth/verify-email/${encodedEmail}`), 2000);
-        }else {
+          setTimeout(
+            () => router.push(`/auth/verify-email/${encodedEmail}`),
+            2000,
+          );
+        } else {
           setError(result.message || "Something went wrong.");
         }
       });

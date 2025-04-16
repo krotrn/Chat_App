@@ -42,7 +42,7 @@ export default function ChatList({
     (chatId: string) => {
       router.push(`/chats?chat=${chatId}`);
     },
-    [router]
+    [router],
   );
 
   return (

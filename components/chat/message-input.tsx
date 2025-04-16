@@ -20,7 +20,7 @@ interface MessageInputProps {
   onSendMessage: (
     content: string,
     attachments?: File[],
-    replyToId?: string
+    replyToId?: string,
   ) => void;
   replyToMessage: MessageType | null;
   onCancelReply: () => void;
@@ -54,7 +54,7 @@ export default function MessageInput({
       setAttachments([]);
       onCancelReply();
     },
-    [message, attachments, replyToMessage, onSendMessage, onCancelReply]
+    [message, attachments, replyToMessage, onSendMessage, onCancelReply],
   );
 
   const handleKeyDown = useCallback(
@@ -66,7 +66,7 @@ export default function MessageInput({
         onCancelReply();
       }
     },
-    [handleSubmit, replyToMessage, onCancelReply]
+    [handleSubmit, replyToMessage, onCancelReply],
   );
 
   const handleEmojiSelect = useCallback(
@@ -84,7 +84,7 @@ export default function MessageInput({
         textarea.focus();
       }, 0);
     },
-    [message]
+    [message],
   );
 
   const handleFileSelect = useCallback((files: File[]) => {

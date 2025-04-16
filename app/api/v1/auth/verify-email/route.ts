@@ -11,7 +11,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const { email } = await request.json();
     const token = uuidv4();
-    const expirationTime = config.emailTokenExpirationTime // in hours
+    const expirationTime = config.emailTokenExpirationTime; // in hours
     const expireDate = new Date(Date.now() + expirationTime * 3600 * 1000);
 
     // Update user record with the token and expiration time
@@ -30,8 +30,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { success: false, message: (error as Error).message || "Error generating verification token" },
-      { status: 500 }
+      {
+        success: false,
+        message:
+          (error as Error).message || "Error generating verification token",
+      },
+      { status: 500 },
     );
   }
 }

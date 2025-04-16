@@ -6,6 +6,6 @@ export async function checkDB() {
     return { status: "ok", message: "Database connection is healthy" };
   } catch (error) {
     console.error("Database health check failed:", error);
-    return { status: "error", message: "Database connection failed" }
+    return { status: "error", message: "Database connection failed" };
   }
 }

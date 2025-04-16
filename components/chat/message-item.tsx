@@ -81,7 +81,7 @@ export default function MessageItem({
   const [editMode, setEditMode] = useState(false);
   const [editContent, setEditContent] = useState(message.content);
   const sender = participants.find(
-    (user) => user.userId === message.sender.userId
+    (user) => user.userId === message.sender.userId,
   );
   const replySender = replyMessage
     ? participants.find((user) => user.userId === replyMessage.sender.userId)
@@ -98,7 +98,7 @@ export default function MessageItem({
     useTouchActions(
       handleCopyToClipboard,
       longPressTimeoutRef,
-      setIsLongPressed
+      setIsLongPressed,
     );
 
   const handleEdit = () => {
@@ -135,7 +135,7 @@ export default function MessageItem({
             <div
               className={cn(
                 "flex max-w-[80%] gap-2",
-                isOwn ? "flex-row-reverse" : "flex-row"
+                isOwn ? "flex-row-reverse" : "flex-row",
               )}
             >
               {showAvatar && !isOwn ? (
@@ -158,7 +158,7 @@ export default function MessageItem({
                 <div
                   className={cn(
                     "space-y-2",
-                    isOwn ? "items-end" : "items-start"
+                    isOwn ? "items-end" : "items-start",
                   )}
                 >
                   {replyMessage && (
@@ -174,7 +174,7 @@ export default function MessageItem({
                         "relative rounded-lg px-3 py-2 group",
                         isOwn
                           ? "bg-primary text-primary-foreground"
-                          : "bg-muted"
+                          : "bg-muted",
                       )}
                     >
                       {editMode ? (
@@ -270,7 +270,7 @@ export default function MessageItem({
                     <div
                       className={cn(
                         "grid gap-2",
-                        message.content ? "mt-2" : ""
+                        message.content ? "mt-2" : "",
                       )}
                     >
                       {message.attachments.map((attachment, index) => (
@@ -279,7 +279,7 @@ export default function MessageItem({
                           file={attachment}
                           className={cn(
                             isOwn ? "bg-primary/10" : "bg-muted/50",
-                            "max-w-sm"
+                            "max-w-sm",
                           )}
                         />
                       ))}

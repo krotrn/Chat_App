@@ -1,4 +1,10 @@
-import { Dispatch, RefObject, SetStateAction, useCallback, useEffect } from "react";
+import {
+  Dispatch,
+  RefObject,
+  SetStateAction,
+  useCallback,
+  useEffect,
+} from "react";
 
 interface TouchActions {
   handleMouseDown: () => void;
@@ -12,14 +18,12 @@ export default function useTouchActions(
   longPressTimeoutRef: RefObject<NodeJS.Timeout | null>,
   setIsLongPressed: Dispatch<SetStateAction<boolean>>,
 ): TouchActions {
-
   const handleMouseDown = useCallback((): void => {
     longPressTimeoutRef.current = setTimeout(() => {
       setIsLongPressed(true);
       action();
     }, 500);
   }, [action, longPressTimeoutRef, setIsLongPressed]);
-
 
   const handleMouseUp = useCallback((): void => {
     if (longPressTimeoutRef.current) {
@@ -28,7 +32,6 @@ export default function useTouchActions(
     }
     setIsLongPressed(false);
   }, [longPressTimeoutRef, setIsLongPressed]);
-
 
   const handleTouchStart = useCallback((): void => {
     longPressTimeoutRef.current = setTimeout(() => {

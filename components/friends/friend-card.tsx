@@ -47,7 +47,7 @@ export default function FriendCard({
     };
     handleGetChat(
       [participant, participant2],
-      `${user.username} and ${friend.username}`
+      `${user.username} and ${friend.username}`,
     );
   };
 

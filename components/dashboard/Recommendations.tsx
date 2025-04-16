@@ -10,7 +10,7 @@ interface RecommendationsProps {
 
 export default function Recommendations({
   recommendations,
-  userId
+  userId,
 }: RecommendationsProps) {
   return (
     <Card>

@@ -1,15 +1,15 @@
 import { config } from "@/config";
 import { ApiError } from "@/lib/api/ApiError";
 
-
-export const generateVerificationToken = async (email: string): Promise<string> => {
+export const generateVerificationToken = async (
+  email: string,
+): Promise<string> => {
   try {
     const response = await fetch(`${config.baseUrl}/api/v1/auth/verify-email`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email }),
     });
-
 
     const text = await response.text();
     const data = text ? JSON.parse(text) : {};
@@ -29,7 +29,6 @@ export const generateVerificationToken = async (email: string): Promise<string> 
     }
 
     return data.token;
-
   } catch (error) {
     console.log(error);
     throw new ApiError({

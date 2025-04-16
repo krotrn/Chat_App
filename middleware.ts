@@ -16,14 +16,14 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth;
 
   const isApiAuthRoute = apiAuthPrefix.some((route) =>
-    nextUrl.pathname.startsWith(route)
+    nextUrl.pathname.startsWith(route),
   );
   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
   const isAuthRoute = authRoutes.some((route) =>
-    nextUrl.pathname.startsWith(route)
+    nextUrl.pathname.startsWith(route),
   );
-  const isInternalRoute = internalRoutes.some(route =>
-    nextUrl.pathname.startsWith(route)
+  const isInternalRoute = internalRoutes.some((route) =>
+    nextUrl.pathname.startsWith(route),
   );
 
   if (isInternalRoute) {
@@ -33,8 +33,6 @@ export default auth((req) => {
     }
     return new Response("Unauthorized", { status: 401 });
   }
-  
-  
 
   // Allow public routes and registration API
   if (isApiAuthRoute || isPublicRoute) {

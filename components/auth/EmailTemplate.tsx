@@ -6,7 +6,7 @@ const EmailTemplate = ({
 }: {
   verificationLink: string;
   expirationHours: string;
-}):React.ReactNode => {
+}): React.ReactNode => {
   return (
     <div className="font-sans max-w-lg mx-auto p-6 bg-white border border-gray-300 rounded-lg shadow-md">
       <h2 className="text-blue-600 text-center text-2xl font-bold mb-4">

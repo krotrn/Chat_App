@@ -25,7 +25,7 @@ export default function ChatHeader({
   const isOnline = chat.participants.some((p) => p.userId !== currentUser?.id);
 
   const otherParticipant = chat.participants.find(
-    (p) => p.userId !== currentUser?.id
+    (p) => p.userId !== currentUser?.id,
   );
 
   const displayName =

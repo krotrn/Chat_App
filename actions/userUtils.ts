@@ -120,7 +120,7 @@ export const getUserStats = async <T extends keyof StatsProps>(fields: T[]) => {
         acc[key] = true;
         return acc;
       },
-      {} as Partial<Record<keyof StatsProps, boolean>>
+      {} as Partial<Record<keyof StatsProps, boolean>>,
     );
 
     const user = await db.user.findUnique({
@@ -143,7 +143,7 @@ export const getUserStats = async <T extends keyof StatsProps>(fields: T[]) => {
  * Update the profile of the authenticated user.
  */
 export const updateProfile = async (
-  data: z.infer<typeof profileSchema>
+  data: z.infer<typeof profileSchema>,
 ): Promise<ResponseType<null>> => {
   const session = await auth();
   if (!session || !session.user.id)
@@ -179,9 +179,7 @@ async function uploadAvatar(avatar: File): Promise<string> {
 /**
  * Retrieve pending friend requests for the authenticated user.
  */
-export const getFriendRequests = async (): Promise<
-  FriendRequestType[]
-> => {
+export const getFriendRequests = async (): Promise<FriendRequestType[]> => {
   const session = await auth();
   if (!session || !session.user.id) throw new Error("Unauthorized");
 
@@ -238,7 +236,7 @@ export const getUserDataById = async <
   T extends Partial<Record<keyof User, boolean>>,
 >(
   id: string,
-  select: T
+  select: T,
 ) => {
   try {
     const user = await db.user.findUnique({
@@ -262,7 +260,7 @@ export const getUserDataById = async <
  * Retrieve friends for a specific user ID and map to a formatted structure.
  */
 export const getUserFriends = async (
-  id: string
+  id: string,
 ): Promise<FormattedFriendType[]> => {
   try {
     const userFriends = await db.userFriends.findMany({
@@ -302,7 +300,7 @@ export const getUserFriends = async (
  */
 export const getUserByQuery = async <T extends keyof SearchUserType>(
   contains: string,
-  reqData: T[]
+  reqData: T[],
 ) => {
   const session = await auth();
   if (!session) throw new Error("Unauthorized");
@@ -313,7 +311,7 @@ export const getUserByQuery = async <T extends keyof SearchUserType>(
         acc[key] = true;
         return acc;
       },
-      {} as Partial<Record<keyof SearchUserType, boolean>>
+      {} as Partial<Record<keyof SearchUserType, boolean>>,
     );
     const users = await db.user.findMany({
       where: {
@@ -345,7 +343,7 @@ export const getUserByQuery = async <T extends keyof SearchUserType>(
  */
 export const sendFriendRequest = async (
   senderId: string,
-  receiverId: string
+  receiverId: string,
 ) => {
   try {
     const recentRequestsCount = await db.friendRequest.count({
@@ -431,7 +429,7 @@ export const getPendingRequests = async (senderId: string) => {
 export const handleFriendRequest = async (
   requestId: string,
   receiverId: string,
-  action: FriendshipStatus
+  action: FriendshipStatus,
 ) => {
   if (!requestId || !receiverId || !action) {
     throw new Error("Missing required parameters");
@@ -457,7 +455,7 @@ export const handleFriendRequest = async (
       // Security check: Ensure the receiver matches
       if (existingRequest.receiverId !== receiverId) {
         console.warn(
-          `Unauthorized friend request action attempt for request ${requestId}`
+          `Unauthorized friend request action attempt for request ${requestId}`,
         );
         throw new Error("Unauthorized action");
       }
@@ -760,7 +758,7 @@ export const blockUser = async (userId: string, blockedUserId: string) => {
 export const createFriendActivity = async (
   userId: string,
   activityType: ActivityType,
-  content: string
+  content: string,
 ) => {
   try {
     const user = await db.user.findUnique({
@@ -792,7 +790,7 @@ export const createFriendActivity = async (
 export const updateRecommendationsAfterFriendAction = async (
   userId: string,
   friendId: string,
-  action: FriendshipStatus
+  action: FriendshipStatus,
 ) => {
   try {
     if (
@@ -844,7 +842,7 @@ export const updateUserConnectionStatus = async (userId: string) => {
  */
 export const getFriendshipStatus = async (
   userId: string,
-  otherUserId: string
+  otherUserId: string,
 ) => {
   try {
     const areFriends = await db.userFriends.findFirst({

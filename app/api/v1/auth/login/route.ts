@@ -22,14 +22,14 @@ export async function POST(req: NextRequest) {
   if (!existingUser) {
     return NextResponse.json(
       { success: false, message: "Invalid Credentials" },
-      { status: 404 }
+      { status: 404 },
     );
   }
 
   if (existingUser.loginType !== AccountType.EMAIL) {
     return NextResponse.json(
       { success: false, error: "Login with the correct method." },
-      { status: 404 }
+      { status: 404 },
     );
   }
   if (!existingUser.emailVerified) {
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
         sendEmail: true,
         encodedEmail: encodeURIComponent(existingUser.email),
       },
-      { status: 404 }
+      { status: 404 },
     );
   }
 
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       { success: true, message: "Login successful" },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.log(error);
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
         success: false,
         message: "An unexpected error occurred. Please try again.",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

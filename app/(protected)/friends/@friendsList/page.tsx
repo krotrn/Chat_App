@@ -7,5 +7,11 @@ export default async function FriendsListPage() {
   if (!session || !session.user.id) throw new Error("unauthoriozed");
   const friends = await getUserFriends(session.user.id);
 
-  return <FriendsList friends={friends} userId={session.user.id} accessToken={session.accessToken} />;
+  return (
+    <FriendsList
+      friends={friends}
+      userId={session.user.id}
+      accessToken={session.accessToken}
+    />
+  );
 }

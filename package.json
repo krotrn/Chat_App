@@ -7,6 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "format": "prettier --write \"./\"",
+    "format:check": "prettier --check \"./\"",
+    "validate": "npm run lint && npm run format:check",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -75,6 +78,7 @@
     "eslint": "^9.23.0",
     "eslint-config-next": "^15.2.4",
     "postcss": "^8",
+    "prettier": "^3.5.3",
     "prisma": "^6.6.0",
     "tailwindcss": "^4.0.17",
     "typescript": "^5.8.2"

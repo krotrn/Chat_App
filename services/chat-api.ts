@@ -69,17 +69,17 @@ api.interceptors.response.use(
       console.error(
         "Error response:",
         error.response.status,
-        error.response.data
+        error.response.data,
       );
       return Promise.reject(error.response.data);
     } else {
       console.error("Error message:", error.message);
       return Promise.reject(error);
     }
-  }
+  },
 );
 
-export const setAuthToken = (token:string) => {
+export const setAuthToken = (token: string) => {
   if (!token) {
     console.error("No access token found");
     return;
@@ -111,10 +111,10 @@ export const createOrGetAOneOnOneChat = async ({
   name: string;
 }): Promise<ChatType> => {
   try {
-    const response = await api.post<ApiResponse<ChatType>>(
-      "/chats",
-      { participants, name },
-    );
+    const response = await api.post<ApiResponse<ChatType>>("/chats", {
+      participants,
+      name,
+    });
     return handleApiResponse(response);
   } catch (error) {
     console.error("Error creating or getting one-on-one chat:", error);
@@ -133,7 +133,7 @@ export const getChatById = async ({
       `/chats/chat/${chatId}`,
       {
         withCredentials: true,
-      }
+      },
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -185,10 +185,10 @@ export const createAGroupChat = async ({
   participants: ParticipantsType[];
 }): Promise<ChatType> => {
   try {
-    const response = await api.post<ApiResponse<ChatType>>(
-      "/chats/group",
-      { participants, name },
-    );
+    const response = await api.post<ApiResponse<ChatType>>("/chats/group", {
+      participants,
+      name,
+    });
     return handleApiResponse(response);
   } catch (error) {
     console.error("Error creating group chat:", error);
@@ -411,7 +411,7 @@ export const sendMessage = async ({
         headers: {
           "Content-Type": "multipart/form-data",
         },
-      }
+      },
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -433,13 +433,13 @@ export const deleteMessage = async ({
     if (forEveryone) {
       const response = await api.delete<ApiResponse<MessageType>>(
         `/messages/${chatId}/${messageId}`,
-        { withCredentials: true }
+        { withCredentials: true },
       );
       return handleApiResponse(response);
     } else {
       const response = await api.delete<ApiResponse<MessageType>>(
         `/messages/${chatId}/${messageId}/me`,
-        { withCredentials: true }
+        { withCredentials: true },
       );
       return handleApiResponse(response);
     }
@@ -498,7 +498,7 @@ export const replyMessage = async ({
         headers: {
           "Content-Type": "multipart/form-data",
         },
-      }
+      },
     );
     return handleApiResponse(response);
   } catch (error) {

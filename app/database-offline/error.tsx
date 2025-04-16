@@ -8,7 +8,7 @@ export default function DatabaseOfflineError({
   error,
   reset,
 }: {
-  error: Error & { digest?: string; };
+  error: Error & { digest?: string };
   reset: () => void;
 }) {
   useEffect(() => {
@@ -31,4 +31,4 @@ export default function DatabaseOfflineError({
       </div>
     </div>
   );
-} 
+}

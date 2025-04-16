@@ -23,15 +23,12 @@ export default function CallToAction() {
               Ready to get started?
             </h2>
             <p className="max-w-[600px] text-zinc-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-zinc-400">
-              Register ChatApp today and join for enjoying
-              better communication.
+              Register ChatApp today and join for enjoying better communication.
             </p>
           </div>
           <div className="flex flex-col gap-2 min-[400px]:flex-row">
             <Button size="lg" className="gap-1" asChild>
-              <Link href="/register">
-                Register
-              </Link>
+              <Link href="/register">Register</Link>
             </Button>
           </div>
         </motion.div>

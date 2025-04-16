@@ -31,7 +31,6 @@ const LoginForm = (): React.ReactNode => {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
-
   const onSubmit = (credentials: z.infer<typeof signInSchema>) => {
     setError("");
     startTransition(() => {
@@ -110,7 +109,7 @@ const LoginForm = (): React.ReactNode => {
             className="w-full"
             aria-disabled={isPending}
           >
-            {(isPending) ? "Signing in..." : "Sign in"}
+            {isPending ? "Signing in..." : "Sign in"}
           </Button>
         </form>
       </Form>

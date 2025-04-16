@@ -1,5 +1,12 @@
 import menuItemProps from "@/types/menuItems";
-import { Home, MessageSquare, Settings, User, UserPlus, Users } from "lucide-react";
+import {
+  Home,
+  MessageSquare,
+  Settings,
+  User,
+  UserPlus,
+  Users,
+} from "lucide-react";
 
 export const menuItems: menuItemProps[] = [
   { name: "Home", href: "/dashboard", icon: Home },

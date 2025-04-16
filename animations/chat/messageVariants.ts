@@ -15,4 +15,4 @@ export const messageVariants = {
     scale: 0.8,
     transition: { duration: 0.2 },
   },
-}
+};

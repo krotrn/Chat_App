@@ -16,28 +16,28 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   if (!username) {
     return NextResponse.json(
       { success: false, message: "Username is required" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   if (!email) {
     return NextResponse.json(
       { success: false, message: "Email is required" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   if (!password) {
     return NextResponse.json(
       { success: false, message: "Password is required" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   if (password !== confirmpassword) {
     return NextResponse.json(
       { success: false, message: "Confirm Password does not match" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -56,13 +56,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     if (existingEmail?.emailVerified) {
       return NextResponse.json(
         { success: false, message: "Email already in use" },
-        { status: 402 }
+        { status: 402 },
       );
     }
     if (existingUsername?.emailVerified) {
       return NextResponse.json(
         { success: false, message: "Username already in use" },
-        { status: 402 }
+        { status: 402 },
       );
     }
 
@@ -104,7 +104,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         },
         {
           status: 500,
-        }
+        },
       );
     }
 
@@ -114,7 +114,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         message: "Registration successful! Please verify your email.",
         sendEmail: true,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.log(error);
@@ -122,7 +122,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       if (error.code === "P2002") {
         return NextResponse.json(
           { success: false, message: "Duplicate registration attempt" },
-          { status: 500 }
+          { status: 500 },
         );
       }
     }
@@ -132,7 +132,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         success: false,
         message: error instanceof Error ? error.message : "Registration failed",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

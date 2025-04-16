@@ -27,7 +27,7 @@ export function RequestsList({ requests, userId, pending }: RequestsListProps) {
     async (
       requestId: string,
       action: FriendshipStatus,
-      status: FriendshipStatus
+      status: FriendshipStatus,
     ) => {
       setPendingRequests((prev) => [...prev, requestId]);
       try {
@@ -41,11 +41,11 @@ export function RequestsList({ requests, userId, pending }: RequestsListProps) {
         setPendingRequests((prev) => prev.filter((id) => id !== requestId));
       }
     },
-    [userId]
+    [userId],
   );
 
   const filteredRequests = requests.filter(
-    (request) => !processedRequests.includes(request.id)
+    (request) => !processedRequests.includes(request.id),
   );
 
   return (

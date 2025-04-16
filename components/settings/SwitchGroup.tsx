@@ -12,7 +12,10 @@ export function SwitchGroup({ switches }: SwitchGroupProps) {
     <div className="space-y-4">
       {switches.map(({ id, label, defaultChecked }) => (
         <div key={id} className="flex items-center justify-between space-x-2">
-          <Label htmlFor={id} className="flex flex-1 cursor-pointer items-center">
+          <Label
+            htmlFor={id}
+            className="flex flex-1 cursor-pointer items-center"
+          >
             <span>{label}</span>
           </Label>
           <Switch id={id} defaultChecked={defaultChecked} />

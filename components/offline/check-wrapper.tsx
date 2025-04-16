@@ -9,9 +9,7 @@ interface CheckWrapperProps {
   children: React.ReactNode;
 }
 
-export default function CheckWrapper({
-  children,
-}: CheckWrapperProps) {
+export default function CheckWrapper({ children }: CheckWrapperProps) {
   const isOnline = useOnlineStatus();
   const { isConnected, isChecking } = useDatabaseStatus();
   const [isMounted, setIsMounted] = useState(false);

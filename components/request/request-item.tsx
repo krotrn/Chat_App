@@ -12,7 +12,7 @@ interface RequestItemProps {
   onAction: (
     requestId: string,
     action: FriendshipStatus,
-    status: FriendshipStatus
+    status: FriendshipStatus,
   ) => void;
 }
 

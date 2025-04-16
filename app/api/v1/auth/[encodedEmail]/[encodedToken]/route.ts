@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(
   req: NextRequest,
-  context: { params: Promise<{ encodedEmail: string; encodedToken: string }> }
+  context: { params: Promise<{ encodedEmail: string; encodedToken: string }> },
 ): Promise<NextResponse> {
   try {
     const params = await context.params;
@@ -13,7 +13,7 @@ export async function POST(
     if (!encodedEmail || !encodedToken) {
       return NextResponse.json(
         { success: false, message: "Missing parameters" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -26,7 +26,7 @@ export async function POST(
       console.error("Token Decryption Failed:", err);
       return NextResponse.json(
         { success: false, message: "Invalid or malformed token" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -43,14 +43,14 @@ export async function POST(
     if (!user) {
       return NextResponse.json(
         { success: false, message: "User Not Found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     if (user.emailVerified) {
       return NextResponse.json(
         { success: true, message: "User already verified" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -61,7 +61,7 @@ export async function POST(
           message: "Invalid verification link",
           reverify: true,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -75,7 +75,7 @@ export async function POST(
           message: "Verification code has expired",
           reverify: true,
         },
-        { status: 410 }
+        { status: 410 },
       );
     }
 
@@ -91,13 +91,13 @@ export async function POST(
 
     return NextResponse.json(
       { success: true, message: `${verifiedUser.username} verified.` },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("Verification Error:", error);
     return NextResponse.json(
       { success: false, message: "Failed to verify email due to server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

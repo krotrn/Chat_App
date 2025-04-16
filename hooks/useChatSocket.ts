@@ -8,7 +8,7 @@ export default function useChatSocket(
   initialChatId: string,
   currentUserId: string,
   token: string,
-  initialMessages: MessageType[]
+  initialMessages: MessageType[],
 ) {
   const [messages, setMessages] = useState<MessageType[]>(initialMessages);
   const socketRef = useRef<ReturnType<typeof initSocket> | null>(null);
@@ -28,7 +28,7 @@ export default function useChatSocket(
           if (message.chatId === initialChatId) {
             setMessages((prev) => [...prev, message]);
           }
-        }
+        },
       );
 
       socket.on(
@@ -36,10 +36,10 @@ export default function useChatSocket(
         (updated: MessageType) => {
           if (updated.chatId === initialChatId) {
             setMessages((prev) =>
-              prev.map((msg) => (msg._id === updated._id ? updated : msg))
+              prev.map((msg) => (msg._id === updated._id ? updated : msg)),
             );
           }
-        }
+        },
       );
 
       // Handle deleted messages
@@ -75,10 +75,10 @@ export default function useChatSocket(
                   };
                 }
                 return msg;
-              })
+              }),
             );
           }
-        }
+        },
       );
 
       // Handle read receipts
@@ -96,7 +96,7 @@ export default function useChatSocket(
                   const readBy = msg.readBy || [];
                   // Check if this user already has a read receipt
                   const existingReadIndex = readBy.findIndex(
-                    (read) => read.userId === data.readBy.userId
+                    (read) => read.userId === data.readBy.userId,
                   );
 
                   if (existingReadIndex >= 0) {
@@ -122,10 +122,10 @@ export default function useChatSocket(
                   }
                 }
                 return msg;
-              })
+              }),
             );
           }
-        }
+        },
       );
 
       // Handle connection error

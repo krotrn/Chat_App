@@ -4,12 +4,12 @@ import { useState, useEffect, useCallback } from "react";
 
 export default function useSearchQuery(
   paramName: string = "query",
-  initialValue: string
+  initialValue: string,
 ): [string, (value: string) => void] {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [search, setSearch] = useState(
-    searchParams.get(paramName) || initialValue
+    searchParams.get(paramName) || initialValue,
   );
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export default function useSearchQuery(
       router.push(`?${newSearchParams.toString()}`, { scroll: false });
       setSearch(value || "");
     },
-    [router, searchParams, paramName]
+    [router, searchParams, paramName],
   );
 
   return [search, updateSearch];

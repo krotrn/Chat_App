@@ -28,4 +28,4 @@ export function useDatabaseStatus() {
   }, []);
 
   return { isConnected, isChecking, checkDatabaseConnection };
-} 
+}

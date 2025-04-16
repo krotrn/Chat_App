@@ -1,10 +1,5 @@
 "use client";
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 export type Theme = "dark" | "light" | "system";
 export type FontSize = "small" | "medium" | "large";

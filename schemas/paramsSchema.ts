@@ -5,11 +5,9 @@ export const groupParamsSchema = z.object({
   chatId: z.string().refine((id) => Types.ObjectId.isValid(id), {
     message: "Invalid chat ID",
   }),
-  participantId: z
-    .string()
-    .refine((id) => Types.ObjectId.isValid(id), {
-      message: "Invalid message ID",
-    }),
+  participantId: z.string().refine((id) => Types.ObjectId.isValid(id), {
+    message: "Invalid message ID",
+  }),
 });
 
 export const messageParamsSchema = z.object({
@@ -27,7 +25,7 @@ export const groupParticipantsSchema = z.object({
   participants: z.array(
     z.string().refine((id) => Types.ObjectId.isValid(id), {
       message: "Invalid participant ID",
-    })
+    }),
   ),
 });
 
@@ -50,7 +48,7 @@ export const messageSchema = z.object({
         .array(
           z.object({
             filename: z.string(),
-          })
+          }),
         )
         .optional(),
     })

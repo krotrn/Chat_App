@@ -23,7 +23,7 @@ export default function ChatDetails({
   onDeleteChat,
 }: ChatDetailsProps) {
   if (isLoading || !chat) return null;
-  
+
   const isAdmin = chat.admin === currentUserId;
   const isGroupChat = chat.type === "group";
 
@@ -46,23 +46,27 @@ export default function ChatDetails({
           <X className="h-5 w-5" />
         </Button>
       </div>
-      
+
       <ScrollArea className="h-[calc(100vh-4rem)]">
         <div className="px-4 py-6">
           {/* Chat Info */}
           <div className="flex flex-col items-center mb-6">
             <Avatar className="h-20 w-20 mb-3">
               <AvatarImage src={chat.avatarUrl} alt={chat.name} />
-              <AvatarFallback>{chat.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+              <AvatarFallback>
+                {chat.name.substring(0, 2).toUpperCase()}
+              </AvatarFallback>
             </Avatar>
             <h2 className="text-xl font-bold">{chat.name}</h2>
             <p className="text-sm text-muted-foreground">
-              {isGroupChat ? `${chat.participants.length} members` : "Direct Message"}
+              {isGroupChat
+                ? `${chat.participants.length} members`
+                : "Direct Message"}
             </p>
           </div>
-          
+
           <Separator className="my-4" />
-          
+
           {/* Participants */}
           <div className="mb-6">
             <h3 className="flex items-center text-sm font-medium mb-3">
@@ -71,16 +75,26 @@ export default function ChatDetails({
             </h3>
             <div className="space-y-3">
               {chat.participants.map((participant: ParticipantsType) => (
-                <div key={participant.userId} className="flex items-center justify-between">
+                <div
+                  key={participant.userId}
+                  className="flex items-center justify-between"
+                >
                   <div className="flex items-center">
                     <Avatar className="h-8 w-8 mr-2">
-                      <AvatarImage src={participant.avatarUrl} alt={participant.name || "User"} />
+                      <AvatarImage
+                        src={participant.avatarUrl}
+                        alt={participant.name || "User"}
+                      />
                       <AvatarFallback>
-                        {(participant.name || "U").substring(0, 1).toUpperCase()}
+                        {(participant.name || "U")
+                          .substring(0, 1)
+                          .toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="text-sm font-medium">{participant.name || "User"}</p>
+                      <p className="text-sm font-medium">
+                        {participant.name || "User"}
+                      </p>
                       <p className="text-xs text-muted-foreground">
                         {participant.role === "admin" ? "Admin" : "Member"}
                       </p>
@@ -90,16 +104,16 @@ export default function ChatDetails({
               ))}
             </div>
           </div>
-          
+
           <Separator className="my-4" />
-          
+
           {/* Settings */}
           <div className="mb-6">
             <h3 className="flex items-center text-sm font-medium mb-3">
               <Settings className="h-4 w-4 mr-2" />
               Settings
             </h3>
-            
+
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
@@ -108,7 +122,7 @@ export default function ChatDetails({
                 </div>
                 <Switch />
               </div>
-              
+
               {isGroupChat && (
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
@@ -120,19 +134,21 @@ export default function ChatDetails({
               )}
             </div>
           </div>
-          
+
           <Separator className="my-4" />
-          
+
           {/* Danger Zone */}
           <div>
             <h3 className="flex items-center text-sm font-medium text-destructive mb-3">
               Danger Zone
             </h3>
-            
-            <Button 
-              variant="destructive" 
+
+            <Button
+              variant="destructive"
               className="w-full"
-              onClick={() => chat && onDeleteChat && onDeleteChat(chat._id, isAdmin)}
+              onClick={() =>
+                chat && onDeleteChat && onDeleteChat(chat._id, isAdmin)
+              }
             >
               <Trash2 className="h-4 w-4 mr-2" />
               {isAdmin ? "Delete for everyone" : "Leave chat"}

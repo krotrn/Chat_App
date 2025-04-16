@@ -31,10 +31,12 @@ export const CardWrapper = ({
           <Header label={headerLabel} />
         </CardTitle>
       </CardHeader>
-      {children && <CardContent className="space-y-6">
-        {children}
-        {showSocial && <Social />}
-      </CardContent>}
+      {children && (
+        <CardContent className="space-y-6">
+          {children}
+          {showSocial && <Social />}
+        </CardContent>
+      )}
       <CardFooter>
         <BackButton label={backButtonLabel} href={backButtonHref} />
       </CardFooter>

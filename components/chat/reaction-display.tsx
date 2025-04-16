@@ -1,9 +1,12 @@
 import { cn } from "@/lib/utils";
 import { MessageReaction } from "@/types/ChatType";
 
-export function ReactionsDisplay({ reactions, isOwn }: {
-  reactions: MessageReaction[],
-  isOwn: boolean
+export function ReactionsDisplay({
+  reactions,
+  isOwn,
+}: {
+  reactions: MessageReaction[];
+  isOwn: boolean;
 }) {
   const groupedReactions: Record<string, MessageReaction[]> = {};
   reactions?.forEach((reaction) => {
@@ -15,7 +18,7 @@ export function ReactionsDisplay({ reactions, isOwn }: {
     <div
       className={cn(
         "flex flex-wrap gap-1",
-        isOwn ? "justify-end" : "justify-start"
+        isOwn ? "justify-end" : "justify-start",
       )}
     >
       {Object.entries(groupedReactions).map(([emoji, group]) => (
