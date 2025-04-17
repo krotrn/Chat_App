@@ -48,7 +48,7 @@ export default function ChatItem({
           <p className="truncate font-medium">{name}</p>
           {lastMessage && (
             <p className="shrink-0 text-xs text-muted-foreground">
-              {lastMessage.createdAt 
+              {lastMessage.createdAt
                 ? formatDistanceToNow(new Date(lastMessage.createdAt), {
                     addSuffix: true,
                   })

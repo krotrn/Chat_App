@@ -11,8 +11,8 @@ export default function useChatSocket(
   initialMessages: MessageType[],
 ) {
   const [messages, setMessages] = useState<MessageType[]>(initialMessages);
+  const [pinnedMessageIds, setPinnedMessageIds] = useState<string[]>([]);
   const socketRef = useRef<ReturnType<typeof initSocket> | null>(null);
-  // Track connected state
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
@@ -25,14 +25,13 @@ export default function useChatSocket(
 
       const socket = socketRef.current;
 
-      // Track connection status
-      socket.on('connect', () => {
-        console.log('Socket connected!');
+      socket.on("connect", () => {
+        console.log("Socket connected!");
         setIsConnected(true);
       });
 
-      socket.on('disconnect', () => {
-        console.log('Socket disconnected!');
+      socket.on("disconnect", () => {
+        console.log("Socket disconnected!");
         setIsConnected(false);
       });
 
@@ -42,13 +41,12 @@ export default function useChatSocket(
           console.log("Message received via socket:", message);
           if (message.chatId === initialChatId) {
             setMessages((prev) => {
-              // Check if we already have this message (avoid duplicates)
-              const exists = prev.some(msg => msg._id === message._id);
+              const exists = prev.some((msg) => msg._id === message._id);
               if (exists) {
-                // Update the existing message instead of adding a duplicate
-                return prev.map(msg => msg._id === message._id ? message : msg);
+                return prev.map((msg) =>
+                  msg._id === message._id ? message : msg,
+                );
               }
-              // Otherwise add the new message
               return [...prev, message];
             });
           }
@@ -67,15 +65,97 @@ export default function useChatSocket(
         },
       );
 
-      // Handle deleted messages
+      socket.on(
+        ChatEventEnum.MESSAGE_PIN_EVENT,
+        (data: { chatId: string; messageId: string; isPinned: boolean }) => {
+          console.log("Message pin event received:", data);
+          if (data.chatId === initialChatId) {
+            setPinnedMessageIds((prev) => {
+              if (data.isPinned) {
+                return prev.includes(data.messageId)
+                  ? prev
+                  : [...prev, data.messageId];
+              } else {
+                return prev.filter((id) => id !== data.messageId);
+              }
+            });
+
+            setMessages((prev) =>
+              prev.map((msg) => {
+                if (msg._id === data.messageId) {
+                  return {
+                    ...msg,
+                    isPinned: data.isPinned,
+                  };
+                }
+                return msg;
+              }),
+            );
+          }
+        },
+      );
+
+      socket.on(
+        ChatEventEnum.MESSAGE_PINNED_EVENT,
+        (data: { chatId: string; messageId: string }) => {
+          console.log("Message pinned event received:", data);
+          if (data.chatId === initialChatId) {
+            setPinnedMessageIds((prev) => {
+              return prev.includes(data.messageId)
+                ? prev
+                : [...prev, data.messageId];
+            });
+
+            setMessages((prev) =>
+              prev.map((msg) => {
+                if (msg._id === data.messageId) {
+                  return {
+                    ...msg,
+                    isPinned: true,
+                  };
+                }
+                return msg;
+              }),
+            );
+          }
+        },
+      );
+
+      socket.on(
+        ChatEventEnum.MESSAGE_UNPINNED_EVENT,
+        (data: { chatId: string; messageId: string }) => {
+          console.log("Message unpinned event received:", data);
+          if (data.chatId === initialChatId) {
+            setPinnedMessageIds((prev) => {
+              return prev.filter((id) => id !== data.messageId);
+            });
+
+            setMessages((prev) =>
+              prev.map((msg) => {
+                if (msg._id === data.messageId) {
+                  return {
+                    ...msg,
+                    isPinned: false,
+                  };
+                }
+                return msg;
+              }),
+            );
+          }
+        },
+      );
+
       socket.on(ChatEventEnum.MESSAGE_DELETE_EVENT, (deleted: MessageType) => {
         console.log("Message delete event received:", deleted);
         if (deleted?.chatId === initialChatId) {
           setMessages((prev) => prev.filter((msg) => msg._id !== deleted._id));
+
+          setPinnedMessageIds((prev) =>
+            prev.filter((id) => id !== deleted._id),
+          );
         }
       });
 
-      // Handle edited messages
       socket.on(
         ChatEventEnum.MESSAGE_EDITED_EVENT,
         (data: {
@@ -108,7 +188,6 @@ export default function useChatSocket(
         },
       );
 
-      // Handle read receipts
       socket.on(
         ChatEventEnum.MESSAGE_READ_EVENT,
         (data: {
@@ -122,16 +201,13 @@ export default function useChatSocket(
               prev.map((msg) => {
                 if (data.messageIds.includes(msg._id)) {
                   const readBy = msg.readBy || [];
-                  // Check if this user already has a read receipt
                   const existingReadIndex = readBy.findIndex(
                     (read) => read.userId === data.readBy.userId,
                   );
 
                   if (existingReadIndex >= 0) {
-                    // Update existing read receipt
                     return msg;
                   } else {
-                    // Add new read receipt
                     const readAt =
                       data.readBy.readAt instanceof Date
                         ? data.readBy.readAt
@@ -156,7 +232,6 @@ export default function useChatSocket(
         },
       );
 
-      // Handle connection error
       socket.on(ChatEventEnum.SOCKET_ERROR_EVENT, (error: Error) => {
         console.error("Socket connection error:", error);
         setIsConnected(false);
@@ -169,12 +244,15 @@ export default function useChatSocket(
         console.log("Cleaning up socket connection");
         socket.off(ChatEventEnum.MESSAGE_RECEIVED_EVENT);
         socket.off(ChatEventEnum.MESSAGE_REACTION_EVENT);
+        socket.off(ChatEventEnum.MESSAGE_PIN_EVENT);
+        socket.off(ChatEventEnum.MESSAGE_PINNED_EVENT);
+        socket.off(ChatEventEnum.MESSAGE_UNPINNED_EVENT);
         socket.off(ChatEventEnum.MESSAGE_DELETE_EVENT);
         socket.off(ChatEventEnum.MESSAGE_EDITED_EVENT);
         socket.off(ChatEventEnum.MESSAGE_READ_EVENT);
         socket.off(ChatEventEnum.SOCKET_ERROR_EVENT);
-        socket.off('connect');
-        socket.off('disconnect');
+        socket.off("connect");
+        socket.off("disconnect");
       };
     } catch (error) {
       console.error("Socket initialization error:", error);
@@ -185,5 +263,5 @@ export default function useChatSocket(
     }
   }, [initialChatId, currentUserId, token]);
 
-  return { messages, setMessages, isConnected };
+  return { messages, setMessages, pinnedMessageIds, isConnected };
 }

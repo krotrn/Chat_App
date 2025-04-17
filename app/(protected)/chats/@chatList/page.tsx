@@ -17,11 +17,12 @@ export default async function ChatListPage({
     }
 
     setAuthToken(session.accessToken);
-    const chats = await fetchChats();
+    const response = await fetchChats();
+    console.log(response);
     const selectedChatId = (await searchParams).chat || null;
     return (
       <ChatSidebar
-        chats={chats}
+        chats={response.chats}
         selectedChatId={selectedChatId}
         token={session.accessToken}
       />

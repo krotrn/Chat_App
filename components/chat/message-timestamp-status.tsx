@@ -1,44 +1,86 @@
+"use client";
+import { MessageType, StatusEnum } from "@/types/ChatType";
+import { formatDistanceToNow } from "date-fns";
+import { AlertCircle, Check, RefreshCw } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { StatusEnum } from "@/types/ChatType";
-import { format, isValid } from "date-fns";
-import { Check, CheckCheck } from "lucide-react";
+
+interface MessageTimestampStatusProps {
+  message: MessageType;
+  isOwn: boolean;
+  onRetry?: (messageId: string) => void;
+}
 
 export function MessageTimestampStatus({
-  timestamp,
+  message,
   isOwn,
-  status,
-}: {
-  timestamp: string | Date | null | undefined;
-  isOwn: boolean;
-  status: StatusEnum;
-}) {
-  // Format the timestamp safely
-  const formatTimestamp = () => {
-    if (!timestamp) return "--:--";
-    
-    try {
-      const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
-      return isValid(date) ? format(date, "HH:mm") : "--:--";
-    } catch (error) {
-      console.error("Error formatting timestamp:", error, { timestamp });
-      return "--:--";
-    }
-  };
+  onRetry,
+}: MessageTimestampStatusProps) {
+  const hasReadReceipts = message.readBy && message.readBy.length > 0;
+  const timestamp = message.updatedAt || message.createdAt;
 
   return (
-    <div
-      className={cn(
-        "mt-1 flex items-center gap-1 text-xs text-muted-foreground",
-        isOwn ? "justify-end" : "justify-start",
+    <div className="flex items-center gap-1 mt-1">
+      <span
+        className={cn(
+          "text-xs text-muted-foreground",
+          isOwn ? "text-right" : "",
+        )}
+      >
+        {timestamp
+          ? formatDistanceToNow(new Date(timestamp), { addSuffix: true })
+          : "Just now"}
+      </span>
+
+      {/* Status indicators */}
+      {message.status === StatusEnum.sending && (
+        <span className="text-xs text-muted-foreground ml-1 flex items-center">
+          Sending...
+        </span>
       )}
-    >
-      <span>{formatTimestamp()}</span>
-      {isOwn &&
-        (status === "read" ? (
-          <CheckCheck className="h-3 w-3" />
-        ) : (
-          <Check className="h-3 w-3" />
-        ))}
+
+      {message.status === StatusEnum.failed && (
+        <span className="text-xs text-destructive ml-1 flex items-center gap-1">
+          <AlertCircle size={12} />
+          Failed
+          {onRetry && (
+            <button
+              className="ml-1 flex items-center gap-1 text-xs underline hover:text-destructive/80"
+              onClick={() => onRetry(message._id)}
+            >
+              <RefreshCw size={10} />
+              Retry
+            </button>
+          )}
+        </span>
+      )}
+
+      {isOwn && hasReadReceipts && (
+        <div className="flex items-center ml-1">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <div className="flex items-center">
+                  <Check size={12} className="text-green-500" />
+                  {message.readBy && message.readBy.length > 1 && (
+                    <span className="text-[10px] text-muted-foreground ml-0.5">
+                      {message.readBy.length}
+                    </span>
+                  )}
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Read by {message.readBy?.length} user(s)</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      )}
     </div>
   );
 }

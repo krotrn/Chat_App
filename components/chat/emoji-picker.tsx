@@ -16,7 +16,10 @@ interface EmojiPickerProps {
   disabled?: boolean;
 }
 
-export default function EmojiPicker({ onEmojiSelect, disabled = false }: EmojiPickerProps) {
+export default function EmojiPicker({
+  onEmojiSelect,
+  disabled = false,
+}: EmojiPickerProps) {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -35,7 +38,12 @@ export default function EmojiPicker({ onEmojiSelect, disabled = false }: EmojiPi
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-9 w-9" disabled={disabled}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9"
+          disabled={disabled}
+        >
           <Smile className="h-5 w-5" />
           <span className="sr-only">Pick emoji</span>
         </Button>

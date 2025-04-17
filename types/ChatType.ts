@@ -64,7 +64,7 @@ export interface MessageType {
   readBy: ReadReceipt[];
   deletedFor: DeletedForEntry[];
   replyToId: string | null;
-  formatting: Map<string, string>;
+  formatting: Record<string, string>;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -72,6 +72,16 @@ export interface MessageType {
 export interface DeletedForEntry {
   userId: string;
   deletedAt: Date;
+}
+
+export interface ChatMetadataPermissions {
+  canAddUsers?: boolean;
+  canRemoveUsers?: boolean;
+  canChangeGroupInfo?: boolean;
+  canSendMessages?: boolean;
+  canPinMessages?: boolean;
+  canSendMedia?: boolean;
+  customRoles?: Record<string, string[]>;
 }
 
 export interface ChatType {
@@ -86,7 +96,7 @@ export interface ChatType {
   deletedFor: DeletedForEntry[];
   metadata?: {
     pinnedMessage: string[];
-    customePermissions?: unknown;
+    customPermissions?: ChatMetadataPermissions;
   };
   messages: MessageType[];
   createdAt: Date;

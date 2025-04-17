@@ -44,10 +44,34 @@ const handleApiResponse = <T>(response: { data: ApiResponse<T> }): T => {
   return response.data.data;
 };
 
+// Define a custom error class for network issues
+export class NetworkError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "NetworkError";
+  }
+}
+
 const handleApiError = (error: unknown): never => {
-  console.log(error);
+  console.log("API Error:", error);
+
+  // Check if this is a network connection issue
+  if (
+    error instanceof Error &&
+    (error.message.includes("Network Error") ||
+      error.message.includes("No response received") ||
+      error.message.includes("timeout") ||
+      error.message.includes("ECONNREFUSED") ||
+      error.message.includes("ECONNABORTED"))
+  ) {
+    isConnectionIssue = true;
+    throw new NetworkError(
+      "Connection to chat server failed. Please check your internet connection.",
+    );
+  }
+
   if (error instanceof Error) {
-    console.log(error.message);
+    console.log("Error message:", error.message);
     throw error;
   }
 
@@ -64,7 +88,11 @@ api.interceptors.response.use(
     if (!error.response) {
       isConnectionIssue = true;
       console.error("Network error:", error.message);
-      return Promise.reject(new Error("No response received from server"));
+      return Promise.reject(
+        new NetworkError(
+          "No response received from server. Please check your connection.",
+        ),
+      );
     } else if (error.response) {
       console.error(
         "Error response:",
@@ -92,9 +120,33 @@ export const isConnectionHealthy = (): boolean => {
 };
 
 // Fetch all chats
-export const fetchChats = async (): Promise<ChatType[]> => {
+export const fetchChats = async (
+  limit?: number,
+  page?: number,
+): Promise<{
+  chats: ChatType[];
+  totals: number;
+  page: number;
+  limit: number;
+  hasMore: boolean;
+}> => {
+  const params = new URLSearchParams();
+  if (page !== undefined) params.append("page", page.toString());
+  if (limit !== undefined) params.append("limit", limit.toString());
+  const queryString = params.toString();
+  const url = queryString ? `/chats?${queryString}` : `/chats`;
+
   try {
-    const response = await api.get<ApiResponse<ChatType[]>>("/chats");
+    const response = await api.get<
+      ApiResponse<{
+        chats: ChatType[];
+        totals: number;
+        page: number;
+        limit: number;
+        hasMore: boolean;
+      }>
+    >(url, { withCredentials: true });
+    console.log(response);
     return handleApiResponse(response);
   } catch (error) {
     console.error("Error fetching chats:", error);
@@ -147,12 +199,12 @@ export const deleteOneOnOneChat = async ({
   chatId,
 }: {
   chatId: string;
-}): Promise<ApiResponse<null>> => {
+}): Promise<null> => {
   try {
     const response = await api.delete<ApiResponse<null>>(
       `/chats/chat/${chatId}`,
     );
-    return response.data;
+    return handleApiResponse(response);
   } catch (error) {
     console.error("Error deleting chat:", error);
     return handleApiError(error);
@@ -164,12 +216,10 @@ export const deleteChatForMe = async ({
   chatId,
 }: {
   chatId: string;
-}): Promise<ApiResponse<null>> => {
+}): Promise<null> => {
   try {
-    const response = await api.delete<ApiResponse<null>>(
-      `/chats/chat/${chatId}/me`,
-    );
-    return response.data;
+    const response = await api.delete<ApiResponse<null>>(`/chats/${chatId}/me`);
+    return handleApiResponse(response);
   } catch (error) {
     console.error("Error deleting chat for me:", error);
     return handleApiError(error);
@@ -214,17 +264,19 @@ export const getGroupChatDetails = async ({
 };
 
 // Rename a group chat
-export const renameGroupChat = async ({
+export const updateGroupChat = async ({
   chatId,
   name,
+  avatarUrl,
 }: {
   chatId: string;
   name: string;
+  avatarUrl: string;
 }): Promise<ChatType> => {
   try {
     const response = await api.patch<ApiResponse<ChatType>>(
       `/chats/group/${chatId}`,
-      { name },
+      { name, avatarUrl },
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -238,9 +290,9 @@ export const deleteGroupChat = async ({
   chatId,
 }: {
   chatId: string;
-}): Promise<ChatType> => {
+}): Promise<null> => {
   try {
-    const response = await api.delete<ApiResponse<ChatType>>(
+    const response = await api.delete<ApiResponse<null>>(
       `/chats/group/${chatId}`,
     );
     return handleApiResponse(response);
@@ -256,7 +308,7 @@ export const addNewParticipantInGroupChat = async ({
   participants,
 }: {
   chatId: string;
-  participants: string[];
+  participants: ParticipantsType[];
 }): Promise<ChatType> => {
   try {
     const response = await api.post<ApiResponse<ChatType>>(
@@ -316,7 +368,7 @@ export const pinMessage = async ({
 }): Promise<ChatType> => {
   try {
     const response = await api.post<ApiResponse<ChatType>>(
-      `/chats/chat/${chatId}/pin/${messageId}`,
+      `/chats/${chatId}/pin/${messageId}`,
       {},
     );
     return handleApiResponse(response);
@@ -336,7 +388,7 @@ export const unpinMessage = async ({
 }): Promise<ChatType> => {
   try {
     const response = await api.delete<ApiResponse<ChatType>>(
-      `/chats/chat/${chatId}/pin/${messageId}`,
+      `/chats/${chatId}/pin/${messageId}`,
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -358,7 +410,13 @@ export const getAllMessages = async ({
   limit?: number;
   before?: string;
   after?: string;
-}) => {
+}): Promise<{
+  messages: MessageType[];
+  total: number;
+  page: number;
+  limit: number;
+  hasMore: boolean;
+}> => {
   try {
     const params = new URLSearchParams();
     if (page) params.append("page", page.toString());
@@ -371,7 +429,15 @@ export const getAllMessages = async ({
       ? `/messages/${chatId}?${queryString}`
       : `/messages/${chatId}`;
 
-    const response = await api.get<ApiResponse<MessageType[]>>(url, {
+    const response = await api.get<
+      ApiResponse<{
+        messages: MessageType[];
+        total: number;
+        page: number;
+        limit: number;
+        hasMore: boolean;
+      }>
+    >(url, {
       withCredentials: true,
     });
 
@@ -457,7 +523,7 @@ export const updateReaction = async ({
   chatId: string;
   messageId: string;
   emoji: string;
-}) => {
+}): Promise<MessageType> => {
   try {
     const response = await api.post<ApiResponse<MessageType>>(
       `/messages/${chatId}/${messageId}/reaction`,
@@ -470,57 +536,22 @@ export const updateReaction = async ({
   }
 };
 
-export const replyMessage = async ({
-  chatId,
-  messageId,
-  content,
-  attachments,
-}: {
-  chatId: string;
-  messageId: string;
-  content: string;
-  attachments?: File[];
-}) => {
-  try {
-    const formData = new FormData();
-    formData.append("content", content);
-    if (attachments) {
-      attachments.forEach((file) => {
-        formData.append("attachments", file);
-      });
-    }
-
-    const response = await api.post<ApiResponse<MessageType>>(
-      `/messages/${chatId}/${messageId}/reply`,
-      formData,
-      {
-        withCredentials: true,
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      },
-    );
-    return handleApiResponse(response);
-  } catch (error) {
-    console.error("Error replying to message:", error);
-    return handleApiError(error);
-  }
-};
-
 // Edit a message
 export const editMessage = async ({
   chatId,
   messageId,
   content,
+  replyToId,
 }: {
   chatId: string;
   messageId: string;
   content: string;
+  replyToId?: string;
 }) => {
   try {
     const response = await api.patch<ApiResponse<MessageType>>(
       `/messages/${chatId}/${messageId}/edit`,
-      { content },
+      { content, replyToId },
     );
     return handleApiResponse(response);
   } catch (error) {

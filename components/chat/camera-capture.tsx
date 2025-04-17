@@ -16,7 +16,10 @@ interface CameraCaptureProps {
   disabled?: boolean;
 }
 
-export default function CameraCapture({ onCapture, disabled = false }: CameraCaptureProps) {
+export default function CameraCapture({
+  onCapture,
+  disabled = false,
+}: CameraCaptureProps) {
   const [isOpen, setIsOpen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -29,7 +32,7 @@ export default function CameraCapture({ onCapture, disabled = false }: CameraCap
         audio: false,
       });
       streamRef.current = stream;
-      
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
@@ -49,14 +52,14 @@ export default function CameraCapture({ onCapture, disabled = false }: CameraCap
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
-      
+
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-      
+
       const context = canvas.getContext("2d");
       if (context) {
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
+
         canvas.toBlob((blob) => {
           if (blob) {
             const file = new File([blob], `camera-capture-${Date.now()}.jpg`, {
@@ -82,7 +85,12 @@ export default function CameraCapture({ onCapture, disabled = false }: CameraCap
   return (
     <Sheet open={isOpen} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-9 w-9" disabled={disabled}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9"
+          disabled={disabled}
+        >
           <Camera className="h-5 w-5" />
           <span className="sr-only">Take photo</span>
         </Button>

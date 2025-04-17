@@ -1,33 +1,48 @@
-import { cn } from "@/lib/utils";
+"use client";
 import { MessageReaction } from "@/types/ChatType";
+import { cn } from "@/lib/utils";
+
+interface ReactionsDisplayProps {
+  reactions: MessageReaction[];
+  isOwn: boolean;
+  currentUserId?: string;
+}
 
 export function ReactionsDisplay({
   reactions,
   isOwn,
-}: {
-  reactions: MessageReaction[];
-  isOwn: boolean;
-}) {
-  const groupedReactions: Record<string, MessageReaction[]> = {};
-  reactions?.forEach((reaction) => {
-    groupedReactions[reaction.emoji] = groupedReactions[reaction.emoji] || [];
-    groupedReactions[reaction.emoji].push(reaction);
-  });
+  currentUserId,
+}: ReactionsDisplayProps) {
+  const groupedReactions = reactions.reduce<Record<string, string[]>>(
+    (acc, reaction) => {
+      if (!acc[reaction.emoji]) {
+        acc[reaction.emoji] = [];
+      }
+      acc[reaction.emoji].push(reaction.userId);
+      return acc;
+    },
+    {},
+  );
 
   return (
     <div
       className={cn(
-        "flex flex-wrap gap-1",
+        "flex flex-wrap gap-1 mt-1 max-w-[80%]",
         isOwn ? "justify-end" : "justify-start",
       )}
     >
-      {Object.entries(groupedReactions).map(([emoji, group]) => (
+      {Object.entries(groupedReactions).map(([emoji, userIds]) => (
         <div
           key={emoji}
-          className="flex items-center bg-background rounded-full border px-2 py-0.5 text-xs shadow-xs"
+          className={cn(
+            "flex items-center gap-1 rounded-full px-2 py-0.5 text-xs border border-border",
+            currentUserId && userIds.includes(currentUserId)
+              ? "bg-primary/20"
+              : "bg-muted/50",
+          )}
         >
-          <span className="mr-1">{emoji}</span>
-          <span className="text-muted-foreground">{group.length}</span>
+          <span>{emoji}</span>
+          <span className="opacity-70">{userIds.length}</span>
         </div>
       ))}
     </div>
