@@ -74,7 +74,6 @@ export interface DeletedForEntry {
   deletedAt: Date;
 }
 
-
 export interface ChatType {
   _id: string;
   name: string;

@@ -260,7 +260,7 @@ export default function useChatActions({
 
   // Edit a message with optimistic UI update
   const handleEditMessage = useCallback(
-    async (messageId: string, content: string, replyToId?:string) => {
+    async (messageId: string, content: string, replyToId?: string) => {
       if (!content.trim()) return toast.error("Message cannot be empty");
 
       setMessages((prev) => {
@@ -278,7 +278,12 @@ export default function useChatActions({
 
       try {
         setAuthToken(token);
-        const response = await editMessage({ chatId, messageId, content, replyToId });
+        const response = await editMessage({
+          chatId,
+          messageId,
+          content,
+          replyToId,
+        });
         if (response) {
           setMessages((prev) =>
             prev.map((msg) => (msg._id === messageId ? response : msg)),

@@ -24,7 +24,7 @@ interface MessageItemProps {
   onDelete: (messageId: string, forEveryone: boolean) => void;
   onReply: (messageId: string) => void;
   onReact: (messageId: string, emoji: string) => void;
-  onEdit?: (messageId: string, content: string, replyToId?:string) => void;
+  onEdit?: (messageId: string, content: string, replyToId?: string) => void;
   onRetry?: (messageId: string) => void;
   replyMessage?: MessageType | null;
   showDate?: boolean;

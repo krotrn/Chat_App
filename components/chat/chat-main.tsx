@@ -137,7 +137,7 @@ export default function ChatMain({
     async (chatId: string, forEveryone: boolean) => {
       try {
         setAuthToken(token);
-        await deleteOneOnOneChat({chatId, forEveryone})
+        await deleteOneOnOneChat({ chatId, forEveryone });
         router.push("/chats");
       } catch (error) {
         console.error(error);

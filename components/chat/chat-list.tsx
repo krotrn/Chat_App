@@ -8,6 +8,7 @@ import { ChatType, AIModel } from "@/types/ChatType";
 
 interface ChatListProps {
   chats: ChatType[];
+  userId: string;
   selectedChatId: string | null;
   aiModels?: AIModel[];
   onAIModelSelect?: (modelId: string) => void;
@@ -16,6 +17,7 @@ interface ChatListProps {
 
 export default function ChatList({
   chats,
+  userId,
   selectedChatId,
   aiModels,
   onAIModelSelect,
@@ -52,6 +54,7 @@ export default function ChatList({
           chats.map((chat) => (
             <ChatItem
               key={chat._id}
+              userId={userId}
               chat={chat}
               isSelected={chat._id === selectedChatId}
               onClick={() => handleChatSelect(chat._id)}

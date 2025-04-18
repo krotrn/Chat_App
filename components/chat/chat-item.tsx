@@ -46,7 +46,7 @@ export default function ChatItem({
     <motion.div
       className={cn(
         "flex cursor-pointer items-center gap-3 rounded-md p-2",
-        isSelected ? "bg-accent" : "hover:bg-muted"
+        isSelected ? "bg-accent" : "hover:bg-muted",
       )}
       onClick={onClick}
       whileHover={{ scale: 1.02 }}

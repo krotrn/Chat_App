@@ -13,7 +13,7 @@ export default function ChatsLayout({
       <aside
         className={cn(
           "flex flex-col h-full w-full md:w-80 border-r",
-          !chatMain && "md:w-full"
+          !chatMain && "md:w-full",
         )}
       >
         {chatList}
@@ -21,7 +21,7 @@ export default function ChatsLayout({
       <section
         className={cn(
           "flex flex-col h-full flex-1",
-          !chatMain && "hidden md:flex"
+          !chatMain && "hidden md:flex",
         )}
       >
         {chatMain}

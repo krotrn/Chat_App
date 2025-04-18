@@ -26,7 +26,7 @@ export default function FriendCard({
     const participant: ParticipantsType = {
       avatarUrl: friend.avatarUrl,
       joinedAt: new Date(),
-      name: friend.name,
+      name: friend.name || friend.username,
       role: "member",
       userId: friend.id,
     };
@@ -40,7 +40,7 @@ export default function FriendCard({
     });
     const participant2: ParticipantsType = {
       avatarUrl: user.avatarUrl ?? undefined,
-      name: user.name ?? undefined,
+      name: user.name ?? friend.username,
       userId: user.id,
       role: "member",
       joinedAt: new Date(),

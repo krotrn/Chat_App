@@ -15,7 +15,11 @@ interface MessageListProps {
   onDeleteMessage: (messageId: string, forEveryone: boolean) => void;
   onReplyMessage: (messageId: string) => void;
   onReactToMessage: (messageId: string, emoji: string) => void;
-  onEditMessage?: (messageId: string, content: string, replyToId?:string) => void;
+  onEditMessage?: (
+    messageId: string,
+    content: string,
+    replyToId?: string,
+  ) => void;
 }
 
 export default function MessageList({
