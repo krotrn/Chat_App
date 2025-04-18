@@ -119,16 +119,11 @@ export default function useChatActions({
         if (!response) throw new Error("Empty server response");
 
         pendingSendMessages.current.delete(tempId);
-        setMessages((prev) => {
-          const exists = prev.some((msg) => msg._id === response._id);
-          if (exists) {
-            cleanupAttachments(tempId);
-            return prev.filter((msg) => msg._id !== tempId);
-          }
-          return prev.map((msg) =>
-            msg._id === tempId ? (cleanupAttachments(tempId), response) : msg,
-          );
-        });
+
+        cleanupAttachments(tempId);
+        addOptimisticMessage(response);
+
+        setMessages((prev) => prev.filter((msg) => msg._id !== tempId));
       } catch (error) {
         setMessages((prev) =>
           prev.map((msg) =>
