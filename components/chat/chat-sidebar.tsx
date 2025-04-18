@@ -9,15 +9,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import ChatItem from "@/components/chat/chat-item";
 import AIChatItem from "@/components/chat/ai-chat-item";
 import { ChatType, AIModel } from "@/types/ChatType";
-import {
-  deleteOneOnOneChat,
-  deleteChatForMe,
-  setAuthToken,
-} from "@/services/chat-api";
+import { deleteOneOnOneChat, setAuthToken } from "@/services/chat-api";
 import { toast } from "sonner";
 
 interface ChatSidebarProps {
   chats: ChatType[];
+  userId: string;
   selectedChatId: string | null;
   aiModels?: AIModel[];
   onAIModelSelect?: (modelId: string) => void;
@@ -27,6 +24,7 @@ interface ChatSidebarProps {
 
 export default function ChatSidebar({
   chats: initialChats,
+  userId,
   selectedChatId,
   aiModels,
   onAIModelSelect,
@@ -37,6 +35,7 @@ export default function ChatSidebar({
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
+  // search in chat
   const handleSearch = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value.toLowerCase();
@@ -47,30 +46,28 @@ export default function ChatSidebar({
         const filtered = initialChats.filter(
           (chat) =>
             chat.name.toLowerCase().includes(value) ||
-            chat.lastMessage?.content.includes(value),
+            chat.lastMessage?.content.includes(value)
         );
         setChats(filtered);
       }
     },
-    [initialChats],
+    [initialChats]
   );
 
+  // select chat
   const handleChatSelect = useCallback(
     (chatId: string) => {
       router.push(`/chats?chat=${chatId}`);
     },
-    [router],
+    [router]
   );
 
+  // delete chat
   const handleDeleteChat = useCallback(
-    async (chatId: string, forEveryone: boolean) => {
+    async (chatId: string, forEveryone?: boolean) => {
       try {
         setAuthToken(token);
-        if (forEveryone) {
-          await deleteOneOnOneChat({ chatId });
-        } else {
-          await deleteChatForMe({ chatId });
-        }
+        await deleteOneOnOneChat({ chatId, forEveryone });
         setChats((prev) => prev.filter((chat) => chat._id !== chatId));
         if (selectedChatId === chatId) {
           router.push("/chats");
@@ -80,16 +77,17 @@ export default function ChatSidebar({
         toast.error("Failed to delete chat");
       }
     },
-    [selectedChatId, router, token],
+    [selectedChatId, router, token]
   );
 
   return (
     <motion.div
-      className="flex h-full w-full md:w-80 flex-col border-r"
+      className="flex h-full w-full md:w-80 flex-col border-r space-y-2"
       initial={{ x: -80, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
+      {/* Search Bar */}
       <div className="p-4">
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -102,6 +100,7 @@ export default function ChatSidebar({
           />
         </div>
       </div>
+      {/* Chat List */}
       <ScrollArea className="flex-1">
         <div className="px-2">
           <div className="space-y-1">
@@ -110,6 +109,7 @@ export default function ChatSidebar({
                 <ChatItem
                   key={chat._id}
                   chat={chat}
+                  userId={userId}
                   isSelected={chat._id === selectedChatId}
                   onClick={() => handleChatSelect(chat._id)}
                   onDelete={(forEveryone) =>
@@ -122,6 +122,7 @@ export default function ChatSidebar({
                 No chats found
               </div>
             )}
+            {/* For Future Ai Models */}
             {aiModels && aiModels.length > 0 && (
               <>
                 <div className="px-2 py-2">

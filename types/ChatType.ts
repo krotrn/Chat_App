@@ -27,7 +27,7 @@ export interface AttachmentResponse {
 
 export interface ParticipantsType {
   userId: string;
-  name?: string;
+  name: string;
   avatarUrl?: string;
   role: "member" | "admin";
   joinedAt: Date;
@@ -63,7 +63,7 @@ export interface MessageType {
   edits: MessageEdit[];
   readBy: ReadReceipt[];
   deletedFor: DeletedForEntry[];
-  replyToId: string | null;
+  replyToId?: string;
   formatting: Record<string, string>;
   createdAt: Date;
   updatedAt: Date;
@@ -74,15 +74,6 @@ export interface DeletedForEntry {
   deletedAt: Date;
 }
 
-export interface ChatMetadataPermissions {
-  canAddUsers?: boolean;
-  canRemoveUsers?: boolean;
-  canChangeGroupInfo?: boolean;
-  canSendMessages?: boolean;
-  canPinMessages?: boolean;
-  canSendMedia?: boolean;
-  customRoles?: Record<string, string[]>;
-}
 
 export interface ChatType {
   _id: string;
@@ -96,7 +87,7 @@ export interface ChatType {
   deletedFor: DeletedForEntry[];
   metadata?: {
     pinnedMessage: string[];
-    customPermissions?: ChatMetadataPermissions;
+    customPermissions?: string[];
   };
   messages: MessageType[];
   createdAt: Date;

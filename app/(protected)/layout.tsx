@@ -6,9 +6,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="h-screen w-full space-y-4">
+    <div className="flex flex-col h-screen w-full space-y-2">
       <NavMenu />
-      {children}
+      <main className="flex-1 overflow-hidden">
+        {children}
+      </main>
     </div>
   );
 }

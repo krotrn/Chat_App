@@ -1,5 +1,4 @@
 import { auth } from "@/auth";
-import { redirect } from "next/navigation";
 import ChatSidebar from "@/components/chat/chat-sidebar";
 import { fetchChats, setAuthToken } from "@/services/chat-api";
 
@@ -9,30 +8,21 @@ export default async function ChatListPage({
   searchParams: Promise<{ chat?: string }>;
 }) {
   const session = await auth();
-  if (!session) redirect("/login");
-
-  try {
-    if (!session.accessToken) {
-      throw new Error("No access token found");
-    }
-
-    setAuthToken(session.accessToken);
-    const response = await fetchChats();
-    console.log(response);
-    const selectedChatId = (await searchParams).chat || null;
-    return (
-      <ChatSidebar
-        chats={response.chats}
-        selectedChatId={selectedChatId}
-        token={session.accessToken}
-      />
-    );
-  } catch (error) {
-    console.error("Error fetching chats:", error);
-    return (
-      <div className="flex h-full items-center justify-center">
-        <p className="text-red-500">Error loading chats</p>
-      </div>
-    );
+  if (!session || !session.user.id) throw new Error("Unauthorized");
+  if (!session.accessToken) {
+    throw new Error("No access token found");
   }
+
+  setAuthToken(session.accessToken);
+  const response = await fetchChats();
+  console.log(response);
+  const selectedChatId = (await searchParams).chat || null;
+  return (
+    <ChatSidebar
+      userId={session.user.id}
+      chats={response.chats}
+      selectedChatId={selectedChatId}
+      token={session.accessToken}
+    />
+  );
 }

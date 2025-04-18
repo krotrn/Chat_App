@@ -1,3 +1,4 @@
+"use client";
 import { startTransition, useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import {
@@ -12,14 +13,20 @@ import { MessageType, StatusEnum } from "@/types/ChatType";
 
 interface ChatActionsProps {
   chatId: string;
-  replyToMessage: MessageType | null;
-  setReplyToMessage: React.Dispatch<React.SetStateAction<MessageType | null>>;
+  replyToMessage: MessageType | undefined;
+  setReplyToMessage: React.Dispatch<
+    React.SetStateAction<MessageType | undefined>
+  >;
   setMessages: React.Dispatch<React.SetStateAction<MessageType[]>>;
   currentUserId?: string;
   addOptimisticMessage: (message: MessageType) => void;
   token: string;
 }
 
+/**
+ * Custom hook to manage chat actions such as sending, deleting, reacting to,
+ * editing, and marking messages as read with optimistic updates.
+ */
 export default function useChatActions({
   chatId,
   replyToMessage,
@@ -33,40 +40,42 @@ export default function useChatActions({
   const pendingSendMessages = useRef<
     Map<string, { content: string; replyToId?: string }>
   >(new Map());
+  const attachmentUrls = useRef<Map<string, string[]>>(new Map());
+  const pendingRequests = useRef<Set<string>>(new Set());
 
-  const revokeAttachmentBlobUrls = useCallback((message: MessageType) => {
-    if (message?.attachments?.length) {
-      message.attachments.forEach((attachment) => {
-        if (attachment.url?.startsWith("blob:")) {
-          try {
-            URL.revokeObjectURL(attachment.url);
-            console.log(`Revoked blob URL for attachment: ${attachment.name}`);
-          } catch (e) {
-            console.error(
-              `Failed to revoke blob URL for attachment: ${attachment.name}`,
-              e,
-            );
-          }
-        }
-      });
+  // Clean up blob URLs for a message's attachments
+  const cleanupAttachments = useCallback((messageId: string) => {
+    const urls = attachmentUrls.current.get(messageId);
+    if (urls) {
+      urls.forEach((url) => URL.revokeObjectURL(url));
+      attachmentUrls.current.delete(messageId);
     }
   }, []);
 
+  // Clean up all attachment URLs on unmount
+  useEffect(() => {
+    const urls = attachmentUrls.current;
+    return () => {
+      urls.forEach((blobUrls) =>
+        blobUrls.forEach((url) => URL.revokeObjectURL(url)),
+      );
+      urls.clear();
+    };
+  }, []);
+
+  // Send a new message with optimistic UI update
   const handleSendMessage = useCallback(
-    async (content: string, attachments?: File[], replyToId?: string) => {
-      if (!content.trim() && (!attachments || attachments.length === 0)) {
-        toast.error("Message cannot be empty");
-        return;
-      }
-      if (!chatId) {
-        toast.error("No chat ID provided");
-        return;
-      }
-      const optimisticId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      console.log(`Creating optimistic message with ID: ${optimisticId}`);
+    async (content: string, attachments: File[] = [], replyToId?: string) => {
+      if (!content.trim() && !attachments.length)
+        return toast.error("Message cannot be empty");
+      if (!chatId) return toast.error("No chat ID provided");
+
+      const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+      const blobUrls = attachments.map((file) => URL.createObjectURL(file));
+      if (blobUrls.length) attachmentUrls.current.set(tempId, blobUrls);
 
       const optimisticMessage: MessageType = {
-        _id: optimisticId,
+        _id: tempId,
         content,
         sender: {
           userId: currentUserId || "",
@@ -79,137 +88,64 @@ export default function useChatActions({
         status: StatusEnum.sending,
         reactions: [],
         receivers: [],
-        attachments: attachments
-          ? attachments.map((file) => ({
-              name: file.name,
-              url: URL.createObjectURL(file),
-              type: file.type,
-              localPath: file.name,
-              status: StatusEnum.sending,
-            }))
-          : [],
-        edited: {
-          isEdited: false,
-          editedAt: new Date(),
-        },
+        attachments: attachments.map((file, i) => ({
+          name: file.name,
+          url: blobUrls[i],
+          type: file.type,
+          localPath: file.name,
+          status: StatusEnum.sending,
+        })),
+        edited: { isEdited: false, editedAt: new Date() },
         edits: [],
         readBy: [],
         deletedFor: [],
         formatting: {},
-        replyToId: replyToId || null,
+        replyToId: replyToId,
       };
 
-      pendingSendMessages.current.set(optimisticId, {
-        content,
-        replyToId,
-      });
-
-      startTransition(() => {
-        addOptimisticMessage(optimisticMessage);
-      });
-
-      if (replyToId && replyToMessage?._id === replyToId) {
-        setReplyToMessage(null);
-      }
+      pendingSendMessages.current.set(tempId, { content, replyToId });
+      startTransition(() => addOptimisticMessage(optimisticMessage));
+      if (replyToId && replyToMessage?._id === replyToId)
+        setReplyToMessage(undefined);
 
       try {
         setAuthToken(token);
-        console.log(`Sending message to API for chat ${chatId}:`, {
-          content,
-          hasAttachments: !!attachments?.length,
-          replyToId: replyToId || null,
-        });
-
         const response = await sendMessage({
           chatId,
           content,
           attachments,
           replyToId,
         });
+        if (!response) throw new Error("Empty server response");
 
-        console.log(`Message sent successfully, received response:`, response);
-
-        if (response) {
-          pendingSendMessages.current.delete(optimisticId);
-
-          setMessages((prev) => {
-            const realMessageExists = prev.some(
-              (msg) => msg._id === response._id,
-            );
-            if (realMessageExists) {
-              console.log(
-                `Real message ${response._id} already exists in state, removing optimistic version`,
-              );
-              const optimisticMessage = prev.find(
-                (msg) => msg._id === optimisticId,
-              );
-              if (optimisticMessage) {
-                revokeAttachmentBlobUrls(optimisticMessage);
-              }
-              return prev.filter((msg) => msg._id !== optimisticId);
-            }
-
-            const optimisticMessageExists = prev.some(
-              (msg) => msg._id === optimisticId,
-            );
-
-            if (!optimisticMessageExists) {
-              console.log(
-                `Message ${optimisticId} not found in state, adding response directly`,
-              );
-              return [...prev, response];
-            }
-
-            return prev.map((msg) => {
-              if (msg._id === optimisticId) {
-                console.log(
-                  `Replacing optimistic message ${optimisticId} with server message ${response._id}`,
-                );
-                revokeAttachmentBlobUrls(msg);
-                return response;
-              }
-              return msg;
-            });
-          });
-        } else {
-          console.error("Empty response received from server");
-          throw new Error("Failed to send message: empty response from server");
-        }
+        pendingSendMessages.current.delete(tempId);
+        setMessages((prev) => {
+          const exists = prev.some((msg) => msg._id === response._id);
+          if (exists) {
+            cleanupAttachments(tempId);
+            return prev.filter((msg) => msg._id !== tempId);
+          }
+          return prev.map((msg) =>
+            msg._id === tempId ? (cleanupAttachments(tempId), response) : msg,
+          );
+        });
       } catch (error) {
-        console.error("Failed to send message:", error);
-
-        startTransition(() => {
-          setMessages((prev) => {
-            const messageExists = prev.some((msg) => msg._id === optimisticId);
-
-            if (!messageExists) {
-              console.log(
-                `Failed message ${optimisticId} not found in state, can't update status`,
-              );
-              return prev;
-            }
-
-            return prev.map((msg) => {
-              if (msg._id === optimisticId) {
-                console.log(`Marking message ${optimisticId} as failed`);
-                return {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg._id === tempId
+              ? {
                   ...msg,
                   status: StatusEnum.failed,
                   attachments: msg.attachments?.map((att) => ({
                     ...att,
                     status: StatusEnum.failed,
                   })),
-                };
-              }
-              return msg;
-            });
-          });
-        });
-
+                }
+              : msg,
+          ),
+        );
         toast.error(
-          error instanceof Error && error.message
-            ? error.message
-            : "Failed to send message",
+          error instanceof Error ? error.message : "Failed to send message",
         );
       }
     },
@@ -221,163 +157,164 @@ export default function useChatActions({
       setMessages,
       currentUserId,
       addOptimisticMessage,
-      revokeAttachmentBlobUrls,
+      cleanupAttachments,
     ],
   );
 
+  // Delete a message with optimistic UI update
   const handleDeleteMessage = useCallback(
     async (messageId: string, forEveryone: boolean) => {
-      let deletedMessage: MessageType | undefined;
+      console.log(messageId, forEveryone);
+      const requestId = `delete-${messageId}`;
+      if (pendingRequests.current.has(requestId)) return;
+      pendingRequests.current.add(requestId);
 
+      let deletedMessage: MessageType | undefined;
       setMessages((prev) => {
         deletedMessage = prev.find((msg) => msg._id === messageId);
+        if (deletedMessage) cleanupAttachments(messageId);
         return prev.filter((msg) => msg._id !== messageId);
       });
 
-      if (replyToMessage?._id === messageId) {
-        setReplyToMessage(null);
-      }
+      if (replyToMessage?._id === messageId) setReplyToMessage(undefined);
 
       try {
-        await deleteMessage({
-          chatId,
-          messageId,
-          forEveryone,
-        });
-        toast.success("Message deleted successfully");
+        setAuthToken(token);
+        await deleteMessage({ chatId, messageId, forEveryone });
+        pendingRequests.current.delete(requestId);
+        toast.success("Message deleted");
       } catch (error) {
-        console.error("Delete message error:", error);
-
+        pendingRequests.current.delete(requestId);
         if (deletedMessage) {
-          setMessages((prev) => {
-            const exists = prev.some((msg) => msg._id === messageId);
-            if (!exists) {
-              return [...prev, deletedMessage!];
-            }
-            return prev;
-          });
+          setMessages((prev) =>
+            prev.some((msg) => msg._id === messageId)
+              ? prev
+              : [...prev, deletedMessage!],
+          );
         }
-
         toast.error(
-          error instanceof Error && error.message
-            ? error.message
-            : "Failed to delete message",
+          error instanceof Error ? error.message : "Failed to delete message",
         );
       }
     },
-    [chatId, replyToMessage, setReplyToMessage, setMessages],
+    [
+      chatId,
+      replyToMessage,
+      setReplyToMessage,
+      setMessages,
+      token,
+      cleanupAttachments,
+    ],
   );
 
+  // React to a message with optimistic UI update
   const handleReactToMessage = useCallback(
-    (messageId: string, emoji: string) => {
+    async (messageId: string, emoji: string) => {
+      const requestId = `react-${messageId}-${emoji}-${Date.now()}`;
+      if (pendingRequests.current.has(requestId)) return;
+      pendingRequests.current.add(requestId);
+
       setMessages((prev) => {
-        const existingMessage = prev.find((msg) => msg._id === messageId);
-        if (!existingMessage) return prev;
+        const msg = prev.find((m) => m._id === messageId);
+        if (!msg) return prev;
 
-        const updatedMessage: MessageType = {
-          ...existingMessage,
-          reactions: [
-            ...(existingMessage.reactions || []),
-            {
-              emoji,
-              userId: currentUserId || "",
-              timestamp: new Date(),
-            },
-          ],
-        };
-
-        addOptimisticMessage(updatedMessage);
-
-        return prev;
+        const hasReaction = msg.reactions?.some(
+          (r) => r.userId === currentUserId && r.emoji === emoji,
+        );
+        return prev.map((m) =>
+          m._id === messageId
+            ? {
+                ...m,
+                reactions: hasReaction
+                  ? m.reactions.filter(
+                      (r) => !(r.userId === currentUserId && r.emoji === emoji),
+                    )
+                  : [
+                      ...(m.reactions || []),
+                      {
+                        emoji,
+                        userId: currentUserId || "",
+                        timestamp: new Date(),
+                      },
+                    ],
+              }
+            : m,
+        );
       });
 
-      updateReaction({
-        chatId,
-        messageId,
-        emoji,
-      }).catch((error) => {
-        console.error("Reaction update error:", error);
-        toast.error("Failed to update reaction");
-      });
+      try {
+        setAuthToken(token);
+        const response = await updateReaction({ chatId, messageId, emoji });
+        if (!response) throw new Error("Empty server response");
+        setMessages((prev) =>
+          prev.map((msg) => (msg._id === messageId ? response : msg)),
+        );
+        pendingRequests.current.delete(requestId);
+      } catch (error) {
+        pendingRequests.current.delete(requestId);
+        console.error("Reaction error:", error);
+      }
     },
-    [chatId, setMessages, currentUserId, addOptimisticMessage],
+    [chatId, setMessages, currentUserId, token],
   );
 
+  // Edit a message with optimistic UI update
   const handleEditMessage = useCallback(
-    async (messageId: string, content: string) => {
-      if (!content.trim()) {
-        toast.error("Message cannot be empty");
-        return;
-      }
+    async (messageId: string, content: string, replyToId?:string) => {
+      if (!content.trim()) return toast.error("Message cannot be empty");
 
       setMessages((prev) => {
-        const existingMessage = prev.find((msg) => msg._id === messageId);
-        if (!existingMessage) return prev;
-
-        const updatedMessage = {
-          ...existingMessage,
+        const msg = prev.find((m) => m._id === messageId);
+        if (!msg) return prev;
+        const updated = {
+          ...msg,
           content,
-          edited: {
-            isEdited: true,
-            editedAt: new Date(),
-          },
+          edited: { isEdited: true, editedAt: new Date() },
           status: StatusEnum.sending,
         };
-
-        addOptimisticMessage(updatedMessage);
-
+        addOptimisticMessage(updated);
         return prev;
       });
 
       try {
-        const response = await editMessage({
-          chatId,
-          messageId,
-          content,
-        });
-
+        setAuthToken(token);
+        const response = await editMessage({ chatId, messageId, content, replyToId });
         if (response) {
           setMessages((prev) =>
             prev.map((msg) => (msg._id === messageId ? response : msg)),
           );
+          toast.success("Message edited");
         }
-
-        toast.success("Message edited successfully");
       } catch (error) {
-        console.error("Edit message error:", error);
-
         setMessages((prev) =>
           prev.map((msg) =>
             msg._id === messageId ? { ...msg, status: StatusEnum.failed } : msg,
           ),
         );
-
         toast.error(
-          error instanceof Error && error.message
-            ? error.message
-            : "Failed to edit message",
+          error instanceof Error ? error.message : "Failed to edit message",
         );
       }
     },
-    [chatId, setMessages, addOptimisticMessage],
+    [chatId, setMessages, addOptimisticMessage, token],
   );
 
+  // Mark messages as read with optimistic UI update
   const handleMarkAsRead = useCallback(
     async (messageIds?: string[]) => {
       if (!currentUserId || !chatId) return;
 
       const readAt = new Date();
-      const messagesToMark = new Set<string>();
+      const toMark = new Set<string>();
 
       setMessages((prev) => {
-        const updatedMessages = prev.map((msg) => {
+        return prev.map((msg) => {
           if (
             (!messageIds || messageIds.includes(msg._id)) &&
             msg.sender.userId !== currentUserId &&
-            (!msg.readBy || !msg.readBy.some((r) => r.userId === currentUserId))
+            !msg.readBy?.some((r) => r.userId === currentUserId)
           ) {
-            messagesToMark.add(msg._id);
-
+            toMark.add(msg._id);
             return {
               ...msg,
               readBy: [
@@ -388,57 +325,44 @@ export default function useChatActions({
           }
           return msg;
         });
-        return updatedMessages;
       });
 
-      messageIds?.forEach((id) => pendingReadMessages.current.add(id));
-
-      const idsToMark = messageIds || Array.from(messagesToMark);
-      if (idsToMark.length === 0) return;
+      const ids = messageIds || [...toMark];
+      if (!ids.length) return;
+      ids.forEach((id) => pendingReadMessages.current.add(id));
 
       try {
-        await markMessagesAsRead({
-          chatId,
-          messageIds: idsToMark,
-        });
-
-        idsToMark.forEach((id) => pendingReadMessages.current.delete(id));
+        await markMessagesAsRead({ chatId, messageIds: ids });
+        ids.forEach((id) => pendingReadMessages.current.delete(id));
       } catch (error) {
-        console.error("Error marking messages as read:", error);
-
-        if (error instanceof Error && error.message.includes("network")) {
-          toast.error("Network issue - read status may not sync", {
-            duration: 3000,
-            position: "bottom-right",
-          });
-        }
+        console.error("Mark as read error:", error);
       }
     },
     [chatId, currentUserId, setMessages],
   );
 
+  // Mark messages as read on chat load and cleanup on unmount
   useEffect(() => {
-    if (chatId && currentUserId) {
-      handleMarkAsRead();
-    }
+    if (chatId && currentUserId) handleMarkAsRead();
 
-    const currentChatId = chatId;
+    // Capture the current values to use in cleanup
     const pendingMessages = pendingReadMessages.current;
+    const currentChatId = chatId;
 
     return () => {
-      if (pendingMessages.size > 0 && currentChatId) {
+      if (pendingMessages.size && currentChatId) {
         markMessagesAsRead({
           chatId: currentChatId,
-          messageIds: Array.from(pendingMessages),
+          messageIds: [...pendingMessages],
         }).catch(console.error);
       }
     };
   }, [chatId, currentUserId, handleMarkAsRead]);
 
   return {
+    handleSendMessage,
     handleDeleteMessage,
     handleReactToMessage,
-    handleSendMessage,
     handleEditMessage,
     handleMarkAsRead,
   };

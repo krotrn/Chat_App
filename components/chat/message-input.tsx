@@ -114,8 +114,12 @@ function SimpleAttachmentPreview({
 
 export interface MessageInputProps {
   participants: Array<ParticipantsType>;
-  onSendMessage: (message: string, attachments?: File[]) => void;
-  replyToMessage?: MessageType | null;
+  onSendMessage: (
+    message: string,
+    attachments?: File[],
+    replyToId?: string,
+  ) => void;
+  replyToMessage?: MessageType;
   onCancelReply?: () => void;
   disabled?: boolean;
   chatId: string;
@@ -153,12 +157,12 @@ export default function MessageInput({
     (e: React.FormEvent) => {
       e.preventDefault();
       if (!message.trim() && !attachments.length) return;
-      onSendMessage(message, attachments);
+      onSendMessage(message, attachments, replyToMessage?._id);
       setMessage("");
       setAttachments([]);
       onCancelReply?.();
     },
-    [message, attachments, onSendMessage, onCancelReply],
+    [message, attachments, onSendMessage, onCancelReply, replyToMessage],
   );
 
   const handleKeyDown = useCallback(

@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useRef, useState } from "react";
 import { initSocket, joinChat } from "@/lib/socket";
 import { ChatEventEnum } from "@/lib/socket-event";
@@ -12,7 +13,7 @@ export default function useChatSocket(
 ) {
   const [messages, setMessages] = useState<MessageType[]>(initialMessages);
   const [pinnedMessageIds, setPinnedMessageIds] = useState<string[]>([]);
-  const socketRef = useRef<ReturnType<typeof initSocket> | null>(null);
+  const socketRef = useRef<SocketIOClient.Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
@@ -33,6 +34,31 @@ export default function useChatSocket(
       socket.on("disconnect", () => {
         console.log("Socket disconnected!");
         setIsConnected(false);
+        toast.error(
+          "Disconnected from chat server. Attempting to reconnect...",
+          {
+            duration: 5000,
+          },
+        );
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = 5;
+        const reconnectTimer = setInterval(
+          () => {
+            if (reconnectAttempts >= maxReconnectAttempts) {
+              clearInterval(reconnectTimer);
+              toast.error("Failed to reconnect. Please refresh the page.");
+              return;
+            }
+            reconnectAttempts++;
+            console.log(
+              `Attempting to reconnect (${reconnectAttempts}/${maxReconnectAttempts})...`,
+            );
+            socket.connect();
+          },
+          3000 * Math.min(reconnectAttempts, 3),
+        );
+
+        return () => clearInterval(reconnectTimer);
       });
 
       socket.on(

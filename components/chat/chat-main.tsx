@@ -15,7 +15,6 @@ import { User } from "next-auth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   deleteOneOnOneChat,
-  deleteChatForMe,
   setAuthToken,
   isConnectionHealthy,
 } from "@/services/chat-api";
@@ -27,12 +26,14 @@ import { WifiOff } from "lucide-react";
 
 interface ChatMainProps {
   chat: ChatType;
+  userId: string;
   currentUser: User;
   token: string;
 }
 
 export default function ChatMain({
   chat: initialChat,
+  userId,
   currentUser,
   token,
 }: ChatMainProps) {
@@ -40,8 +41,8 @@ export default function ChatMain({
   const isMobile = useIsMobile();
   const [chat, setChat] = useState(initialChat);
   const [showDetails, setShowDetails] = useState(false);
-  const [replyToMessage, setReplyToMessage] = useState<MessageType | null>(
-    null,
+  const [replyToMessage, setReplyToMessage] = useState<MessageType | undefined>(
+    undefined,
   );
 
   const {
@@ -114,9 +115,10 @@ export default function ChatMain({
 
   useEffect(() => {
     if (chat._id) {
+      setAuthToken(token);
       handleMarkAsRead();
     }
-  }, [chat._id, handleMarkAsRead]);
+  }, [chat._id, handleMarkAsRead, token]);
 
   const toggleDetails = useCallback(() => setShowDetails((prev) => !prev), []);
   const handleBack = useCallback(() => router.push("/chats"), [router]);
@@ -129,17 +131,13 @@ export default function ChatMain({
     [optimisticMessages],
   );
 
-  const handleCancelReply = useCallback(() => setReplyToMessage(null), []);
+  const handleCancelReply = useCallback(() => setReplyToMessage(undefined), []);
 
   const handleDeleteChat = useCallback(
     async (chatId: string, forEveryone: boolean) => {
       try {
         setAuthToken(token);
-        if (forEveryone) {
-          await deleteOneOnOneChat({ chatId });
-        } else {
-          await deleteChatForMe({ chatId });
-        }
+        await deleteOneOnOneChat({chatId, forEveryone})
         router.push("/chats");
       } catch (error) {
         console.error(error);
@@ -160,17 +158,18 @@ export default function ChatMain({
     >
       <ChatHeader
         chat={chat}
+        userId={userId}
         onToggleDetails={toggleDetails}
         onDeleteChat={handleDeleteChat}
         onBack={isMobile ? handleBack : undefined}
       />
 
       {!isConnected && (
-        <div className="mx-4 mt-2 p-3 bg-destructive/15 text-destructive rounded-md flex items-center gap-2">
+        <div className="mx-4 mt-2 p-3 w-2xl bg-destructive/15 text-destructive rounded-md flex self-center gap-2">
           <WifiOff className="h-4 w-4" />
           <p>
             Connection to chat server lost. Messages may not be sent or
-            received.
+            received. wait a minute.
           </p>
         </div>
       )}

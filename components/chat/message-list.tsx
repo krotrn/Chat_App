@@ -3,7 +3,7 @@
 import { groupMessagesByDate } from "@/lib/utils/groupMessageByDate";
 import { MessageType, ParticipantsType } from "@/types/ChatType";
 import { User } from "next-auth";
-import { Fragment, useEffect, useRef, useMemo } from "react";
+import { Fragment, useEffect, useMemo, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import DateDivider from "@/components/chat/date-divider";
 import MessageItem from "@/components/chat/message-item";
@@ -15,7 +15,7 @@ interface MessageListProps {
   onDeleteMessage: (messageId: string, forEveryone: boolean) => void;
   onReplyMessage: (messageId: string) => void;
   onReactToMessage: (messageId: string, emoji: string) => void;
-  onEditMessage?: (messageId: string, content: string) => void;
+  onEditMessage?: (messageId: string, content: string, replyToId?:string) => void;
 }
 
 export default function MessageList({
@@ -46,8 +46,7 @@ export default function MessageList({
   }, [messages]);
 
   return (
-    <ScrollArea className="flex-1 p-4 flex flex-col">
-      <div className="flex-1" />
+    <ScrollArea className="flex-1 h-full flex">
       {Object.entries(groupedMessages).map(([date, dateMessages]) => (
         <Fragment key={date}>
           <DateDivider date={date} />

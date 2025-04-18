@@ -15,6 +15,7 @@ import { formatDistanceToNow } from "date-fns";
 
 interface ChatItemProps {
   chat: ChatType;
+  userId: string;
   isSelected: boolean;
   onClick: () => void;
   onDelete: (forEveryone: boolean) => void;
@@ -22,17 +23,30 @@ interface ChatItemProps {
 
 export default function ChatItem({
   chat,
+  userId,
   isSelected,
   onClick,
   onDelete,
 }: ChatItemProps) {
   const { name, avatarUrl, lastMessage } = chat;
 
+  let title: string;
+  let avatar: string | undefined;
+  if (chat.type === "direct") {
+    [title, avatar] = [
+      chat.participants.filter((p) => p.userId !== userId)[0].name,
+      chat.participants.filter((p) => p.userId !== userId)[0].avatarUrl,
+    ];
+  } else {
+    title = name;
+    avatar = avatarUrl;
+  }
+
   return (
     <motion.div
       className={cn(
         "flex cursor-pointer items-center gap-3 rounded-md p-2",
-        isSelected ? "bg-accent" : "hover:bg-muted",
+        isSelected ? "bg-accent" : "hover:bg-muted"
       )}
       onClick={onClick}
       whileHover={{ scale: 1.02 }}
@@ -40,12 +54,12 @@ export default function ChatItem({
       layout
     >
       <Avatar>
-        <AvatarImage src={avatarUrl} alt={name} />
-        <AvatarFallback>{name.slice(0, 2).toUpperCase()}</AvatarFallback>
+        <AvatarImage src={avatar} alt={title} />
+        <AvatarFallback>{title.slice(0, 2).toUpperCase()}</AvatarFallback>
       </Avatar>
       <div className="flex-1 overflow-hidden">
         <div className="flex items-center justify-between">
-          <p className="truncate font-medium">{name}</p>
+          <p className="truncate font-medium">{title}</p>
           {lastMessage && (
             <p className="shrink-0 text-xs text-muted-foreground">
               {lastMessage.createdAt
@@ -66,7 +80,7 @@ export default function ChatItem({
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100"
+            className="h-8 w-8 p-0"
             onClick={(e) => e.stopPropagation()}
           >
             <MoreVertical className="h-4 w-4" />

@@ -13,9 +13,9 @@ const NavMenu = () => {
   const pathname = usePathname();
 
   return (
-    <>
+    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b overflow-y-hidden">
       {/* Desktop Menu */}
-      <NavigationMenu className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60 hidden md:block overflow-x-hidden">
+      <NavigationMenu className="hidden overflow-x-hidden md:flex items-center justify-center max-w-7xl mx-auto px-4 py-2">
         <DesktopNav pathname={pathname} />
       </NavigationMenu>
       {/* Mobile Menu Trigger */}
@@ -32,7 +32,7 @@ const NavMenu = () => {
         </SheetTrigger>
         <MobileNav pathname={pathname} setIsOpen={setIsOpen} />
       </Sheet>
-    </>
+    </header>
   );
 };
 

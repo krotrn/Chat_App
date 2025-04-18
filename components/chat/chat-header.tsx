@@ -8,6 +8,7 @@ import { User } from "next-auth";
 
 interface ChatHeaderProps {
   chat: ChatType;
+  userId: string;
   onToggleDetails: () => void;
   onDeleteChat: (chatId: string, forEveryone: boolean) => Promise<void>;
   onBack?: () => void;
@@ -16,6 +17,7 @@ interface ChatHeaderProps {
 
 export default function ChatHeader({
   chat,
+  userId,
   onToggleDetails,
   onDeleteChat,
   onBack,
@@ -24,19 +26,17 @@ export default function ChatHeader({
   const isAdmin = chat.admin === currentUser?.id;
   const isOnline = chat.participants.some((p) => p.userId !== currentUser?.id);
 
-  const otherParticipant = chat.participants.find(
-    (p) => p.userId !== currentUser?.id,
-  );
-
-  const displayName =
-    chat.type === "direct" && otherParticipant
-      ? otherParticipant.name || "User"
-      : chat.name;
-
-  const displayAvatar =
-    chat.type === "direct" && otherParticipant
-      ? otherParticipant.avatarUrl
-      : chat.avatarUrl;
+  let title: string;
+  let avatar: string | undefined;
+  if (chat.type === "direct") {
+    [title, avatar] = [
+      chat.participants.filter((p) => p.userId !== userId)[0].name,
+      chat.participants.filter((p) => p.userId !== userId)[0].avatarUrl,
+    ];
+  } else {
+    title = chat.name;
+    avatar = chat.avatarUrl;
+  }
 
   return (
     <div className="flex h-16 items-center border-b px-4">
@@ -54,15 +54,13 @@ export default function ChatHeader({
 
       <div className="flex flex-1 items-center">
         <Avatar className="h-9 w-9 mr-3">
-          <AvatarImage src={displayAvatar} alt={displayName} />
-          <AvatarFallback>
-            {displayName.substring(0, 2).toUpperCase()}
-          </AvatarFallback>
+          <AvatarImage src={avatar} alt={title} />
+          <AvatarFallback>{title.substring(0, 2).toUpperCase()}</AvatarFallback>
         </Avatar>
 
         <div className="flex flex-col">
           <div className="flex items-center">
-            <h2 className="text-base font-semibold">{displayName}</h2>
+            <h2 className="text-base font-semibold">{title}</h2>
             {chat.type === "group" && (
               <div className="ml-2 flex items-center text-xs text-muted-foreground">
                 <Users className="h-3 w-3 mr-1" />

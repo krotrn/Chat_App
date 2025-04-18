@@ -24,7 +24,7 @@ interface MessageItemProps {
   onDelete: (messageId: string, forEveryone: boolean) => void;
   onReply: (messageId: string) => void;
   onReact: (messageId: string, emoji: string) => void;
-  onEdit?: (messageId: string, content: string) => void;
+  onEdit?: (messageId: string, content: string, replyToId?:string) => void;
   onRetry?: (messageId: string) => void;
   replyMessage?: MessageType | null;
   showDate?: boolean;
@@ -71,7 +71,8 @@ export default function MessageItem({
 
   const handleEdit = () => {
     if (onEdit && editContent.trim() && editContent !== message.content) {
-      onEdit(message._id, editContent);
+      console.log(message._id, editContent);
+      onEdit(message._id, editContent, message.replyToId);
       setEditMode(false);
     }
   };
