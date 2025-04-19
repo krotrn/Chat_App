@@ -88,7 +88,7 @@ const handleApiError = (error: unknown): never => {
     }
 
     throw new NetworkError(
-      "Connection to chat server failed. Please check your internet connection."
+      "Connection to chat server failed. Please check your internet connection.",
     );
   }
 
@@ -117,21 +117,21 @@ api.interceptors.response.use(
       console.error("Network error:", error.message);
       return Promise.reject(
         new NetworkError(
-          "No response received from server. Please check your connection."
-        )
+          "No response received from server. Please check your connection.",
+        ),
       );
     } else if (error.response) {
       console.error(
         "Error response:",
         error.response.status,
-        error.response.data
+        error.response.data,
       );
       return Promise.reject(error.response.data);
     } else {
       console.error("Error message:", error.message);
       return Promise.reject(error);
     }
-  }
+  },
 );
 
 export const setAuthToken = (token: string) => {
@@ -162,7 +162,7 @@ export const checkConnectionHealth = async (): Promise<boolean> => {
 // Fetch all chats
 export const fetchChats = async (
   limit?: number,
-  page?: number
+  page?: number,
 ): Promise<{
   chats: ChatType[];
   totals: number;
@@ -224,7 +224,7 @@ export const getChatById = async ({
       `/chats/chat/${chatId}`,
       {
         withCredentials: true,
-      }
+      },
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -244,7 +244,7 @@ export const deleteOneOnOneChat = async ({
   try {
     if (forEveryone) {
       const response = await api.delete<ApiResponse<null>>(
-        `/chats/chat/${chatId}`
+        `/chats/chat/${chatId}`,
       );
       return handleApiResponse(response);
     }
@@ -285,7 +285,7 @@ export const getGroupChatDetails = async ({
 }): Promise<ChatType> => {
   try {
     const response = await api.get<ApiResponse<ChatType>>(
-      `/chats/group/${chatId}`
+      `/chats/group/${chatId}`,
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -307,7 +307,7 @@ export const updateGroupChat = async ({
   try {
     const response = await api.patch<ApiResponse<ChatType>>(
       `/chats/group/${chatId}`,
-      { name, avatarUrl }
+      { name, avatarUrl },
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -324,7 +324,7 @@ export const deleteGroupChat = async ({
 }): Promise<null> => {
   try {
     const response = await api.delete<ApiResponse<null>>(
-      `/chats/group/${chatId}`
+      `/chats/group/${chatId}`,
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -344,7 +344,7 @@ export const addNewParticipantInGroupChat = async ({
   try {
     const response = await api.post<ApiResponse<ChatType>>(
       `/chats/group/${chatId}/participant`,
-      { participants }
+      { participants },
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -363,7 +363,7 @@ export const removeParticipantFromGroupChat = async ({
 }): Promise<ChatType> => {
   try {
     const response = await api.delete<ApiResponse<ChatType>>(
-      `/chats/group/${chatId}/participant/${participantId}`
+      `/chats/group/${chatId}/participant/${participantId}`,
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -380,7 +380,7 @@ export const leaveGroupChat = async ({
 }): Promise<ChatType> => {
   try {
     const response = await api.delete<ApiResponse<ChatType>>(
-      `/chats/group/${chatId}/leave`
+      `/chats/group/${chatId}/leave`,
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -400,7 +400,7 @@ export const pinMessage = async ({
   try {
     const response = await api.post<ApiResponse<ChatType>>(
       `/chats/${chatId}/pin/${messageId}`,
-      {}
+      {},
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -419,7 +419,7 @@ export const unpinMessage = async ({
 }): Promise<ChatType> => {
   try {
     const response = await api.delete<ApiResponse<ChatType>>(
-      `/chats/${chatId}/pin/${messageId}`
+      `/chats/${chatId}/pin/${messageId}`,
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -508,7 +508,7 @@ export const sendMessage = async ({
         headers: {
           "Content-Type": "multipart/form-data",
         },
-      }
+      },
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -530,13 +530,13 @@ export const deleteMessage = async ({
     if (forEveryone) {
       const response = await api.delete<ApiResponse<MessageType>>(
         `/messages/${chatId}/${messageId}`,
-        { withCredentials: true }
+        { withCredentials: true },
       );
       return handleApiResponse(response);
     } else {
       const response = await api.delete<ApiResponse<MessageType>>(
         `/messages/${chatId}/${messageId}/me`,
-        { withCredentials: true }
+        { withCredentials: true },
       );
       return handleApiResponse(response);
     }
@@ -558,7 +558,7 @@ export const updateReaction = async ({
   try {
     const response = await api.patch<ApiResponse<MessageType>>(
       `/messages/${chatId}/${messageId}/reaction`,
-      { emoji }
+      { emoji },
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -583,7 +583,7 @@ export const editMessage = async ({
     console.log(chatId, messageId, content, replyToId);
     const response = await api.patch<ApiResponse<MessageType>>(
       `/messages/${chatId}/${messageId}/edit`,
-      { content, replyToId }
+      { content, replyToId },
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -603,7 +603,7 @@ export const markMessagesAsRead = async ({
   try {
     const response = await api.post<ApiResponse<MessageType[]>>(
       `/messages/${chatId}/read`,
-      { messageIds }
+      { messageIds },
     );
     return handleApiResponse(response);
   } catch (error) {

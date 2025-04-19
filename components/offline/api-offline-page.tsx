@@ -14,7 +14,7 @@ export function ApiOfflinePage() {
 
   useEffect(() => {
     setIsRefreshing(false);
-    
+
     // Check connection status immediately
     const checkConnection = async () => {
       const isHealthy = await checkConnectionHealth();
@@ -22,23 +22,25 @@ export function ApiOfflinePage() {
         router.refresh();
       }
     };
-    
+
     checkConnection();
-    
+
     // Setup interval to keep checking
     const interval = setInterval(checkConnection, 5000);
-    
+
     return () => clearInterval(interval);
   }, [router]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
     const isHealthy = await checkConnectionHealth();
-    
+
     if (isHealthy) {
       router.refresh();
     } else {
-      setTimeout(() => { setIsRefreshing(false); }, 2000);
+      setTimeout(() => {
+        setIsRefreshing(false);
+      }, 2000);
     }
   };
 
@@ -53,8 +55,8 @@ export function ApiOfflinePage() {
         </h1>
         <p className="text-muted-foreground">
           We&apos;re having trouble connecting to our chat server. This might be
-          due to server maintenance or a temporary issue. Please try again in a few
-          moments.
+          due to server maintenance or a temporary issue. Please try again in a
+          few moments.
         </p>
         <Button
           onClick={handleRefresh}

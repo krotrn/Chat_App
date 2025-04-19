@@ -1,5 +1,8 @@
 "use client";
-import { checkConnectionHealth, isConnectionHealthy } from "@/services/chat-api";
+import {
+  checkConnectionHealth,
+  isConnectionHealthy,
+} from "@/services/chat-api";
 import { useState, useEffect } from "react";
 
 export function useApiStatus() {
@@ -21,7 +24,7 @@ export function useApiStatus() {
 
   useEffect(() => {
     setIsConnected(isConnectionHealthy());
-    
+
     checkApiConnection();
 
     const interval = setInterval(checkApiConnection, 30000);
@@ -30,4 +33,4 @@ export function useApiStatus() {
   }, []);
 
   return { isConnected, isChecking, checkApiConnection };
-} 
+}

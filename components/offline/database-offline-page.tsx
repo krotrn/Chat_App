@@ -10,13 +10,15 @@ export function DatabaseOfflinePage() {
   const router = useRouter();
   const [isRefreshing, setIsRefreshing] = useState(false);
   useEffect(() => {
-    setIsRefreshing(false)
-  }, [])
+    setIsRefreshing(false);
+  }, []);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
     router.refresh();
-    setTimeout(() => { setIsRefreshing(false); }, 2000);
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 2000);
   };
 
   return (

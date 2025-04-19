@@ -71,8 +71,8 @@ export default function MessageItem({
 
   const handleEdit = () => {
     if (onEdit && editContent.trim() && editContent !== message.content) {
-      console.log(editContent)
-      console.log(message._id, editContent, message.replyToId)
+      console.log(editContent);
+      console.log(message._id, editContent, message.replyToId);
       onEdit(message._id, editContent, message.replyToId);
       setEditMode(false);
     }

@@ -57,8 +57,7 @@ export default function ChatSidebar({
   // select chat
   const handleChatSelect = useCallback(
     (chatId: string) => {
-      if(chatId !== selectedChatId)
-        router.push(`/chats?chat=${chatId}`);
+      if (chatId !== selectedChatId) router.push(`/chats?chat=${chatId}`);
     },
     [router, selectedChatId],
   );

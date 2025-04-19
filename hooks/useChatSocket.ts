@@ -92,16 +92,22 @@ export default function useChatSocket(
         (message: MessageType) => {
           console.log("Message received via socket:", message);
           if (message.chatId === initialChatId || message.chatId === null) {
-            console.log(`Socket message for chat: ${initialChatId}, message ID: ${message._id}`);
+            console.log(
+              `Socket message for chat: ${initialChatId}, message ID: ${message._id}`,
+            );
             setMessages((prev) => {
               const exists = prev.some((msg) => msg._id === message._id);
               if (exists) {
-                console.log(`Updating existing message with ID: ${message._id}`);
+                console.log(
+                  `Updating existing message with ID: ${message._id}`,
+                );
                 return prev.map((msg) =>
-                  msg._id === message._id ? {...message, chatId: message.chatId || initialChatId} : msg,
+                  msg._id === message._id
+                    ? { ...message, chatId: message.chatId || initialChatId }
+                    : msg,
                 );
               }
-              
+
               const tempIndex = prev.findIndex(
                 (msg) =>
                   msg._id.startsWith("temp-") &&
@@ -111,20 +117,27 @@ export default function useChatSocket(
               );
 
               if (tempIndex >= 0) {
-                console.log(`Found temp message at index ${tempIndex} to replace with ID: ${message._id}`);
+                console.log(
+                  `Found temp message at index ${tempIndex} to replace with ID: ${message._id}`,
+                );
                 const updatedMessages = [...prev];
                 updatedMessages[tempIndex] = {
                   ...message,
-                  chatId: message.chatId || initialChatId
+                  chatId: message.chatId || initialChatId,
                 };
                 return updatedMessages;
               }
 
               console.log(`Adding new message from socket ID: ${message._id}`);
-              return [...prev, {...message, chatId: message.chatId || initialChatId}];
+              return [
+                ...prev,
+                { ...message, chatId: message.chatId || initialChatId },
+              ];
             });
           } else {
-            console.log(`Ignoring socket message for different chat: ${message.chatId}, expecting: ${initialChatId}`);
+            console.log(
+              `Ignoring socket message for different chat: ${message.chatId}, expecting: ${initialChatId}`,
+            );
           }
         },
       );

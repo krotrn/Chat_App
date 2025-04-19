@@ -11,11 +11,7 @@ export function ReplyPreview({
   if (!replyMessage) return null;
 
   return (
-    <div
-      className={cn(
-        "rounded-lg px-3 py-1.5 text-xs border-l-2 mb-1",
-      )}
-    >
+    <div className={cn("rounded-lg px-3 py-1.5 text-xs border-l-2 mb-1")}>
       <p className="font-medium text-xs">
         {!replySender
           ? "Replying to message"

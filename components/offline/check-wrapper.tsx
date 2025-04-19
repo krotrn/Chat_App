@@ -13,8 +13,10 @@ interface CheckWrapperProps {
 
 export default function CheckWrapper({ children }: CheckWrapperProps) {
   const isOnline = useOnlineStatus();
-  const { isConnected: isDatabaseConnected, isChecking: isDatabaseChecking } = useDatabaseStatus();
-  const { isConnected: isApiConnected, isChecking: isApiChecking } = useApiStatus();
+  const { isConnected: isDatabaseConnected, isChecking: isDatabaseChecking } =
+    useDatabaseStatus();
+  const { isConnected: isApiConnected, isChecking: isApiChecking } =
+    useApiStatus();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -28,11 +30,11 @@ export default function CheckWrapper({ children }: CheckWrapperProps) {
   if (!isOnline) {
     return <OfflinePage />;
   }
-  
+
   if (!isApiConnected) {
     return <ApiOfflinePage />;
   }
-  
+
   if (!isDatabaseConnected) {
     return <DatabaseOfflinePage />;
   }

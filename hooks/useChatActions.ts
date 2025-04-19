@@ -209,21 +209,25 @@ export default function useChatActions({
 
         const finalResponse = {
           ...response,
-          chatId: response.chatId || chatId
+          chatId: response.chatId || chatId,
         };
 
         setMessages((prev) => {
           // Find the temporary message by ID
-          const messageIndex = prev.findIndex(msg => msg._id === tempId);
-          
+          const messageIndex = prev.findIndex((msg) => msg._id === tempId);
+
           if (messageIndex >= 0) {
-            console.log(`Replacing temp message at index ${messageIndex} with server message: ${finalResponse._id}`);
+            console.log(
+              `Replacing temp message at index ${messageIndex} with server message: ${finalResponse._id}`,
+            );
             const updatedMessages = [...prev];
             updatedMessages[messageIndex] = finalResponse;
             return updatedMessages;
           }
-          
-          console.log(`Could not find temp message ${tempId}, adding server message: ${finalResponse._id}`);
+
+          console.log(
+            `Could not find temp message ${tempId}, adding server message: ${finalResponse._id}`,
+          );
           return [...prev, finalResponse];
         });
       } catch (error) {
