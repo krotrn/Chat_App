@@ -1,36 +1,59 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Database } from "lucide-react";
+import { RefreshCw, ServerOff } from "lucide-react";
 import { config } from "@/config";
 import Link from "next/link";
+import { checkConnectionHealth } from "@/services/chat-api";
 
-export function DatabaseOfflinePage() {
+export function ApiOfflinePage() {
   const router = useRouter();
   const [isRefreshing, setIsRefreshing] = useState(false);
-  useEffect(() => {
-    setIsRefreshing(false)
-  }, [])
 
-  const handleRefresh = () => {
+  useEffect(() => {
+    setIsRefreshing(false);
+    
+    // Check connection status immediately
+    const checkConnection = async () => {
+      const isHealthy = await checkConnectionHealth();
+      if (isHealthy) {
+        router.refresh();
+      }
+    };
+    
+    checkConnection();
+    
+    // Setup interval to keep checking
+    const interval = setInterval(checkConnection, 5000);
+    
+    return () => clearInterval(interval);
+  }, [router]);
+
+  const handleRefresh = async () => {
     setIsRefreshing(true);
-    router.refresh();
-    setTimeout(() => { setIsRefreshing(false); }, 2000);
+    const isHealthy = await checkConnectionHealth();
+    
+    if (isHealthy) {
+      router.refresh();
+    } else {
+      setTimeout(() => { setIsRefreshing(false); }, 2000);
+    }
   };
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-4 text-center">
       <div className="mx-auto flex max-w-[500px] flex-col items-center justify-center space-y-4">
         <div className="rounded-full bg-muted p-4">
-          <Database className="h-12 w-12 text-muted-foreground" />
+          <ServerOff className="h-12 w-12 text-muted-foreground" />
         </div>
         <h1 className="text-2xl font-bold tracking-tight">
-          Database Connection Lost
+          Chat Server Connection Lost
         </h1>
         <p className="text-muted-foreground">
-          We&apos;re having trouble connecting to our database. This might be
-          due to maintenance or a temporary issue. Please try again in a few
+          We&apos;re having trouble connecting to our chat server. This might be
+          due to server maintenance or a temporary issue. Please try again in a few
           moments.
         </p>
         <Button

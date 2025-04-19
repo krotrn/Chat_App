@@ -1,3 +1,4 @@
+"use server"
 import { db } from "@/prisma";
 
 export async function checkDB() {

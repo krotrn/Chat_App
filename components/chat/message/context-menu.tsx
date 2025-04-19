@@ -116,11 +116,18 @@ export function MessageContextMenu({
           <>
             <ContextMenuSeparator />
             <ContextMenuItem
+              onClick={() => onDelete(message._id, false)}
+              className="text-destructive focus:text-destructive"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete for me
+            </ContextMenuItem>
+            <ContextMenuItem
               onClick={() => onDelete(message._id, true)}
               className="text-destructive focus:text-destructive"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              Delete
+              Delete for Everyone
             </ContextMenuItem>
           </>
         )}

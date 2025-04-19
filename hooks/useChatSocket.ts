@@ -91,29 +91,40 @@ export default function useChatSocket(
         ChatEventEnum.MESSAGE_RECEIVED_EVENT,
         (message: MessageType) => {
           console.log("Message received via socket:", message);
-          if (message.chatId === initialChatId) {
+          if (message.chatId === initialChatId || message.chatId === null) {
+            console.log(`Socket message for chat: ${initialChatId}, message ID: ${message._id}`);
             setMessages((prev) => {
               const exists = prev.some((msg) => msg._id === message._id);
               if (exists) {
+                console.log(`Updating existing message with ID: ${message._id}`);
                 return prev.map((msg) =>
-                  msg._id === message._id ? message : msg,
+                  msg._id === message._id ? {...message, chatId: message.chatId || initialChatId} : msg,
                 );
               }
+              
               const tempIndex = prev.findIndex(
                 (msg) =>
                   msg._id.startsWith("temp-") &&
                   msg.content === message.content &&
-                  msg.chatId === message.chatId,
+                  msg.sender.userId === currentUserId &&
+                  (msg.chatId === message.chatId || message.chatId === null),
               );
 
-              if (tempIndex > -1) {
+              if (tempIndex >= 0) {
+                console.log(`Found temp message at index ${tempIndex} to replace with ID: ${message._id}`);
                 const updatedMessages = [...prev];
-                updatedMessages[tempIndex] = message;
+                updatedMessages[tempIndex] = {
+                  ...message,
+                  chatId: message.chatId || initialChatId
+                };
                 return updatedMessages;
               }
 
-              return [...prev, message];
+              console.log(`Adding new message from socket ID: ${message._id}`);
+              return [...prev, {...message, chatId: message.chatId || initialChatId}];
             });
+          } else {
+            console.log(`Ignoring socket message for different chat: ${message.chatId}, expecting: ${initialChatId}`);
           }
         },
       );
@@ -231,7 +242,6 @@ export default function useChatSocket(
           chatId: string;
           editedAt?: Date | string;
         }) => {
-          console.log("Message edit event received:", data);
           if (data.chatId === initialChatId) {
             setMessages((prev) =>
               prev.map((msg) => {

@@ -76,18 +76,31 @@ export default function ChatMain({
     socketMessages,
     (state: MessageType[], newMessage: MessageType) => {
       const existingIndex = state.findIndex(
-        (message) =>
-          message._id === newMessage._id ||
-          (newMessage._id.startsWith("temp-") &&
-            message._id === newMessage._id),
+        (message) => message._id === newMessage._id
       );
-      if (existingIndex > 0) {
+      if (existingIndex >= 0) {
         console.log(`Updating existing message in state: ${newMessage._id}`);
         const updatedState = [...state];
         updatedState[existingIndex] = newMessage;
         return updatedState;
       }
-      console.log(`Adding optimistic messsage to state: ${newMessage._id}`);
+      if (!newMessage._id.startsWith("temp-")) {
+        const tempIndex = state.findIndex(
+          (msg) => 
+            msg._id.startsWith("temp-") &&
+            msg.content === newMessage.content &&
+            msg.chatId === newMessage.chatId
+        );
+        
+        if (tempIndex >= 0) {
+          console.log(`Replacing temp message with server message: ${newMessage._id}`);
+          const updatedState = [...state];
+          updatedState[tempIndex] = newMessage;
+          return updatedState;
+        }
+      }
+      
+      console.log(`Adding optimistic message to state: ${newMessage._id}`);
       return [...state, newMessage];
     },
   );

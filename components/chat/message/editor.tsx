@@ -1,5 +1,8 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+
 interface MessageEditorProps {
   editContent: string;
   setEditContent: (content: string) => void;
@@ -15,24 +18,26 @@ export function MessageEditor({
 }: MessageEditorProps) {
   return (
     <div className="flex flex-col gap-2">
-      <textarea
+      <Textarea
         value={editContent}
         onChange={(e) => setEditContent(e.target.value)}
-        className="w-full min-h-[60px] text-sm p-2 rounded bg-background border"
+        className="w-full min-h-[60px] text-sm p-2 rounded border"
       />
       <div className="flex justify-end gap-2">
-        <button
-          className="text-xs px-2 py-1 rounded bg-muted hover:bg-muted/80"
+        <Button
+          variant="ghost"
+          className="text-xs px-2 py-1 rounded"
           onClick={onCancel}
         >
           Cancel
-        </button>
-        <button
-          className="text-xs px-2 py-1 rounded bg-primary text-primary-foreground hover:bg-primary/80"
+        </Button>
+        <Button
+          variant="secondary"
+          className="text-xs px-2 py-1 rounded "
           onClick={onSave}
         >
           Save
-        </button>
+        </Button>
       </div>
     </div>
   );

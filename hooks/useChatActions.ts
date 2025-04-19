@@ -31,10 +31,6 @@ interface ChatActionsProps {
   messagesMap?: Map<string, MessageType>;
 }
 
-/**
- * Custom hook to manage chat actions such as sending, deleting, reacting to,
- * editing, and marking messages as read with optimistic updates.
- */
 export default function useChatActions({
   chatId,
   replyToMessage,
@@ -45,7 +41,6 @@ export default function useChatActions({
   token,
   messagesMap = new Map(),
 }: ChatActionsProps) {
-  // for storing
   const pendingReadMessages = useRef<Set<string>>(new Set());
   const pendingSendMessages = useRef<
     Map<string, { content: string; replyToId?: string; attachments?: File[] }>
@@ -206,16 +201,31 @@ export default function useChatActions({
           attachments,
           replyToId,
         });
-        console.log(response);
+        console.log("Message sent response:", response);
         if (!response) throw new Error("Empty server response");
 
         pendingSendMessages.current.delete(tempId);
-
         cleanupAttachments(tempId);
 
-        setMessages((prev) =>
-          prev.map((message) => (message._id === tempId ? response : message)),
-        );
+        const finalResponse = {
+          ...response,
+          chatId: response.chatId || chatId
+        };
+
+        setMessages((prev) => {
+          // Find the temporary message by ID
+          const messageIndex = prev.findIndex(msg => msg._id === tempId);
+          
+          if (messageIndex >= 0) {
+            console.log(`Replacing temp message at index ${messageIndex} with server message: ${finalResponse._id}`);
+            const updatedMessages = [...prev];
+            updatedMessages[messageIndex] = finalResponse;
+            return updatedMessages;
+          }
+          
+          console.log(`Could not find temp message ${tempId}, adding server message: ${finalResponse._id}`);
+          return [...prev, finalResponse];
+        });
       } catch (error) {
         setMessages((prev) =>
           prev.map((message) =>
