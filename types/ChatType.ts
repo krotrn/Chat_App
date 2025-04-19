@@ -17,6 +17,13 @@ export interface MessageEdit {
   editedBy: string;
 }
 
+export enum ConnectionState {
+  DISCONNECTED = "disconnected",
+  CONNECTING = "connecting",
+  CONNECTED = "connected",
+  RECONNECTING = "reconnecting",
+}
+
 export interface AttachmentResponse {
   name: string;
   url: string;
@@ -39,6 +46,7 @@ export enum StatusEnum {
   delivered = "delivered",
   read = "read",
   failed = "failed",
+  deleting = "deleting",
 }
 
 interface MessageUser {

@@ -84,7 +84,7 @@ const handleApiError = (error: unknown): never => {
           .catch((err) => {
             console.log(err);
           });
-      }, 10000); // Check every 10 seconds
+      }, 10000);
     }
 
     throw new NetworkError(

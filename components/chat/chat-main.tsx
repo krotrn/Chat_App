@@ -1,5 +1,11 @@
 "use client";
-import { useState, useCallback, useEffect, useOptimistic } from "react";
+import {
+  useState,
+  useCallback,
+  useEffect,
+  useOptimistic,
+  useMemo,
+} from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -44,6 +50,11 @@ export default function ChatMain({
   const [replyToMessage, setReplyToMessage] = useState<MessageType | undefined>(
     undefined,
   );
+  const [connectionNotified, setConnectionNotified] = useState(false);
+
+  useEffect(() => {
+    setAuthToken(token);
+  }, [token]);
 
   const {
     messages: socketMessages,
@@ -64,17 +75,28 @@ export default function ChatMain({
   const [optimisticMessages, addOptimisticMessage] = useOptimistic(
     socketMessages,
     (state: MessageType[], newMessage: MessageType) => {
-      if (!state.some((msg) => msg._id === newMessage._id)) {
-        console.log(`Adding optimistic message to state: ${newMessage._id}`);
-        return [...state, newMessage];
-      }
-
-      console.log(`Updating existing message in state: ${newMessage._id}`);
-      return state.map((msg) =>
-        msg._id === newMessage._id ? newMessage : msg,
+      const existingIndex = state.findIndex(
+        (message) =>
+          message._id === newMessage._id ||
+          (newMessage._id.startsWith("temp-") &&
+            message._id === newMessage._id),
       );
+      if (existingIndex > 0) {
+        console.log(`Updating existing message in state: ${newMessage._id}`);
+        const updatedState = [...state];
+        updatedState[existingIndex] = newMessage;
+        return updatedState;
+      }
+      console.log(`Adding optimistic messsage to state: ${newMessage._id}`);
+      return [...state, newMessage];
     },
   );
+
+  const messagesMap = useMemo(() => {
+    const map = new Map<string, MessageType>();
+    optimisticMessages.forEach((msg) => map.set(msg._id, msg));
+    return map;
+  }, [optimisticMessages]);
 
   useEffect(() => {
     console.log(
@@ -84,18 +106,24 @@ export default function ChatMain({
   }, [initialChat]);
 
   useEffect(() => {
-    if (!isConnected && isConnectionHealthy() === false) {
+    if (
+      !isConnected &&
+      isConnectionHealthy() === false &&
+      !connectionNotified
+    ) {
       toast.error("Lost connection to chat server. Reconnecting...", {
         id: "socket-connection",
         duration: 3000,
       });
+      setConnectionNotified(true);
     } else if (isConnected) {
       toast.success("Connected to chat server", {
         id: "socket-connection",
         duration: 2000,
       });
+      setConnectionNotified(false);
     }
-  }, [isConnected]);
+  }, [isConnected, connectionNotified]);
 
   const {
     handleSendMessage,
@@ -103,6 +131,7 @@ export default function ChatMain({
     handleReactToMessage,
     handleEditMessage,
     handleMarkAsRead,
+    retryFailedMessage,
   } = useChatActions({
     chatId: chat._id,
     replyToMessage,
@@ -111,21 +140,30 @@ export default function ChatMain({
     addOptimisticMessage,
     currentUserId: currentUser.id,
     token,
+    messagesMap,
   });
 
   useEffect(() => {
-    if (chat._id) {
-      setAuthToken(token);
-      handleMarkAsRead();
+    if (
+      chat._id &&
+      socketMessages.some(
+        (message) =>
+          message.sender.userId !== currentUser.id &&
+          !message.readBy.some((read) => read.userId === currentUser.id),
+      )
+    ) {
+      handleMarkAsRead([]);
     }
-  }, [chat._id, handleMarkAsRead, token]);
+  }, [chat._id, handleMarkAsRead, socketMessages, currentUser.id]);
 
   const toggleDetails = useCallback(() => setShowDetails((prev) => !prev), []);
   const handleBack = useCallback(() => router.push("/chats"), [router]);
 
   const handleReplyToMessage = useCallback(
     (messageId: string) => {
-      const message = optimisticMessages.find((msg) => msg._id === messageId);
+      const message = optimisticMessages.find(
+        (prevMessage) => prevMessage._id === messageId,
+      );
       if (message) setReplyToMessage(message);
     },
     [optimisticMessages],
@@ -136,15 +174,16 @@ export default function ChatMain({
   const handleDeleteChat = useCallback(
     async (chatId: string, forEveryone: boolean) => {
       try {
-        setAuthToken(token);
+        toast.loading("Deleting chat...", { id: "delete-chat" });
         await deleteOneOnOneChat({ chatId, forEveryone });
+        toast.success("Chat deleted", { id: "delete-chat" });
         router.push("/chats");
       } catch (error) {
         console.error(error);
-        toast.error("Failed to delete chat");
+        toast.error("Failed to delete chat", { id: "delete-chat" });
       }
     },
-    [router, token],
+    [router],
   );
 
   return (
@@ -169,14 +208,14 @@ export default function ChatMain({
           <WifiOff className="h-4 w-4" />
           <p>
             Connection to chat server lost. Messages may not be sent or
-            received. wait a minute.
+            received. Please wait a moment.
           </p>
         </div>
       )}
 
       <div className="flex flex-1 overflow-hidden">
         <div className="flex flex-1 flex-col h-full">
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 pl-4 overflow-hidden">
             <MessageList
               messages={optimisticMessages}
               participants={chat.participants}
@@ -185,6 +224,7 @@ export default function ChatMain({
               onReplyMessage={handleReplyToMessage}
               onReactToMessage={handleReactToMessage}
               onEditMessage={handleEditMessage}
+              onRetryMessage={retryFailedMessage}
             />
           </div>
 

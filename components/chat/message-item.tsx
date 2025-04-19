@@ -25,7 +25,7 @@ interface MessageItemProps {
   onReply: (messageId: string) => void;
   onReact: (messageId: string, emoji: string) => void;
   onEdit?: (messageId: string, content: string, replyToId?: string) => void;
-  onRetry?: (messageId: string) => void;
+  onRetry?: (messageId: string) => Promise<void>;
   replyMessage?: MessageType | null;
   showDate?: boolean;
   date?: string;

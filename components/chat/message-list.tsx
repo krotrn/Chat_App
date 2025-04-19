@@ -20,6 +20,7 @@ interface MessageListProps {
     content: string,
     replyToId?: string,
   ) => void;
+  onRetryMessage: (messageId: string) => Promise<void>;
 }
 
 export default function MessageList({
@@ -30,6 +31,7 @@ export default function MessageList({
   onReplyMessage,
   onReactToMessage,
   onEditMessage,
+  onRetryMessage,
 }: MessageListProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -73,6 +75,7 @@ export default function MessageList({
                 onReply={onReplyMessage}
                 onReact={onReactToMessage}
                 onEdit={onEditMessage}
+                onRetry={onRetryMessage}
                 replyMessage={replyMessage}
                 currentUserId={currentUser?.id}
               />

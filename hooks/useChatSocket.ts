@@ -1,8 +1,8 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { initSocket, joinChat } from "@/lib/socket";
 import { ChatEventEnum } from "@/lib/socket-event";
-import { MessageType } from "@/types/ChatType";
+import { ConnectionState, MessageType } from "@/types/ChatType";
 import { toast } from "sonner";
 
 export default function useChatSocket(
@@ -14,13 +14,40 @@ export default function useChatSocket(
   const [messages, setMessages] = useState<MessageType[]>(initialMessages);
   const [pinnedMessageIds, setPinnedMessageIds] = useState<string[]>([]);
   const socketRef = useRef<SocketIOClient.Socket | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
+  const [connectionState, setConnectionState] = useState<ConnectionState>(
+    ConnectionState.DISCONNECTED,
+  );
+  const reconnectAttempts = useRef(0);
+  const maxReconnectAttempts = 5;
+  const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isConnected = connectionState === ConnectionState.CONNECTED;
+  const updateMultipleMessages = useCallback(
+    (messageIds: string[], updateFn: (msg: MessageType) => MessageType) => {
+      setMessages((prev) => {
+        const needsUpdate = prev.some((msg) => messageIds.includes(msg._id));
+        if (!needsUpdate) return prev;
+
+        return prev.map((msg) =>
+          messageIds.includes(msg._id) ? updateFn(msg) : msg,
+        );
+      });
+    },
+    [],
+  );
+
+  const cleanupTimer = useCallback(() => {
+    if (reconnectTimerRef.current) {
+      clearInterval(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
+  }, []);
 
   useEffect(() => {
     if (!currentUserId || !initialChatId || !token) return;
 
     try {
       console.log("Initializing socket connection for chat:", initialChatId);
+      setConnectionState(ConnectionState.CONNECTING);
       socketRef.current = initSocket(token);
       joinChat(initialChatId);
 
@@ -28,37 +55,36 @@ export default function useChatSocket(
 
       socket.on("connect", () => {
         console.log("Socket connected!");
-        setIsConnected(true);
+        setConnectionState(ConnectionState.CONNECTED);
+        reconnectAttempts.current = 0;
+        cleanupTimer();
+        toast.success("Connected to chat server", {
+          duration: 3000,
+        });
       });
 
       socket.on("disconnect", () => {
         console.log("Socket disconnected!");
-        setIsConnected(false);
-        toast.error(
-          "Disconnected from chat server. Attempting to reconnect...",
-          {
-            duration: 5000,
-          },
-        );
-        let reconnectAttempts = 0;
-        const maxReconnectAttempts = 5;
-        const reconnectTimer = setInterval(
+        setConnectionState(ConnectionState.RECONNECTING);
+        cleanupTimer();
+        reconnectTimerRef.current = setInterval(
           () => {
-            if (reconnectAttempts >= maxReconnectAttempts) {
-              clearInterval(reconnectTimer);
+            if (reconnectAttempts.current >= maxReconnectAttempts) {
+              cleanupTimer();
+              setConnectionState(ConnectionState.DISCONNECTED);
               toast.error("Failed to reconnect. Please refresh the page.");
               return;
             }
-            reconnectAttempts++;
+            reconnectAttempts.current++;
             console.log(
-              `Attempting to reconnect (${reconnectAttempts}/${maxReconnectAttempts})...`,
+              `Attempting to reconnect (${reconnectAttempts.current}/${maxReconnectAttempts})...`,
             );
             socket.connect();
           },
-          3000 * Math.min(reconnectAttempts, 3),
+          3000 * Math.min(reconnectAttempts.current, 3),
         );
 
-        return () => clearInterval(reconnectTimer);
+        return () => clearInterval(reconnectAttempts.current);
       });
 
       socket.on(
@@ -73,6 +99,19 @@ export default function useChatSocket(
                   msg._id === message._id ? message : msg,
                 );
               }
+              const tempIndex = prev.findIndex(
+                (msg) =>
+                  msg._id.startsWith("temp-") &&
+                  msg.content === message.content &&
+                  msg.chatId === message.chatId,
+              );
+
+              if (tempIndex > -1) {
+                const updatedMessages = [...prev];
+                updatedMessages[tempIndex] = message;
+                return updatedMessages;
+              }
+
               return [...prev, message];
             });
           }
@@ -85,7 +124,9 @@ export default function useChatSocket(
           console.log("Message reaction received:", updated);
           if (updated.chatId === initialChatId) {
             setMessages((prev) =>
-              prev.map((msg) => (msg._id === updated._id ? updated : msg)),
+              prev.map((message) =>
+                message._id === updated._id ? updated : message,
+              ),
             );
           }
         },
@@ -222,45 +263,38 @@ export default function useChatSocket(
           messageIds: string[];
         }) => {
           console.log("Message read event received:", data);
-          if (data.chatId === initialChatId) {
-            setMessages((prev) =>
-              prev.map((msg) => {
-                if (data.messageIds.includes(msg._id)) {
-                  const readBy = msg.readBy || [];
-                  const existingReadIndex = readBy.findIndex(
-                    (read) => read.userId === data.readBy.userId,
-                  );
-
-                  if (existingReadIndex >= 0) {
-                    return msg;
-                  } else {
-                    const readAt =
-                      data.readBy.readAt instanceof Date
-                        ? data.readBy.readAt
-                        : new Date(data.readBy.readAt);
-
-                    return {
-                      ...msg,
-                      readBy: [
-                        ...readBy,
-                        {
-                          userId: data.readBy.userId,
-                          readAt,
-                        },
-                      ],
-                    };
-                  }
-                }
-                return msg;
-              }),
-            );
+          if (data.chatId === initialChatId && data.messageIds.length > 0) {
+            const readAt =
+              data.readBy.readAt instanceof Date
+                ? data.readBy.readAt
+                : new Date(data.readBy.readAt);
+            updateMultipleMessages(data.messageIds, (message) => {
+              const readBy = message.readBy;
+              const existingReadIndex = readBy.findIndex(
+                (read) => read.userId === data.readBy.userId,
+              );
+              if (existingReadIndex >= 0) {
+                return message;
+              } else {
+                return {
+                  ...message,
+                  readBy: [
+                    ...readBy,
+                    {
+                      userId: data.readBy.userId,
+                      readAt,
+                    },
+                  ],
+                };
+              }
+            });
           }
         },
       );
 
       socket.on(ChatEventEnum.SOCKET_ERROR_EVENT, (error: Error) => {
         console.error("Socket connection error:", error);
-        setIsConnected(false);
+        setConnectionState(ConnectionState.DISCONNECTED);
         toast.error("Chat connection failed. Please refresh the page.", {
           duration: 5000,
         });
@@ -268,6 +302,7 @@ export default function useChatSocket(
 
       return () => {
         console.log("Cleaning up socket connection");
+        cleanupTimer();
         socket.off(ChatEventEnum.MESSAGE_RECEIVED_EVENT);
         socket.off(ChatEventEnum.MESSAGE_REACTION_EVENT);
         socket.off(ChatEventEnum.MESSAGE_PIN_EVENT);
@@ -279,15 +314,32 @@ export default function useChatSocket(
         socket.off(ChatEventEnum.SOCKET_ERROR_EVENT);
         socket.off("connect");
         socket.off("disconnect");
+        socket.disconnect();
       };
     } catch (error) {
       console.error("Socket initialization error:", error);
-      setIsConnected(false);
+      setConnectionState(ConnectionState.DISCONNECTED);
       toast.error("Failed to connect to chat service", {
         duration: 5000,
       });
     }
-  }, [initialChatId, currentUserId, token]);
-
-  return { messages, setMessages, pinnedMessageIds, isConnected };
+  }, [
+    initialChatId,
+    currentUserId,
+    token,
+    cleanupTimer,
+    updateMultipleMessages,
+  ]);
+  useEffect(() => {
+    if (initialMessages.length > 0 && messages.length === 0) {
+      setMessages(initialMessages);
+    }
+  }, [initialMessages, messages.length]);
+  return {
+    messages,
+    setMessages,
+    pinnedMessageIds,
+    isConnected,
+    connectionState,
+  };
 }

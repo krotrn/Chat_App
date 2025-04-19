@@ -8,7 +8,7 @@ export default function RootLayout({
   return (
     <div className="flex flex-col h-screen w-full space-y-2">
       <NavMenu />
-      <main className="flex-1 overflow-hidden">{children}</main>
+      <main className="flex-1 overflow-x-hidden">{children}</main>
     </div>
   );
 }
