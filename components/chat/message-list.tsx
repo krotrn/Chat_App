@@ -2,38 +2,22 @@
 
 import { groupMessagesByDate } from "@/lib/utils/groupMessageByDate";
 import { MessageType, ParticipantsType } from "@/types/ChatType";
-import { User } from "next-auth";
 import { Fragment, useEffect, useMemo, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import DateDivider from "@/components/chat/date-divider";
 import MessageItem from "@/components/chat/message-item";
-
-interface MessageListProps {
-  participants: ParticipantsType[];
-  messages: MessageType[];
-  currentUser: User;
-  onDeleteMessage: (messageId: string, forEveryone: boolean) => void;
-  onReplyMessage: (messageId: string) => void;
-  onReactToMessage: (messageId: string, emoji: string) => void;
-  onEditMessage?: (
-    messageId: string,
-    content: string,
-    replyToId?: string,
-  ) => void;
-  onRetryMessage: (messageId: string) => Promise<void>;
-}
+import { useChatActions } from "@/context/ChatActions";
+import { useChat } from "@/context/ChatProvider";
 
 export default function MessageList({
   participants,
-  messages,
-  currentUser,
-  onDeleteMessage,
-  onReplyMessage,
-  onReactToMessage,
-  onEditMessage,
-  onRetryMessage,
-}: MessageListProps) {
+}: {
+  participants: ParticipantsType[];
+}) {
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const { optimisticMessages: messages } = useChatActions();
+  const { currentUser } = useChat();
 
   const messageMap = useMemo(() => {
     const map = new Map<string, MessageType>();
@@ -71,13 +55,7 @@ export default function MessageList({
                 message={message}
                 isOwn={message.sender.userId === currentUser?.id}
                 showAvatar={showAvatar}
-                onDelete={onDeleteMessage}
-                onReply={onReplyMessage}
-                onReact={onReactToMessage}
-                onEdit={onEditMessage}
-                onRetry={onRetryMessage}
                 replyMessage={replyMessage}
-                currentUserId={currentUser?.id}
               />
             );
           })}

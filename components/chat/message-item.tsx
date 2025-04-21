@@ -15,17 +15,13 @@ import { MessageTimestampStatus } from "@/components/chat/message-timestamp-stat
 import useTouchActions from "@/hooks/useTouchActions";
 import { motion } from "framer-motion";
 import { AttachmentPreviews } from "./attachment-previews";
+import { useChatActions } from "@/context/ChatActions";
 
 interface MessageItemProps {
   participants: ParticipantsType[];
   message: MessageType;
   isOwn: boolean;
   showAvatar: boolean;
-  onDelete: (messageId: string, forEveryone: boolean) => void;
-  onReply: (messageId: string) => void;
-  onReact: (messageId: string, emoji: string) => void;
-  onEdit?: (messageId: string, content: string, replyToId?: string) => void;
-  onRetry?: (messageId: string) => Promise<void>;
   replyMessage?: MessageType | null;
   showDate?: boolean;
   date?: string;
@@ -37,21 +33,16 @@ export default function MessageItem({
   message,
   isOwn,
   showAvatar,
-  onDelete,
-  onReply,
-  onReact,
-  onEdit,
-  onRetry,
   replyMessage,
   showDate,
   date,
-  currentUserId,
 }: MessageItemProps) {
   const [editMode, setEditMode] = useState(false);
   const [editContent, setEditContent] = useState(message.content);
   const sender = participants.find(
     (user) => user.userId === message.sender.userId,
   );
+  const { handleEditMessage: onEdit } = useChatActions();
   const replySender = replyMessage
     ? participants.find((user) => user.userId === replyMessage.sender.userId)
     : null;
@@ -89,11 +80,8 @@ export default function MessageItem({
       <MessageContextMenu
         message={message}
         isOwn={isOwn}
-        onDelete={onDelete}
-        onReply={onReply}
         onEdit={() => setEditMode(true)}
         onCopy={handleCopyToClipboard}
-        onReact={onReact}
       >
         <motion.div
           className={cn("mb-4 flex", isOwn ? "justify-end" : "justify-start")}
@@ -162,12 +150,7 @@ export default function MessageItem({
                       <MessageContent message={message} isOwn={isOwn} />
                     )}
 
-                    <MessageActions
-                      message={message}
-                      isOwn={isOwn}
-                      onReact={onReact}
-                      onReply={onReply}
-                    />
+                    <MessageActions message={message} isOwn={isOwn} />
                   </div>
                 )}
 
@@ -184,15 +167,10 @@ export default function MessageItem({
                   <ReactionsDisplay
                     reactions={message.reactions}
                     isOwn={isOwn}
-                    currentUserId={currentUserId}
                   />
                 )}
               </div>
-              <MessageTimestampStatus
-                message={message}
-                isOwn={isOwn}
-                onRetry={onRetry}
-              />
+              <MessageTimestampStatus message={message} isOwn={isOwn} />
             </div>
           </div>
         </motion.div>

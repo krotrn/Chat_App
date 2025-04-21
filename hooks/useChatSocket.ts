@@ -83,8 +83,6 @@ export default function useChatSocket(
           },
           3000 * Math.min(reconnectAttempts.current, 3),
         );
-
-        return () => clearInterval(reconnectAttempts.current);
       });
 
       socket.on(
@@ -108,13 +106,25 @@ export default function useChatSocket(
                 );
               }
 
-              const tempIndex = prev.findIndex(
+              let tempIndex = prev.findIndex(
                 (msg) =>
                   msg._id.startsWith("temp-") &&
                   msg.content === message.content &&
                   msg.sender.userId === currentUserId &&
                   (msg.chatId === message.chatId || message.chatId === null),
               );
+
+              if (tempIndex < 0) {
+                const messageTime = new Date(message.createdAt).getTime();
+                tempIndex = prev.findIndex(
+                  (msg) =>
+                    msg._id.startsWith("temp-") &&
+                    msg.sender.userId === currentUserId &&
+                    Math.abs(new Date(msg.createdAt).getTime() - messageTime) <
+                      10000 && // within 10 seconds
+                    (msg.chatId === message.chatId || message.chatId === null),
+                );
+              }
 
               if (tempIndex >= 0) {
                 console.log(
@@ -354,10 +364,14 @@ export default function useChatSocket(
     updateMultipleMessages,
   ]);
   useEffect(() => {
-    if (initialMessages.length > 0 && messages.length === 0) {
-      setMessages(initialMessages);
+    if (initialMessages.length > 0) {
+      const filteredMessages = initialMessages.filter(
+        (message) =>
+          !message.deletedFor.some((ele) => ele.userId === currentUserId),
+      );
+      setMessages(filteredMessages);
     }
-  }, [initialMessages, messages.length]);
+  }, [initialMessages, currentUserId]);
   return {
     messages,
     setMessages,

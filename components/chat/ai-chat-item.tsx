@@ -6,18 +6,19 @@ import { Bot } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { AIModel } from "@/types/ChatType";
 import { cn } from "@/lib/utils";
+import { useChat } from "@/context/ChatProvider";
 
 interface AIChatItemProps {
   model: AIModel;
-  isSelected: boolean;
-  onClick: () => void;
 }
 
-export default function AIChatItem({
-  model,
-  isSelected,
-  onClick,
-}: AIChatItemProps) {
+export default function AIChatItem({ model }: AIChatItemProps) {
+  const { currentChatId, setCurrentChatId } = useChat();
+
+  const isSelected = currentChatId === model.id;
+  const onClick = () => {
+    setCurrentChatId(model.id);
+  };
   return (
     <motion.div
       className={cn(

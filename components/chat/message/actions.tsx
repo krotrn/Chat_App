@@ -15,21 +15,17 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { reactionEmoji } from "@/lib/emojis";
+import { useChatActions } from "@/context/ChatActions";
 
 interface MessageActionsProps {
   message: MessageType;
   isOwn: boolean;
-  onReply: (messageId: string) => void;
-  onReact: (messageId: string, emoji: string) => void;
 }
 
-export function MessageActions({
-  message,
-  isOwn,
-  onReply,
-  onReact,
-}: MessageActionsProps) {
+export function MessageActions({ message, isOwn }: MessageActionsProps) {
   const [showReactions, setShowReactions] = useState(false);
+  const { handleReactToMessage: onReact, handleReplyToMessage: onReply } =
+    useChatActions();
 
   return (
     <>

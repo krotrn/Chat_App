@@ -22,16 +22,14 @@ import {
   Pin,
 } from "lucide-react";
 import { reactionEmoji } from "@/lib/emojis";
+import { useChatActions } from "@/context/ChatActions";
 
 interface MessageContextMenuProps {
   message: MessageType;
   isOwn: boolean;
   children: ReactNode;
-  onDelete: (messageId: string, forEveryone: boolean) => void;
-  onReply: (messageId: string) => void;
   onCopy: () => void;
   onEdit?: () => void;
-  onReact: (messageId: string, emoji: string) => void;
   onRetry?: (messageId: string) => void;
   onPin?: (messageId: string) => void;
   onUnpin?: (messageId: string) => void;
@@ -42,16 +40,19 @@ export function MessageContextMenu({
   message,
   isOwn,
   children,
-  onDelete,
-  onReply,
   onCopy,
   onEdit,
-  onReact,
   onRetry,
   onPin,
   onUnpin,
   isPinned,
 }: MessageContextMenuProps) {
+  const {
+    handleReactToMessage: onReact,
+    handleDeleteMessage: onDelete,
+    handleReplyToMessage: onReply,
+  } = useChatActions();
+
   return (
     <ContextMenu>
       <ContextMenuTrigger>{children}</ContextMenuTrigger>

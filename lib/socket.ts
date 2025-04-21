@@ -19,10 +19,12 @@ export const initSocket = (token: string) => {
 
   socket = io(config.chatApiUrl, {
     auth: { token },
-    transports: ["websocket"],
+    transports: ["websocket", "polling"],
     reconnectionAttempts: MAX_RECONNECT_ATTEMPTS,
     reconnectionDelay: 1000,
-    timeout: 10000,
+    timeout: 20000,
+    upgrade: true,
+    forceNew: true,
   });
 
   if (!socket) {
@@ -49,6 +51,10 @@ export const initSocket = (token: string) => {
 
   socket.on("error", (error: Error) => {
     console.error("Socket error:", error);
+  });
+
+  socket.on("connect_error", (error: Error) => {
+    console.error("Socket connection error:", error);
   });
 
   return socket;

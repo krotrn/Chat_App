@@ -1,11 +1,5 @@
 "use client";
-import {
-  useState,
-  useCallback,
-  useEffect,
-  useOptimistic,
-  useMemo,
-} from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -16,109 +10,45 @@ import MessageInput from "@/components/chat/message-input";
 import ChatDetails from "@/components/chat/chat-details";
 import TypingIndicator from "@/components/chat/typing-indicator";
 
-import { ChatType, MessageType } from "@/types/ChatType";
-import { User } from "next-auth";
+import { ConnectionState } from "@/types/ChatType";
 import { useIsMobile } from "@/hooks/use-mobile";
-import {
-  deleteOneOnOneChat,
-  setAuthToken,
-  isConnectionHealthy,
-} from "@/services/chat-api";
+import { setAuthToken, isConnectionHealthy } from "@/services/chat-api";
 
-import useChatSocket from "@/hooks/useChatSocket";
-import useChatActions from "@/hooks/useChatActions";
-import useTypingIndicator from "@/hooks/useTypingIndicator";
+import { useChat } from "@/context/ChatProvider";
+import { useChatActions } from "@/context/ChatActions";
 import { WifiOff } from "lucide-react";
 
-interface ChatMainProps {
-  chat: ChatType;
-  userId: string;
-  currentUser: User;
-  token: string;
-}
-
-export default function ChatMain({
-  chat: initialChat,
-  userId,
-  currentUser,
-  token,
-}: ChatMainProps) {
+export default function ChatMain() {
   const router = useRouter();
   const isMobile = useIsMobile();
-  const [chat, setChat] = useState(initialChat);
   const [showDetails, setShowDetails] = useState(false);
-  const [replyToMessage, setReplyToMessage] = useState<MessageType | undefined>(
-    undefined,
-  );
   const [connectionNotified, setConnectionNotified] = useState(false);
+
+  const {
+    connectionState,
+    typingUserIds,
+    handleDeleteChat,
+    token,
+    chats,
+    currentChatId,
+    currentUser,
+  } = useChat();
+  const isConnected = connectionState === ConnectionState.CONNECTED;
+
+  const currentUserId = currentUser.id!;
 
   useEffect(() => {
     setAuthToken(token);
   }, [token]);
 
+  const chat = chats.find((chat) => chat._id === currentChatId);
   const {
-    messages: socketMessages,
-    setMessages: setSocketMessages,
-    isConnected,
-  } = useChatSocket(
-    initialChat._id,
-    currentUser.id!,
-    token,
-    initialChat.messages || [],
-  );
-
-  const { typingUserIds } = useTypingIndicator({
-    chatId: initialChat._id,
-    currentUserId: currentUser.id!,
-  });
-
-  const [optimisticMessages, addOptimisticMessage] = useOptimistic(
-    socketMessages,
-    (state: MessageType[], newMessage: MessageType) => {
-      const existingIndex = state.findIndex(
-        (message) => message._id === newMessage._id,
-      );
-      if (existingIndex >= 0) {
-        console.log(`Updating existing message in state: ${newMessage._id}`);
-        const updatedState = [...state];
-        updatedState[existingIndex] = newMessage;
-        return updatedState;
-      }
-      if (!newMessage._id.startsWith("temp-")) {
-        const tempIndex = state.findIndex(
-          (msg) =>
-            msg._id.startsWith("temp-") &&
-            msg.content === newMessage.content &&
-            msg.chatId === newMessage.chatId,
-        );
-
-        if (tempIndex >= 0) {
-          console.log(
-            `Replacing temp message with server message: ${newMessage._id}`,
-          );
-          const updatedState = [...state];
-          updatedState[tempIndex] = newMessage;
-          return updatedState;
-        }
-      }
-
-      console.log(`Adding optimistic message to state: ${newMessage._id}`);
-      return [...state, newMessage];
-    },
-  );
-
-  const messagesMap = useMemo(() => {
-    const map = new Map<string, MessageType>();
-    optimisticMessages.forEach((msg) => map.set(msg._id, msg));
-    return map;
-  }, [optimisticMessages]);
-
-  useEffect(() => {
-    console.log(
-      `Initial chat updated: ${initialChat._id}, messages: ${initialChat.messages?.length || 0}`,
-    );
-    setChat(initialChat);
-  }, [initialChat]);
+    optimisticMessages,
+    replyToMessage,
+    handleSendMessage,
+    handleMarkAsRead,
+    handleCancelReply,
+  } = useChatActions();
 
   useEffect(() => {
     if (
@@ -138,68 +68,31 @@ export default function ChatMain({
       });
       setConnectionNotified(false);
     }
-  }, [isConnected, connectionNotified]);
-
-  const {
-    handleSendMessage,
-    handleDeleteMessage,
-    handleReactToMessage,
-    handleEditMessage,
-    handleMarkAsRead,
-    retryFailedMessage,
-  } = useChatActions({
-    chatId: chat._id,
-    replyToMessage,
-    setReplyToMessage,
-    setMessages: setSocketMessages,
-    addOptimisticMessage,
-    currentUserId: currentUser.id,
-    token,
-    messagesMap,
-  });
+  }, [isConnected, connectionNotified, chat]);
 
   useEffect(() => {
     if (
-      chat._id &&
-      socketMessages.some(
+      currentChatId &&
+      optimisticMessages.some(
         (message) =>
-          message.sender.userId !== currentUser.id &&
-          !message.readBy.some((read) => read.userId === currentUser.id),
+          message.sender.userId !== currentUserId &&
+          !message.readBy.some((read) => read.userId === currentUserId),
       )
     ) {
       handleMarkAsRead([]);
     }
-  }, [chat._id, handleMarkAsRead, socketMessages, currentUser.id]);
+  }, [currentChatId, handleMarkAsRead, optimisticMessages, currentUserId]);
 
   const toggleDetails = useCallback(() => setShowDetails((prev) => !prev), []);
   const handleBack = useCallback(() => router.push("/chats"), [router]);
 
-  const handleReplyToMessage = useCallback(
-    (messageId: string) => {
-      const message = optimisticMessages.find(
-        (prevMessage) => prevMessage._id === messageId,
-      );
-      if (message) setReplyToMessage(message);
-    },
-    [optimisticMessages],
-  );
-
-  const handleCancelReply = useCallback(() => setReplyToMessage(undefined), []);
-
-  const handleDeleteChat = useCallback(
-    async (chatId: string, forEveryone: boolean) => {
-      try {
-        toast.loading("Deleting chat...", { id: "delete-chat" });
-        await deleteOneOnOneChat({ chatId, forEveryone });
-        toast.success("Chat deleted", { id: "delete-chat" });
-        router.push("/chats");
-      } catch (error) {
-        console.error(error);
-        toast.error("Failed to delete chat", { id: "delete-chat" });
-      }
-    },
-    [router],
-  );
+  if (!chat) {
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <p className="text-muted-foreground">No chat selected</p>
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -212,7 +105,7 @@ export default function ChatMain({
     >
       <ChatHeader
         chat={chat}
-        userId={userId}
+        userId={currentUserId}
         onToggleDetails={toggleDetails}
         onDeleteChat={handleDeleteChat}
         onBack={isMobile ? handleBack : undefined}
@@ -231,16 +124,7 @@ export default function ChatMain({
       <div className="flex flex-1 overflow-hidden">
         <div className="flex flex-1 flex-col h-full">
           <div className="flex-1 pl-4 overflow-hidden">
-            <MessageList
-              messages={optimisticMessages}
-              participants={chat.participants}
-              currentUser={currentUser}
-              onDeleteMessage={handleDeleteMessage}
-              onReplyMessage={handleReplyToMessage}
-              onReactToMessage={handleReactToMessage}
-              onEditMessage={handleEditMessage}
-              onRetryMessage={retryFailedMessage}
-            />
+            <MessageList participants={chat.participants} />
           </div>
 
           <AnimatePresence>

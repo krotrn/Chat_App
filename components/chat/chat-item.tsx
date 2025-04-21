@@ -12,30 +12,40 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
+import { useChat } from "@/context/ChatProvider";
 
 interface ChatItemProps {
   chat: ChatType;
-  userId: string;
-  isSelected: boolean;
-  onClick: () => void;
-  onDelete: (forEveryone: boolean) => void;
 }
 
-export default function ChatItem({
-  chat,
-  userId,
-  isSelected,
-  onClick,
-  onDelete,
-}: ChatItemProps) {
+export default function ChatItem({ chat }: ChatItemProps) {
   const { name, avatarUrl, lastMessage } = chat;
+  const { currentUser, currentChatId, handleDeleteChat, setCurrentChatId } =
+    useChat();
+  const isSelected = currentChatId === chat._id;
+
+  const onClick = () => {
+    setCurrentChatId(chat._id);
+  };
+
+  const onDelete = (forEveryone: boolean) => {
+    handleDeleteChat(chat._id, forEveryone)
+      .then(() => {
+        if (isSelected) {
+          setCurrentChatId(null);
+        }
+      })
+      .catch((error) => {
+        console.error("Error deleting chat:", error);
+      });
+  };
 
   let title: string;
   let avatar: string | undefined;
   if (chat.type === "direct") {
     [title, avatar] = [
-      chat.participants.filter((p) => p.userId !== userId)[0].name,
-      chat.participants.filter((p) => p.userId !== userId)[0].avatarUrl,
+      chat.participants.filter((p) => p.userId !== currentUser.id)[0].name,
+      chat.participants.filter((p) => p.userId !== currentUser.id)[0].avatarUrl,
     ];
   } else {
     title = name;

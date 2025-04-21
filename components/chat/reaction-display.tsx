@@ -1,18 +1,16 @@
 "use client";
 import { MessageReaction } from "@/types/ChatType";
 import { cn } from "@/lib/utils";
+import { useChat } from "@/context/ChatProvider";
 
 interface ReactionsDisplayProps {
   reactions: MessageReaction[];
   isOwn: boolean;
-  currentUserId?: string;
 }
 
-export function ReactionsDisplay({
-  reactions,
-  isOwn,
-  currentUserId,
-}: ReactionsDisplayProps) {
+export function ReactionsDisplay({ reactions, isOwn }: ReactionsDisplayProps) {
+  const { currentUser } = useChat();
+  const currentUserId = currentUser?.id;
   const groupedReactions = reactions.reduce<Record<string, string[]>>(
     (acc, reaction) => {
       if (!acc[reaction.emoji]) {

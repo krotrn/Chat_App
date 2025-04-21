@@ -18,8 +18,6 @@ interface ApiErrorData {
 let isConnectionIssue = false;
 let connectionCheckTimer: NodeJS.Timeout | null = null;
 
-console.log("API Base URL:", config.chatApiUrl);
-
 const api = axios.create({
   baseURL: `${config.chatApiUrl}/api/v1`,
   headers: {
