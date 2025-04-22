@@ -10,14 +10,7 @@ export default function ChatsLayout({
 }) {
   return (
     <div className="flex h-full overflow-hidden bg-background">
-      <aside
-        className={cn(
-          "flex flex-col h-full w-full md:w-80 border-r",
-          !chatMain && "md:w-full",
-        )}
-      >
-        {chatList}
-      </aside>
+      {chatList}
       <section
         className={cn(
           "flex flex-col h-full flex-1",

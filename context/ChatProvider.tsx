@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  createContext,
-  useState,
-  useEffect,
-  use,
-  useCallback,
-} from "react";
+import { createContext, useState, useEffect, use, useCallback } from "react";
 import useChatSocket from "@/hooks/useChatSocket";
 import useTypingIndicator from "@/hooks/useTypingIndicator";
 import { ChatType, ConnectionState, MessageType } from "@/types/ChatType";
@@ -53,16 +47,15 @@ interface ChatProviderProps {
   children: React.ReactNode;
   currentUser: User;
   token: string;
-  initialMessages?: MessageType[];
 }
 
 export const ChatProvider: React.FC<ChatProviderProps> = ({
   children,
   currentUser,
   token,
-  initialMessages = [],
 }) => {
   const [chats, setChats] = useState<ChatType[]>([]);
+  const [initialMessages, setInitialMessages] = useState<MessageType[]>([]);
   const searchParams = useSearchParams();
   const router = useRouter();
   const [searchChatQuery, setSearchChatQuery] = useState("");
@@ -80,22 +73,10 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
     },
     [router, currentChatId],
   );
+
   if (!currentUser || !currentUser.id) {
     throw new Error("No current user found");
   }
-
-  const {
-    connectionState,
-    setMessages,
-    messages,
-    isConnected,
-    pinnedMessageIds,
-  } = useChatSocket(
-    currentChatId || "",
-    currentUser.id,
-    token,
-    initialMessages,
-  );
 
   const { typingUserIds, handleLocalUserTyping } = useTypingIndicator({
     chatId: currentChatId || "",
@@ -111,6 +92,36 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
       console.error("Error loading chats:", error);
     }
   }, [token]);
+
+  // Only set initial messages when currentChatId changes, not on every render
+  useEffect(() => {
+    if (currentChatId) {
+      const currentChat = chats.find((chat) => chat._id === currentChatId);
+      if (currentChat?.messages) {
+        const filteredMessages = currentChat.messages.filter(
+          (message) =>
+            !message.deletedFor.some((ele) => ele.userId === currentUser.id),
+        );
+        setInitialMessages(filteredMessages);
+      }
+    } else {
+      // Clear initial messages when no chat is selected
+      setInitialMessages([]);
+    }
+  }, [currentChatId, chats, currentUser.id]);
+
+  const {
+    connectionState,
+    setMessages,
+    messages,
+    isConnected,
+    pinnedMessageIds,
+  } = useChatSocket(
+    currentChatId || "",
+    currentUser.id,
+    token,
+    initialMessages,
+  );
 
   const handleDeleteChat = useCallback(
     async (chatId: string, forEveryone?: boolean) => {
@@ -134,17 +145,19 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
       const value = e.target.value.toLowerCase();
       setSearchChatQuery(value);
       if (!value.trim()) {
-        setChats(chats);
+        loadChats();
       } else {
-        const filtered = chats.filter(
-          (chat) =>
-            chat.name.toLowerCase().includes(value) ||
-            chat.lastMessage?.content.includes(value),
+        setChats((prevChats) =>
+          prevChats.filter(
+            (chat) =>
+              chat.name.toLowerCase().includes(value) ||
+              (chat.lastMessage?.content &&
+                chat.lastMessage.content.toLowerCase().includes(value)),
+          ),
         );
-        setChats(filtered);
       }
     },
-    [chats],
+    [loadChats],
   );
 
   useEffect(() => {

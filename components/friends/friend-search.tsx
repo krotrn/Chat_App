@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SearchUserType } from "@/types/formattedDataTypes";
-import { getUserByQuery, sendFriendRequest } from "@/actions/userUtils";
+import { searchPeople, sendFriendRequest } from "@/actions/userUtils";
 import { toast } from "sonner";
 
 interface FriendSearchProps {
@@ -38,13 +38,7 @@ export default function FriendSearch({ userId, pending }: FriendSearchProps) {
     if (!searchQuery.trim()) return;
     startTransition(async () => {
       try {
-        const results = await getUserByQuery(searchQuery, [
-          "id",
-          "email",
-          "username",
-          "name",
-          "avatarUrl",
-        ]);
+        const results = await searchPeople(searchQuery);
         setSearchResult(results);
       } catch (error) {
         console.log(error);
@@ -129,11 +123,15 @@ export default function FriendSearch({ userId, pending }: FriendSearchProps) {
                     <Button
                       variant="outline"
                       size="sm"
-                      disabled={pendingRequests.includes(user.id)}
+                      disabled={
+                        pendingRequests.includes(user.id) || user.isFriend
+                      }
                       onClick={() => handleSendRequest(user.id)}
                       className="self-end sm:self-auto mt-2 sm:mt-0"
                     >
-                      {pendingRequests.includes(user.id) ? (
+                      {user.isFriend ? (
+                        "Aleady Friend"
+                      ) : pendingRequests.includes(user.id) ? (
                         "Request Sent"
                       ) : (
                         <>

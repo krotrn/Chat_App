@@ -7,7 +7,6 @@ import { profileSchema } from "@/schemas/profileSchema";
 import {
   FriendRequestType,
   FormattedFriendType,
-  SearchUserType,
   StatsProps,
 } from "@/types/formattedDataTypes";
 import {
@@ -298,21 +297,11 @@ export const getUserFriends = async (
 /**
  * Retrieve users based on a search query while excluding the authenticated user.
  */
-export const getUserByQuery = async <T extends keyof SearchUserType>(
-  contains: string,
-  reqData: T[],
-) => {
+export const searchPeople = async (contains: string) => {
   const session = await auth();
   if (!session) throw new Error("Unauthorized");
 
   try {
-    const select = reqData.reduce(
-      (acc, key) => {
-        acc[key] = true;
-        return acc;
-      },
-      {} as Partial<Record<keyof SearchUserType, boolean>>,
-    );
     const users = await db.user.findMany({
       where: {
         OR: [
@@ -322,18 +311,29 @@ export const getUserByQuery = async <T extends keyof SearchUserType>(
         ],
         NOT: { id: session.user.id },
       },
-      select,
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        email: true,
+        avatarUrl: true,
+        friends: {
+          where: { friendId: session.user.id },
+          select: { id: true, friendId: true },
+        },
+      },
     });
 
     return users.map((user) => ({
       ...user,
       name: user.name ?? undefined,
       avatarUrl: user.avatarUrl ?? undefined,
+      isFriend: user.friends.length > 0,
     }));
   } catch (error) {
     const errorMsg =
       error instanceof Error ? error.message : "Error searching users";
-    console.error("Error in getUserByQuery:", errorMsg);
+    console.error("Error in searchPeople:", errorMsg);
     throw new Error(errorMsg);
   }
 };

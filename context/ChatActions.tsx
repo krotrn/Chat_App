@@ -1,6 +1,6 @@
 "use client";
 
-import React, {
+import {
   createContext,
   useState,
   useRef,
@@ -10,6 +10,8 @@ import React, {
   useOptimistic,
   use,
   startTransition,
+  Dispatch,
+  SetStateAction,
 } from "react";
 import { toast } from "sonner";
 import {
@@ -27,7 +29,7 @@ import { useChat } from "./ChatProvider";
 interface ChatActionsContextType {
   messages: MessageType[];
   optimisticMessages: MessageType[];
-  setMessages: React.Dispatch<React.SetStateAction<MessageType[]>>;
+  setMessages: Dispatch<SetStateAction<MessageType[]>>;
   replyToMessage: MessageType | undefined;
   handleReplyToMessage: (messageId: string) => void;
   handleSendMessage: (
@@ -184,7 +186,16 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
   const cleanupAttachments = useCallback((messageId: string) => {
     const urls = attachmentUrls.current.get(messageId);
     if (urls) {
-      urls.forEach((url) => URL.revokeObjectURL(url));
+      urls.forEach((url) => {
+        try {
+          URL.revokeObjectURL(url);
+        } catch (error) {
+          console.error(
+            `Failed to revoke URL for message ${messageId}:`,
+            error,
+          );
+        }
+      });
       attachmentUrls.current.delete(messageId);
     }
   }, []);
@@ -414,17 +425,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
               status: StatusEnum.failed,
             })),
           });
-          setMessages((prev) => [
-            ...prev,
-            {
-              ...optimisticMessage,
-              status: StatusEnum.failed,
-              attachments: optimisticMessage.attachments?.map((attachment) => ({
-                ...attachment,
-                status: StatusEnum.failed,
-              })),
-            },
-          ]);
+          setMessages((prev) => [...prev, optimisticMessage]);
         });
 
         toast.error(
@@ -457,13 +458,6 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
             ...message,
             status: StatusEnum.deleting,
           });
-          setMessages((prev) =>
-            prev.map((message) =>
-              message._id === messageId
-                ? { ...message, status: StatusEnum.deleting }
-                : message,
-            ),
-          );
         });
       }
 
@@ -568,11 +562,6 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
         };
         startTransition(() => {
           updateOptimisticMessage(updatedMessage);
-          setMessages((prev) =>
-            prev.map((message) =>
-              message._id === messageId ? updatedMessage : message,
-            ),
-          );
         });
       }
 
@@ -596,32 +585,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
         pendingRequests.current.delete(requestId);
         if (message) {
           startTransition(() => {
-            updateOptimisticMessage({
-              ...message,
-              reactions: message.reactions.filter(
-                (reaction) =>
-                  !(
-                    reaction.userId === currentUserId &&
-                    reaction.emoji === emoji
-                  ),
-              ),
-            });
-            setMessages((prev) =>
-              prev.map((message) =>
-                message._id === messageId
-                  ? {
-                      ...message,
-                      reactions: message.reactions.filter(
-                        (reaction) =>
-                          !(
-                            reaction.userId === currentUserId &&
-                            reaction.emoji === emoji
-                          ),
-                      ),
-                    }
-                  : message,
-              ),
-            );
+            updateOptimisticMessage(message);
           });
         }
         console.error("Reaction error:", error);
@@ -651,18 +615,6 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
             edited: { editedAt: new Date(), isEdited: true },
             status: StatusEnum.sending,
           });
-          setMessages((prev) =>
-            prev.map((message) =>
-              message._id === messageId
-                ? {
-                    ...message,
-                    content,
-                    edited: { editedAt: new Date(), isEdited: true },
-                    status: StatusEnum.sending,
-                  }
-                : message,
-            ),
-          );
         });
       }
 
@@ -692,13 +644,6 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
               ...message,
               status: StatusEnum.failed,
             });
-            setMessages((prev) =>
-              prev.map((message) =>
-                message._id === messageId
-                  ? { ...message, status: StatusEnum.failed }
-                  : message,
-              ),
-            );
           });
         }
 
@@ -763,7 +708,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
   );
 
   // Handle pending read messages when component unmounts
-  React.useEffect(() => {
+  useEffect(() => {
     if (chatId && currentUserId) handleMarkAsRead([]);
 
     const pendingMessages = pendingReadMessages.current;
@@ -783,13 +728,6 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
     () => setReplyToMessage(undefined),
     [setReplyToMessage],
   );
-
-  // Initialize messages from initialMessages prop if needed
-  useEffect(() => {
-    if (messages.length > 0 && messages.length === 0) {
-      setMessages(messages);
-    }
-  }, [messages, messages.length, setMessages]);
 
   const handleReplyToMessage = useCallback(
     (messageId: string) => {

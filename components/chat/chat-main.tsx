@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -23,6 +23,7 @@ export default function ChatMain() {
   const isMobile = useIsMobile();
   const [showDetails, setShowDetails] = useState(false);
   const [connectionNotified, setConnectionNotified] = useState(false);
+  const processedMessageIdsRef = useRef(new Set<string>());
 
   const {
     connectionState,
@@ -68,27 +69,38 @@ export default function ChatMain() {
       });
       setConnectionNotified(false);
     }
-  }, [isConnected, connectionNotified, chat]);
+  }, [isConnected, connectionNotified]);
 
   useEffect(() => {
-    if (
-      currentChatId &&
-      optimisticMessages.some(
+    if (!currentChatId || !optimisticMessages.length) return;
+
+    const unreadMessageIds = optimisticMessages
+      .filter(
         (message) =>
           message.sender.userId !== currentUserId &&
-          !message.readBy.some((read) => read.userId === currentUserId),
+          !message.readBy.some((read) => read.userId === currentUserId) &&
+          !processedMessageIdsRef.current.has(message._id),
       )
-    ) {
-      handleMarkAsRead([]);
+      .map((message) => {
+        processedMessageIdsRef.current.add(message._id);
+        return message._id;
+      });
+
+    if (unreadMessageIds.length > 0) {
+      handleMarkAsRead(unreadMessageIds);
     }
   }, [currentChatId, handleMarkAsRead, optimisticMessages, currentUserId]);
+
+  useEffect(() => {
+    processedMessageIdsRef.current.clear();
+  }, [currentChatId]);
 
   const toggleDetails = useCallback(() => setShowDetails((prev) => !prev), []);
   const handleBack = useCallback(() => router.push("/chats"), [router]);
 
   if (!chat) {
     return (
-      <div className="flex flex-1 items-center justify-center">
+      <div className="hidden md:flex flex-1 items-center justify-center">
         <p className="text-muted-foreground">No chat selected</p>
       </div>
     );
@@ -112,7 +124,7 @@ export default function ChatMain() {
       />
 
       {!isConnected && (
-        <div className="mx-4 mt-2 p-3 w-2xl bg-destructive/15 text-destructive rounded-md flex self-center gap-2">
+        <div className="mx-4 mt-2 p-3 w-fit bg-destructive/15 text-destructive rounded-md flex self-center gap-2">
           <WifiOff className="h-4 w-4" />
           <p>
             Connection to chat server lost. Messages may not be sent or

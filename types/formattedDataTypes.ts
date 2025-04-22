@@ -21,11 +21,16 @@ export interface StatsProps {
 }
 
 export interface SearchUserType {
-  id: string;
   name?: string;
-  username: string;
-  email: string;
   avatarUrl?: string;
+  isFriend: boolean;
+  id: string;
+  email: string;
+  username: string;
+  friends: {
+    id: string;
+    friendId: string;
+  }[];
 }
 
 export interface PendingRequestsType {
