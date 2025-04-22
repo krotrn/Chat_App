@@ -73,6 +73,7 @@ export interface MessageType {
   deletedFor: DeletedForEntry[];
   replyToId?: string;
   formatting: Record<string, string>;
+  tempId?: string;
   createdAt: Date;
   updatedAt: Date;
 }

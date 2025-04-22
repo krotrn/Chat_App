@@ -30,16 +30,6 @@ export const initSocket = (token: string) => {
   if (!socket) {
     throw new Error("Error configuring socket connection");
   }
-
-  socket.on("connect", () => {
-    console.log("Connected to chat socket");
-    reconnectAttempts = 0;
-  });
-
-  socket.on("disconnect", (reason: string) => {
-    console.log(`Socket disconnected: ${reason}`);
-  });
-
   socket.on("reconnect_attempt", (attempt: number) => {
     reconnectAttempts = attempt;
     console.log(`Reconnection attempt ${attempt}/${MAX_RECONNECT_ATTEMPTS}`);

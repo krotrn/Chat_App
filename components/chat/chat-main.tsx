@@ -1,8 +1,7 @@
 "use client";
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { toast } from "sonner";
 
 import ChatHeader from "@/components/chat/chat-header";
 import MessageList from "@/components/chat/message-list";
@@ -12,7 +11,7 @@ import TypingIndicator from "@/components/chat/typing-indicator";
 
 import { ConnectionState } from "@/types/ChatType";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { setAuthToken, isConnectionHealthy } from "@/services/chat-api";
+import { setAuthToken } from "@/services/chat-api";
 
 import { useChat } from "@/context/ChatProvider";
 import { useChatActions } from "@/context/ChatActions";
@@ -22,8 +21,6 @@ export default function ChatMain() {
   const router = useRouter();
   const isMobile = useIsMobile();
   const [showDetails, setShowDetails] = useState(false);
-  const [connectionNotified, setConnectionNotified] = useState(false);
-  const processedMessageIdsRef = useRef(new Set<string>());
 
   const {
     connectionState,
@@ -43,57 +40,8 @@ export default function ChatMain() {
   }, [token]);
 
   const chat = chats.find((chat) => chat._id === currentChatId);
-  const {
-    optimisticMessages,
-    replyToMessage,
-    handleSendMessage,
-    handleMarkAsRead,
-    handleCancelReply,
-  } = useChatActions();
-
-  useEffect(() => {
-    if (
-      !isConnected &&
-      isConnectionHealthy() === false &&
-      !connectionNotified
-    ) {
-      toast.error("Lost connection to chat server. Reconnecting...", {
-        id: "socket-connection",
-        duration: 3000,
-      });
-      setConnectionNotified(true);
-    } else if (isConnected) {
-      toast.success("Connected to chat server", {
-        id: "socket-connection",
-        duration: 2000,
-      });
-      setConnectionNotified(false);
-    }
-  }, [isConnected, connectionNotified]);
-
-  useEffect(() => {
-    if (!currentChatId || !optimisticMessages.length) return;
-
-    const unreadMessageIds = optimisticMessages
-      .filter(
-        (message) =>
-          message.sender.userId !== currentUserId &&
-          !message.readBy.some((read) => read.userId === currentUserId) &&
-          !processedMessageIdsRef.current.has(message._id),
-      )
-      .map((message) => {
-        processedMessageIdsRef.current.add(message._id);
-        return message._id;
-      });
-
-    if (unreadMessageIds.length > 0) {
-      handleMarkAsRead(unreadMessageIds);
-    }
-  }, [currentChatId, handleMarkAsRead, optimisticMessages, currentUserId]);
-
-  useEffect(() => {
-    processedMessageIdsRef.current.clear();
-  }, [currentChatId]);
+  const { replyToMessage, handleSendMessage, handleCancelReply } =
+    useChatActions();
 
   const toggleDetails = useCallback(() => setShowDetails((prev) => !prev), []);
   const handleBack = useCallback(() => router.push("/chats"), [router]);

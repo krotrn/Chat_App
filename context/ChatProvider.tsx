@@ -93,7 +93,34 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
     }
   }, [token]);
 
-  // Only set initial messages when currentChatId changes, not on every render
+  const handleChatUpdateFromSocket = useCallback((newMessage: MessageType) => {
+    setChats((prevChats) => {
+      const chatIndex = prevChats.findIndex(
+        (chat) => chat._id === newMessage.chatId,
+      );
+
+      if (chatIndex === -1) {
+        console.warn(`Chat ${newMessage.chatId} not found for socket update.`);
+        return prevChats;
+      }
+
+      const updatedChats = [...prevChats];
+      const targetChat = { ...updatedChats[chatIndex] };
+
+      // Update last message
+      targetChat.lastMessage = newMessage;
+
+      if (!targetChat.messages.some((msg) => msg._id === newMessage._id)) {
+        // Avoid mutating directly
+        targetChat.messages = [...targetChat.messages, newMessage];
+      }
+
+      updatedChats[chatIndex] = targetChat;
+
+      return updatedChats;
+    });
+  }, []);
+
   useEffect(() => {
     if (currentChatId) {
       const currentChat = chats.find((chat) => chat._id === currentChatId);
@@ -105,7 +132,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
         setInitialMessages(filteredMessages);
       }
     } else {
-      // Clear initial messages when no chat is selected
       setInitialMessages([]);
     }
   }, [currentChatId, chats, currentUser.id]);
@@ -121,6 +147,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
     currentUser.id,
     token,
     initialMessages,
+    handleChatUpdateFromSocket,
   );
 
   const handleDeleteChat = useCallback(

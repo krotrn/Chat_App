@@ -10,6 +10,7 @@ export default function useChatSocket(
   currentUserId: string,
   token: string,
   initialMessages: MessageType[] = [],
+  onChatUpdate: (message: MessageType) => void,
 ) {
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [pinnedMessageIds, setPinnedMessageIds] = useState<string[]>([]);
@@ -44,7 +45,6 @@ export default function useChatSocket(
     }
   }, []);
 
-  // Initial message setup - only run once per chat change
   useEffect(() => {
     if (initialMessages.length > 0 && !initialMessagesProcessed.current) {
       const filteredMessages = initialMessages.filter(
@@ -55,7 +55,6 @@ export default function useChatSocket(
       initialMessagesProcessed.current = true;
     }
 
-    // Reset flag when chat or initial messages change
     return () => {
       initialMessagesProcessed.current = false;
     };
@@ -67,7 +66,11 @@ export default function useChatSocket(
     try {
       console.log("Initializing socket connection for chat:", initialChatId);
       setConnectionState(ConnectionState.CONNECTING);
-      socketRef.current = initSocket(token);
+      if (!socketRef.current) {
+        socketRef.current = initSocket(token);
+      } else {
+        console.log("Socket already initialized, joining chat:", initialChatId);
+      }
       joinChat(initialChatId);
 
       const socket = socketRef.current;
@@ -106,48 +109,69 @@ export default function useChatSocket(
 
       socket.on(
         ChatEventEnum.MESSAGE_RECEIVED_EVENT,
-        (message: MessageType) => {
+        (message: MessageType & { tempId?: string }) => {
           if (message.chatId === initialChatId || message.chatId === null) {
             setMessages((prev) => {
-              const existingIndex = prev.findIndex(
-                (msg) => msg._id === message._id,
+              const existingIndex = {
+                ...message,
+                chatId: message.chatId || initialChatId,
+              };
+
+              const serverIdIndex = prev.findIndex(
+                (msg) => msg._id === existingIndex._id,
               );
-              if (existingIndex >= 0) {
+              if (serverIdIndex >= 0) {
+                console.log(
+                  `Updating existing message ${existingIndex._id} from socket event.`,
+                );
                 const updatedMessages = [...prev];
-                updatedMessages[existingIndex] = {
-                  ...message,
-                  chatId: message.chatId || initialChatId,
-                };
+                updatedMessages[serverIdIndex] = existingIndex;
                 return updatedMessages;
               }
 
-              // Then check for any matching temp message
-              const tempIndex = prev.findIndex(
-                (msg) =>
-                  msg._id.startsWith("temp-") &&
-                  msg.sender.userId === currentUserId &&
-                  (msg.content === message.content ||
-                    Math.abs(
-                      new Date(msg.createdAt).getTime() -
-                        new Date(message.createdAt).getTime(),
-                    ) < 10000),
-              );
-
-              if (tempIndex >= 0) {
-                const updatedMessages = [...prev];
-                updatedMessages[tempIndex] = {
-                  ...message,
-                  chatId: message.chatId || initialChatId,
-                };
-                return updatedMessages;
+              if (existingIndex.tempId) {
+                const tempIdIndex = prev.findIndex(
+                  (msg) => msg._id === existingIndex.tempId,
+                );
+                if (tempIdIndex >= 0) {
+                  console.log(
+                    `Replacing temp message ${existingIndex.tempId} with server message ${existingIndex._id} from socket event.`,
+                  );
+                  const updatedMessages = [...prev];
+                  updatedMessages[tempIdIndex] = existingIndex;
+                  return updatedMessages;
+                }
               }
 
-              return [
-                ...prev,
-                { ...message, chatId: message.chatId || initialChatId },
-              ];
+              if (message.sender.userId === currentUserId) {
+                const tempIndex = prev.findIndex(
+                  (msg) =>
+                    msg._id.startsWith("temp-") &&
+                    msg.sender.userId === currentUserId &&
+                    (msg.content === message.content ||
+                      Math.abs(
+                        new Date(msg.createdAt).getTime() -
+                          new Date(message.createdAt).getTime(),
+                      ) < 10000),
+                );
+
+                if (tempIndex >= 0) {
+                  console.log(
+                    `Replacing temp message via heuristic match with ${existingIndex._id} from socket event.`,
+                  );
+                  const updatedMessages = [...prev];
+                  updatedMessages[tempIndex] = existingIndex;
+                  return updatedMessages;
+                }
+              }
+
+              console.log(
+                `Adding new message ${existingIndex._id} from socket event.`,
+              );
+              return [...prev, existingIndex];
             });
           }
+          onChatUpdate(message);
         },
       );
 
@@ -367,6 +391,7 @@ export default function useChatSocket(
     token,
     cleanupTimer,
     updateMultipleMessages,
+    onChatUpdate,
   ]);
 
   return {

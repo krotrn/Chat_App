@@ -84,6 +84,7 @@ export default function MessageItem({
         onCopy={handleCopyToClipboard}
       >
         <motion.div
+          data-message-id={message._id}
           className={cn("mb-4 flex", isOwn ? "justify-end" : "justify-start")}
           variants={messageVariants}
           initial="initial"

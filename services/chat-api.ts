@@ -16,7 +16,6 @@ interface ApiErrorData {
 }
 
 let isConnectionIssue = false;
-let connectionCheckTimer: NodeJS.Timeout | null = null;
 
 const api = axios.create({
   baseURL: `${config.chatApiUrl}/api/v1`,
@@ -40,10 +39,6 @@ const handleApiResponse = <T>(response: { data: ApiResponse<T> }): T => {
     throw error;
   }
 
-  if (isConnectionIssue) {
-    isConnectionIssue = false;
-  }
-
   return response.data.data;
 };
 
@@ -57,36 +52,15 @@ export class NetworkError extends Error {
 const handleApiError = (error: unknown): never => {
   console.log("API Error:", error);
 
-  // Check if this is a network connection issue
   if (
     error instanceof Error &&
-    (error.message.includes("Network Error") ||
-      error.message.includes("No response received") ||
-      error.message.includes("timeout") ||
-      error.message.includes("ECONNREFUSED") ||
-      error.message.includes("ECONNABORTED"))
+    typeof error === "object" &&
+    error !== null &&
+    "config" in error &&
+    !("response" in error)
   ) {
-    isConnectionIssue = true;
-
-    if (!connectionCheckTimer) {
-      connectionCheckTimer = setInterval(() => {
-        api
-          .get("/ping")
-          .then(() => {
-            isConnectionIssue = false;
-            if (connectionCheckTimer) {
-              clearInterval(connectionCheckTimer);
-              connectionCheckTimer = null;
-            }
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-      }, 10000);
-    }
-
     throw new NetworkError(
-      "Connection to chat server failed. Please check your internet connection.",
+      "Network connection failed. Please check your connection or try again later.",
     );
   }
 
@@ -101,17 +75,10 @@ const handleApiError = (error: unknown): never => {
 api.interceptors.response.use(
   (response) => {
     console.log("Response received:", response.status, response.config.url);
-    isConnectionIssue = false;
-    if (connectionCheckTimer) {
-      clearInterval(connectionCheckTimer);
-      connectionCheckTimer = null;
-    }
-
     return response;
   },
   (error) => {
     if (!error.response) {
-      isConnectionIssue = true;
       console.error("Network error:", error.message);
       return Promise.reject(
         new NetworkError(
@@ -482,16 +449,19 @@ export const sendMessage = async ({
   content,
   attachments,
   replyToId,
+  tempId,
 }: {
   chatId: string;
   content: string;
   attachments?: File[];
   replyToId?: string;
+  tempId?: string;
 }) => {
   try {
     const formData = new FormData();
     formData.append("content", content);
     if (replyToId) formData.append("replyToId", replyToId);
+    if (tempId) formData.append("tempId", tempId);
     if (attachments) {
       attachments.forEach((file) => {
         formData.append("attachments", file);

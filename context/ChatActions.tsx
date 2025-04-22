@@ -385,6 +385,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
           content,
           attachments,
           replyToId,
+          tempId,
         });
 
         if (!response) throw new Error("Empty server response");
@@ -394,6 +395,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
 
         const finalResponse = {
           ...response,
+          tempId: response.tempId || tempId,
           chatId: response.chatId || chatId,
         };
 
@@ -402,15 +404,25 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
 
           if (messageIndex >= 0) {
             console.log(
-              `Replacing temp message at index ${messageIndex} with server message: ${finalResponse._id}`,
+              `Replacing temp message ${tempId} at index ${messageIndex} with server message: ${finalResponse._id}`,
             );
             const updatedMessages = [...prev];
             updatedMessages[messageIndex] = finalResponse;
             return updatedMessages;
           }
 
+          const serverIdExists = prev.some(
+            (msg) => msg._id === finalResponse._id,
+          );
+          if (serverIdExists) {
+            console.log(
+              `Server message ${finalResponse._id} already exists (likely from socket), ignoring duplicate from API response.`,
+            );
+            return prev;
+          }
+
           console.log(
-            `Could not find temp message ${tempId}, adding server message: ${finalResponse._id}`,
+            `Could not find temp message ${tempId}, adding server message: ${finalResponse._id} as new entry`,
           );
           return [...prev, finalResponse];
         });
@@ -629,7 +641,6 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
 
         if (!response) throw new Error("Failed to Send Message.");
 
-        // Update with server response
         setMessages((prev) =>
           prev.map((message) =>
             message._id === messageId ? response : message,
@@ -655,48 +666,49 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
     [chatId, setMessages, token, updateOptimisticMessage],
   );
 
-  // Mark messages as read with optimistic UI update
   const handleMarkAsRead = useCallback(
     async (messageIds: string[]) => {
       if (!currentUserId || !chatId) return;
 
       const readAt = new Date();
-      const toMark = new Set<string>();
+      const messagesToUpdateOptimistically: MessageType[] = [];
 
-      // Apply optimistic updates
       setMessages((prev) => {
-        const updatedMessages = prev.map((message) => {
+        return prev.map((message) => {
           if (
             messageIds.includes(message._id) &&
             message.sender.userId !== currentUserId &&
             !message.readBy.some((r) => r.userId === currentUserId)
           ) {
-            toMark.add(message._id);
-            return {
+            const updatedMessage = {
               ...message,
               readBy: [...message.readBy, { userId: currentUserId, readAt }],
             };
+            messagesToUpdateOptimistically.push(updatedMessage);
+            return updatedMessage;
           }
           return message;
         });
-
-        // For each updated message, also apply optimistic update
-        updatedMessages.forEach((message) => {
-          if (toMark.has(message._id)) {
-            startTransition(() => {
-              updateOptimisticMessage(message);
-            });
-          }
-        });
-
-        return updatedMessages;
       });
 
-      const ids = messageIds.length ? messageIds : [...toMark];
-      if (!ids.length) return;
+      if (messagesToUpdateOptimistically.length > 0) {
+        startTransition(() => {
+          messagesToUpdateOptimistically.forEach((message) => {
+            updateOptimisticMessage(message);
+          });
+        });
+      }
 
-      ids.forEach((id) => pendingReadMessages.current.add(id));
-      debouncedMarkAsReadHandler(ids);
+      const idsToMarkForAPI = new Set(messageIds);
+      messagesToUpdateOptimistically.forEach((msg) =>
+        idsToMarkForAPI.add(msg._id),
+      );
+      const finalIds = Array.from(idsToMarkForAPI);
+
+      if (!finalIds.length) return;
+
+      finalIds.forEach((id) => pendingReadMessages.current.add(id));
+      debouncedMarkAsReadHandler(finalIds);
     },
     [
       chatId,
@@ -709,8 +721,6 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
 
   // Handle pending read messages when component unmounts
   useEffect(() => {
-    if (chatId && currentUserId) handleMarkAsRead([]);
-
     const pendingMessages = pendingReadMessages.current;
 
     return () => {
@@ -722,7 +732,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
         }).catch(console.error);
       }
     };
-  }, [chatId, currentUserId, handleMarkAsRead, token]);
+  }, [chatId, currentUserId, token]);
 
   const handleCancelReply = useCallback(
     () => setReplyToMessage(undefined),
