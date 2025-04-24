@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  useState,
-  useEffect,
-  use,
-  useCallback,
-} from "react";
+import { createContext, useState, useEffect, use, useCallback } from "react";
 import useChatSocket from "@/hooks/useChatSocket";
 import useTypingIndicator from "@/hooks/useTypingIndicator";
 import { ChatType, ConnectionState, MessageType } from "@/types/ChatType";
@@ -64,10 +58,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
    * For storing chats.
    */
   const [chats, setChats] = useState<ChatType[]>([]);
-  /**
-   * For storing the initial messages of the current chat.
-   */
-  const [initialMessages, setInitialMessages] = useState<MessageType[]>([]);
   /**'
    * for getting search query.
    */
@@ -138,7 +128,9 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
         const targetChat = { ...updatedChats[chatIndex] };
 
         // Update last message
-        targetChat.lastMessage = newMessage;
+        if (updatedChats[chatIndex].lastMessage?._id === newMessage._id) {
+          targetChat.lastMessage = newMessage;
+        }
 
         if (!targetChat.messages.some((msg) => msg._id === newMessage._id)) {
           targetChat.messages = [...targetChat.messages, newMessage];
@@ -155,21 +147,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
   /**
    * For storing the the messages from selected chat in initial rendering.
    */
-  useEffect(() => {
-    if (currentChatId) {
-      const currentChat = chats.find((chat) => chat._id === currentChatId);
-      if (currentChat?.messages) {
-        const filteredMessages = currentChat.messages.filter(
-          (message) =>
-            !message.deletedFor.some((ele) => ele.userId === currentUser.id),
-        );
-        setInitialMessages(filteredMessages);
-      }
-    } else {
-      setInitialMessages([]);
-    }
-  }, [currentChatId, chats, currentUser.id]);
-
   const {
     connectionState,
     setMessages,
@@ -180,9 +157,22 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
     currentChatId || "",
     currentUser.id,
     token,
-    initialMessages,
     handleChatUpdateFromByNewMessage,
   );
+  useEffect(() => {
+    if (currentChatId) {
+      const currentChat = chats.find((chat) => chat._id === currentChatId);
+      if (currentChat?.messages) {
+        const filteredMessages = currentChat.messages.filter(
+          (message) =>
+            !message.deletedFor.some((ele) => ele.userId === currentUser.id),
+        );
+        setMessages(filteredMessages);
+      }
+    } else {
+      setMessages([]);
+    }
+  }, [currentChatId, chats, currentUser.id, setMessages]);
 
   /**
    * For deleting the chat.
@@ -195,14 +185,14 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
         setChats((prev) => prev.filter((chat) => chat._id !== chatId));
         if (currentChatId === chatId) {
           router.push("/chats");
-          setInitialMessages([]);
+          setMessages([]);
         }
       } catch (error) {
         console.log(error);
         toast.error("Failed to delete chat");
       }
     },
-    [currentChatId, router, token],
+    [currentChatId, router, token, setMessages],
   );
 
   /**

@@ -1,3 +1,4 @@
+import APICheckWrapper from "@/components/offline/api-check-wrapper";
 import { cn } from "@/lib/utils";
 
 export default function ChatsLayout({
@@ -9,16 +10,18 @@ export default function ChatsLayout({
   chatMain: React.ReactNode;
 }) {
   return (
-    <div className="flex h-full overflow-hidden bg-background">
-      {chatList}
-      <section
-        className={cn(
-          "flex flex-col h-full flex-1",
-          !chatMain && "hidden md:flex",
-        )}
-      >
-        {chatMain}
-      </section>
-    </div>
+    <APICheckWrapper>
+      <div className="flex h-full overflow-hidden bg-background">
+        {chatList}
+        <section
+          className={cn(
+            "flex flex-col h-full flex-1",
+            !chatMain && "hidden md:flex",
+          )}
+        >
+          {chatMain}
+        </section>
+      </div>
+    </APICheckWrapper>
   );
 }

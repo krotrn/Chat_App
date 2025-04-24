@@ -9,7 +9,6 @@ export default function useChatSocket(
   initialChatId: string,
   currentUserId: string,
   token: string,
-  initialMessages: MessageType[] = [],
   onChatUpdate: (message: MessageType) => void,
 ) {
   /**
@@ -44,11 +43,6 @@ export default function useChatSocket(
   const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   /**
-   * For storing the initial messages processed state.
-   */
-  const initialMessagesProcessed = useRef(false);
-
-  /**
    * For Updating multiple messages in the state.
    * @param messageIds - The ids of the messages to update.
    * @param updateFn - The function to update the message.
@@ -77,24 +71,6 @@ export default function useChatSocket(
       reconnectTimerRef.current = null;
     }
   }, []);
-
-  /**
-   * For setting messages When mount and if initial messages not processes
-   */
-  useEffect(() => {
-    if (initialMessages.length > 0 && !initialMessagesProcessed.current) {
-      const filteredMessages = initialMessages.filter(
-        (message) =>
-          !message.deletedFor.some((ele) => ele.userId === currentUserId),
-      );
-      setMessages(filteredMessages);
-      initialMessagesProcessed.current = true;
-    }
-
-    return () => {
-      initialMessagesProcessed.current = false;
-    };
-  }, [initialChatId, initialMessages, currentUserId]);
 
   /**
    * For connecting to soocket

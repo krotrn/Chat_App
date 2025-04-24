@@ -7,7 +7,6 @@ import {
   useCallback,
   useMemo,
   useEffect,
-  useOptimistic,
   use,
   startTransition,
   Dispatch,
@@ -28,7 +27,6 @@ import { useChat } from "./ChatProvider";
 
 interface ChatActionsContextType {
   messages: MessageType[];
-  optimisticMessages: MessageType[];
   setMessages: Dispatch<SetStateAction<MessageType[]>>;
   replyToMessage: MessageType | undefined;
   handleReplyToMessage: (messageId: string) => void;
@@ -49,7 +47,6 @@ interface ChatActionsContextType {
   ) => Promise<void>;
   handleMarkAsRead: (messageIds: string[]) => Promise<void>;
   retryFailedMessage: (messageId: string) => Promise<void>;
-  updateOptimisticMessage: (message: MessageType) => void;
   handleCancelReply: () => void;
 }
 
@@ -89,59 +86,6 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
   }
 
   const currentUserId = currentUser.id;
-
-  const [optimisticMessages, updateOptimisticMessage] = useOptimistic(
-    messages,
-    (state: MessageType[], newMessage: MessageType) => {
-      const existingIndex = state.findIndex(
-        (message) => message._id === newMessage._id,
-      );
-      if (existingIndex >= 0) {
-        const updatedState = [...state];
-        updatedState[existingIndex] = newMessage;
-        return updatedState;
-      }
-
-      if (!newMessage._id.startsWith("temp-")) {
-        let tempIndex = state.findIndex(
-          (msg) =>
-            msg._id.startsWith("temp-") &&
-            msg.content === newMessage.content &&
-            msg.sender.userId === newMessage.sender.userId &&
-            (msg.chatId === newMessage.chatId || newMessage.chatId === null),
-        );
-
-        if (tempIndex < 0) {
-          const serverTime = new Date(newMessage.createdAt).getTime();
-          tempIndex = state.findIndex(
-            (msg) =>
-              msg._id.startsWith("temp-") &&
-              msg.sender.userId === newMessage.sender.userId &&
-              Math.abs(new Date(msg.createdAt).getTime() - serverTime) <
-                10000 &&
-              (msg.chatId === newMessage.chatId || newMessage.chatId === null),
-          );
-        }
-
-        if (tempIndex >= 0) {
-          console.log(
-            `Found temp message at index ${tempIndex} to replace with server message: ${newMessage._id}`,
-          );
-          const updatedState = [...state];
-          updatedState[tempIndex] = {
-            ...newMessage,
-            chatId: newMessage.chatId || chatId!,
-          };
-          return updatedState;
-        }
-      }
-
-      console.log(
-        `Could not find temp message for ${newMessage._id}, adding as new message`,
-      );
-      return [...state, newMessage];
-    },
-  );
 
   /**
    * Refs to store pending messages and requests.
@@ -213,7 +157,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
     };
   }, []);
 
-  const debouncedMarkAsRead = useCallback(
+  const markAsRead = useCallback(
     async (messageIds: string[]) => {
       if (!messageIds.length) return;
       try {
@@ -232,8 +176,8 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
    * @param messageIds - The IDs of the messages to mark as read.
    */
   const debouncedMarkAsReadHandler = useMemo(
-    () => debounce(debouncedMarkAsRead, 1000),
-    [debouncedMarkAsRead],
+    () => debounce(markAsRead, 1000),
+    [markAsRead],
   );
 
   /**
@@ -247,17 +191,25 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
       const message = messagesMap.current.get(messageId);
       if (!message || message.status !== StatusEnum.failed) return;
 
+      const requestId = `retry-${messageId}`;
+      if (pendingRequests.current.has(requestId)) return;
+      pendingRequests.current.add(requestId);
       // Update status to sending
-      startTransition(() => {
-        updateOptimisticMessage({
-          ...message,
-          status: StatusEnum.sending,
-        });
-      });
+      setMessages((prev) =>
+        prev.map((m) =>
+          m._id === messageId
+            ? {
+                ...message,
+                status: StatusEnum.sending,
+              }
+            : m,
+        ),
+      );
 
       const pendingMessageData = pendingSendMessages.current.get(messageId);
       if (!pendingMessageData) {
         toast.error("Cannot retry: message data lost");
+        pendingRequests.current.delete(requestId);
         return;
       }
 
@@ -288,23 +240,29 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
         toast.success("Message sent successfully");
       } catch (error) {
         // Update with failure status
-        startTransition(() => {
-          updateOptimisticMessage({
-            ...message,
-            attachments: message.attachments.map((attachment) => ({
-              ...attachment,
-              status: StatusEnum.failed,
-            })),
-            status: StatusEnum.failed,
-          });
-        });
+        setMessages((prev) =>
+          prev.map((m) =>
+            m._id === messageId
+              ? {
+                  ...message,
+                  attachments: message.attachments.map((attachment) => ({
+                    ...attachment,
+                    status: StatusEnum.failed,
+                  })),
+                  status: StatusEnum.failed,
+                }
+              : m,
+          ),
+        );
 
         toast.error(
           error instanceof Error ? error.message : "Failed to send message",
         );
+      } finally {
+        pendingRequests.current.delete(requestId);
       }
     },
-    [chatId, token, setMessages, cleanupAttachments, updateOptimisticMessage],
+    [chatId, token, setMessages, cleanupAttachments],
   );
 
   /**
@@ -330,7 +288,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
         return;
       }
 
-      const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+      const tempId = `temp-${Math.random().toString(36).slice(2, 11)}`;
       const blobUrls = attachments.map((file) => URL.createObjectURL(file));
       if (blobUrls.length) attachmentUrls.current.set(tempId, blobUrls);
 
@@ -370,10 +328,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
         attachments,
       });
 
-      startTransition(() => {
-        updateOptimisticMessage(optimisticMessage);
-        setMessages((prev) => [...prev, optimisticMessage]);
-      });
+      setMessages((prev) => [...prev, optimisticMessage]);
 
       if (replyToId && replyToMessage?._id === replyToId) {
         setReplyToMessage(undefined);
@@ -395,7 +350,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
 
         const finalResponse = {
           ...response,
-          chatId: response.chatId || chatId,
+          chatId: response.chatId,
         };
 
         setMessages((prev) => {
@@ -409,17 +364,6 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
             updatedMessages[messageIndex] = finalResponse;
             return updatedMessages;
           }
-
-          const serverIdExists = prev.some(
-            (msg) => msg._id === finalResponse._id,
-          );
-          if (serverIdExists) {
-            console.log(
-              `Server message ${finalResponse._id} already exists (likely from socket), ignoring duplicate from API response.`,
-            );
-            return prev;
-          }
-
           console.log(
             `Could not find temp message ${tempId}, adding server message: ${finalResponse._id} as new entry`,
           );
@@ -427,17 +371,18 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
         });
       } catch (error) {
         // Update with failure status
-        startTransition(() => {
-          updateOptimisticMessage({
+
+        setMessages((prev) => [
+          ...prev,
+          {
             ...optimisticMessage,
             status: StatusEnum.failed,
-            attachments: optimisticMessage.attachments?.map((attachment) => ({
-              ...attachment,
+            attachments: optimisticMessage.attachments.map((a) => ({
+              ...a,
               status: StatusEnum.failed,
             })),
-          });
-          setMessages((prev) => [...prev, optimisticMessage]);
-        });
+          },
+        ]);
 
         toast.error(
           error instanceof Error ? error.message : "Failed to send message",
@@ -451,7 +396,6 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
       token,
       currentUserId,
       cleanupAttachments,
-      updateOptimisticMessage,
       setMessages,
     ],
   );
@@ -464,12 +408,10 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
 
       const message = messagesMap.current.get(messageId);
       if (message) {
-        startTransition(() => {
-          updateOptimisticMessage({
-            ...message,
-            status: StatusEnum.deleting,
-          });
-        });
+        setMessages((prev) => [
+          ...prev,
+          { ...message, status: StatusEnum.deleting },
+        ]);
       }
 
       if (replyToMessage?._id === messageId) setReplyToMessage(undefined);
@@ -511,15 +453,13 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
       } catch (error) {
         pendingRequests.current.delete(requestId);
         if (message) {
-          updateOptimisticMessage({
-            ...message,
-            status: StatusEnum.sent,
-          });
+          setMessages((prev) => [
+            ...prev,
+            { ...message, status: StatusEnum.sent },
+          ]);
           setMessages((prev) =>
-            prev.map((message) =>
-              message._id === messageId
-                ? { ...message, status: StatusEnum.sent }
-                : message,
+            prev.map((msg) =>
+              msg._id === messageId ? { ...msg, status: StatusEnum.sent } : msg,
             ),
           );
         }
@@ -535,45 +475,42 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
       setMessages,
       token,
       cleanupAttachments,
-      updateOptimisticMessage,
       currentUserId,
     ],
   );
 
   const handleReactToMessage = useCallback(
     async (messageId: string, emoji: string) => {
-      const requestId = `react-${messageId}-${emoji}-${Date.now()}`;
+      const requestId = `react-${messageId}-${emoji}`;
       if (pendingRequests.current.has(requestId)) return;
       pendingRequests.current.add(requestId);
 
       const message = messagesMap.current.get(messageId);
+      if (!message) {
+        toast.error("Message not found");
+        pendingRequests.current.delete(requestId);
+        return;
+      }
+      const prevReaction = [...message.reactions];
+      const hasReacted = prevReaction.some(
+        (r) => r.userId === currentUserId && r.emoji === emoji,
+      );
+      const updatedReactions = hasReacted
+        ? prevReaction.filter(
+            (r) => !(r.userId !== currentUserId && r.emoji !== emoji),
+          )
+        : [
+            ...prevReaction,
+            { userId: currentUserId, emoji, timestamp: new Date() },
+          ];
       if (message && currentUserId) {
-        const updatedMessage = {
-          ...message,
-          reactions: message.reactions
-            .filter(
-              (reaction) =>
-                !(
-                  reaction.userId === currentUserId && reaction.emoji === emoji
-                ),
-            )
-            .concat(
-              message.reactions.some(
-                (r) => r.userId === currentUserId && r.emoji === emoji,
-              )
-                ? []
-                : [
-                    {
-                      emoji,
-                      timestamp: new Date(),
-                      userId: currentUserId,
-                    },
-                  ],
-            ),
-        };
-        startTransition(() => {
-          updateOptimisticMessage(updatedMessage);
-        });
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg._id === messageId
+              ? { ...msg, reactions: updatedReactions }
+              : msg,
+          ),
+        );
       }
 
       try {
@@ -590,20 +527,21 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
             message._id === messageId ? response : message,
           ),
         );
-
-        pendingRequests.current.delete(requestId);
       } catch (error) {
-        pendingRequests.current.delete(requestId);
-        if (message) {
-          startTransition(() => {
-            updateOptimisticMessage(message);
-          });
-        }
+        startTransition(() => {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg._id === messageId ? { ...msg, reactions: prevReaction } : msg,
+            ),
+          );
+        });
         console.error("Reaction error:", error);
         toast.error("Failed to react to message");
+      } finally {
+        pendingRequests.current.delete(requestId);
       }
     },
-    [chatId, setMessages, currentUserId, token, updateOptimisticMessage],
+    [chatId, setMessages, currentUserId, token],
   );
 
   const handleEditMessage = useCallback(
@@ -617,16 +555,24 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
         return;
       }
 
+      const requestId = `edit-${messageId}`;
+      if (pendingRequests.current.has(requestId)) return;
+      pendingRequests.current.add(requestId);
+
       const message = messagesMap.current.get(messageId);
       if (message) {
-        startTransition(() => {
-          updateOptimisticMessage({
-            ...message,
-            content,
-            edited: { editedAt: new Date(), isEdited: true },
-            status: StatusEnum.sending,
-          });
-        });
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg._id === messageId
+              ? {
+                  ...msg,
+                  content,
+                  edited: { editedAt: new Date(), isEdited: true },
+                  status: StatusEnum.sending,
+                }
+              : msg,
+          ),
+        );
       }
 
       try {
@@ -649,20 +595,26 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
         toast.success("Message edited");
       } catch (error) {
         if (message) {
-          startTransition(() => {
-            updateOptimisticMessage({
-              ...message,
-              status: StatusEnum.failed,
-            });
-          });
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg._id === messageId
+                ? {
+                    ...msg,
+                    status: StatusEnum.failed,
+                  }
+                : msg,
+            ),
+          );
         }
 
         toast.error(
           error instanceof Error ? error.message : "Failed to edit message",
         );
+      } finally {
+        pendingRequests.current.delete(requestId);
       }
     },
-    [chatId, setMessages, token, updateOptimisticMessage],
+    [chatId, setMessages, token],
   );
 
   const handleMarkAsRead = useCallback(
@@ -690,14 +642,6 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
         });
       });
 
-      if (messagesToUpdateOptimistically.length > 0) {
-        startTransition(() => {
-          messagesToUpdateOptimistically.forEach((message) => {
-            updateOptimisticMessage(message);
-          });
-        });
-      }
-
       const idsToMarkForAPI = new Set(messageIds);
       messagesToUpdateOptimistically.forEach((msg) =>
         idsToMarkForAPI.add(msg._id),
@@ -709,13 +653,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
       finalIds.forEach((id) => pendingReadMessages.current.add(id));
       debouncedMarkAsReadHandler(finalIds);
     },
-    [
-      chatId,
-      currentUserId,
-      setMessages,
-      debouncedMarkAsReadHandler,
-      updateOptimisticMessage,
-    ],
+    [chatId, currentUserId, setMessages, debouncedMarkAsReadHandler],
   );
 
   // Handle pending read messages when component unmounts
@@ -740,17 +678,14 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
 
   const handleReplyToMessage = useCallback(
     (messageId: string) => {
-      const message = optimisticMessages.find(
-        (prevMessage) => prevMessage._id === messageId,
-      );
+      const message = messages.find((msg) => messageId === msg._id);
       if (message) setReplyToMessage(message);
     },
-    [optimisticMessages, setReplyToMessage],
+    [setReplyToMessage, messages],
   );
 
   const value = {
     messages,
-    optimisticMessages,
     setMessages,
     replyToMessage,
     handleSendMessage,
@@ -759,7 +694,6 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
     handleEditMessage,
     handleMarkAsRead,
     retryFailedMessage,
-    updateOptimisticMessage,
     handleCancelReply,
     handleReplyToMessage,
   };

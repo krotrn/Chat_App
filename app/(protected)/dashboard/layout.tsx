@@ -1,3 +1,4 @@
+import DatabaseCheckWrapper from "@/components/offline/database-check-wrapper";
 import { Metadata } from "next";
 import { ReactNode } from "react";
 
@@ -20,15 +21,17 @@ export default function DashboardLayout({
   recommendations,
 }: Readonly<DashboardLayoutProps>) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div className="md:col-span-1 space-y-4">
-        {profile}
-        {stats}
+    <DatabaseCheckWrapper>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-1 space-y-4">
+          {profile}
+          {stats}
+        </div>
+        <div className="md:col-span-2 space-y-6">
+          {activity}
+          {recommendations}
+        </div>
       </div>
-      <div className="md:col-span-2 space-y-6">
-        {activity}
-        {recommendations}
-      </div>
-    </div>
+    </DatabaseCheckWrapper>
   );
 }

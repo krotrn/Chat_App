@@ -22,7 +22,6 @@ export const initSocket = (token: string) => {
     reconnectionDelay: 1000,
     timeout: 20000,
     upgrade: true,
-    forceNew: true,
   });
 
   if (!socket) {

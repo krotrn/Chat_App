@@ -114,14 +114,36 @@ export const isConnectionHealthy = (): boolean => {
 // Explicitly check connection health
 export const checkConnectionHealth = async (): Promise<boolean> => {
   try {
-    await api.get("/ping", { timeout: 3000 });
+    await api.get("/ping", {
+      timeout: 3000,
+    });
+
     isConnectionIssue = false;
     return true;
   } catch (error) {
+    console.log("Connection health check failed:", error);
     isConnectionIssue = true;
-    console.log(error);
     return false;
   }
+};
+
+export const ensureConnection = async (): Promise<boolean> => {
+  if (isConnectionIssue) {
+    return await checkConnectionHealth();
+  }
+  return true;
+};
+
+export const withConnectionCheck = async <T>(
+  apiCall: () => Promise<T>,
+): Promise<T> => {
+  const isConnected = await ensureConnection();
+  if (!isConnected) {
+    throw new NetworkError(
+      "Server is currently unavailable. Please try again later.",
+    );
+  }
+  return apiCall();
 };
 
 // Fetch all chats
