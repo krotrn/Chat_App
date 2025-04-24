@@ -347,6 +347,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
         updatedAt: new Date(),
         status: StatusEnum.sending,
         reactions: [],
+        isPinned: false,
         receivers: [],
         attachments: attachments.map((file, i) => ({
           name: file.name,
@@ -385,7 +386,6 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
           content,
           attachments,
           replyToId,
-          tempId,
         });
 
         if (!response) throw new Error("Empty server response");
@@ -395,7 +395,6 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
 
         const finalResponse = {
           ...response,
-          tempId: response.tempId || tempId,
           chatId: response.chatId || chatId,
         };
 

@@ -1,10 +1,8 @@
 import { config } from "@/config";
 import io from "socket.io-client";
 import { ChatEventEnum } from "./socket-event";
-import { MessageType } from "@/types/ChatType";
 
 let socket: SocketIOClient.Socket | null = null;
-let reconnectAttempts = 0;
 const MAX_RECONNECT_ATTEMPTS = 5;
 
 export const initSocket = (token: string) => {
@@ -31,7 +29,6 @@ export const initSocket = (token: string) => {
     throw new Error("Error configuring socket connection");
   }
   socket.on("reconnect_attempt", (attempt: number) => {
-    reconnectAttempts = attempt;
     console.log(`Reconnection attempt ${attempt}/${MAX_RECONNECT_ATTEMPTS}`);
   });
 
@@ -60,16 +57,6 @@ export const joinChat = (chatId: string) => {
   return true;
 };
 
-export const onMessageReceived = (callback: (message: MessageType) => void) => {
-  socket?.on(ChatEventEnum.MESSAGE_RECEIVED_EVENT, callback);
-  return () => socket?.off(ChatEventEnum.MESSAGE_RECEIVED_EVENT, callback);
-};
-
-export const onMessageDeleted = (callback: (message: MessageType) => void) => {
-  socket?.on(ChatEventEnum.MESSAGE_DELETE_EVENT, callback);
-  return () => socket?.off(ChatEventEnum.MESSAGE_DELETE_EVENT, callback);
-};
-
 export const onTyping = (callback: (chatId: string) => void) => {
   socket?.on(ChatEventEnum.TYPING_EVENT, callback);
   return () => socket?.off(ChatEventEnum.TYPING_EVENT, callback);
@@ -94,18 +81,4 @@ export const emitStopTyping = (chatId: string) => {
     return true;
   }
   return false;
-};
-
-export const disconnectSocket = () => {
-  if (socket) {
-    socket.disconnect();
-    socket = null;
-  }
-};
-
-export const getSocketStatus = () => {
-  return {
-    connected: socket?.connected || false,
-    reconnectAttempts,
-  };
 };

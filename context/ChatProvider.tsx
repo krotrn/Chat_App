@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useState, useEffect, use, useCallback } from "react";
+import {
+  createContext,
+  useState,
+  useEffect,
+  use,
+  useCallback,
+} from "react";
 import useChatSocket from "@/hooks/useChatSocket";
 import useTypingIndicator from "@/hooks/useTypingIndicator";
 import { ChatType, ConnectionState, MessageType } from "@/types/ChatType";
@@ -54,9 +60,21 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
   currentUser,
   token,
 }) => {
+  /**
+   * For storing chats.
+   */
   const [chats, setChats] = useState<ChatType[]>([]);
+  /**
+   * For storing the initial messages of the current chat.
+   */
   const [initialMessages, setInitialMessages] = useState<MessageType[]>([]);
+  /**'
+   * for getting search query.
+   */
   const searchParams = useSearchParams();
+  /**
+   * For redirecting to the specific chat.
+   */
   const router = useRouter();
   const [searchChatQuery, setSearchChatQuery] = useState("");
 
@@ -71,18 +89,24 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
         }
       }
     },
-    [router, currentChatId],
+    [currentChatId, router],
   );
 
-  if (!currentUser || !currentUser.id) {
+  if (!currentUser.id) {
     throw new Error("No current user found");
   }
 
+  /**
+   * For storing the Typing user Ids
+   */
   const { typingUserIds, handleLocalUserTyping } = useTypingIndicator({
     chatId: currentChatId || "",
     currentUserId: currentUser.id,
   });
 
+  /**
+   * Load chat from server.
+   */
   const loadChats = useCallback(async () => {
     try {
       setAuthToken(token);
@@ -93,34 +117,44 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
     }
   }, [token]);
 
-  const handleChatUpdateFromSocket = useCallback((newMessage: MessageType) => {
-    setChats((prevChats) => {
-      const chatIndex = prevChats.findIndex(
-        (chat) => chat._id === newMessage.chatId,
-      );
+  /**
+   * update chat when a new message is received.
+   */
+  const handleChatUpdateFromByNewMessage = useCallback(
+    (newMessage: MessageType) => {
+      setChats((prevChats) => {
+        const chatIndex = prevChats.findIndex(
+          (chat) => chat._id === newMessage.chatId,
+        );
 
-      if (chatIndex === -1) {
-        console.warn(`Chat ${newMessage.chatId} not found for socket update.`);
-        return prevChats;
-      }
+        if (chatIndex === -1) {
+          console.warn(
+            `Chat ${newMessage.chatId} not found for socket update.`,
+          );
+          return prevChats;
+        }
 
-      const updatedChats = [...prevChats];
-      const targetChat = { ...updatedChats[chatIndex] };
+        const updatedChats = [...prevChats];
+        const targetChat = { ...updatedChats[chatIndex] };
 
-      // Update last message
-      targetChat.lastMessage = newMessage;
+        // Update last message
+        targetChat.lastMessage = newMessage;
 
-      if (!targetChat.messages.some((msg) => msg._id === newMessage._id)) {
-        // Avoid mutating directly
-        targetChat.messages = [...targetChat.messages, newMessage];
-      }
+        if (!targetChat.messages.some((msg) => msg._id === newMessage._id)) {
+          targetChat.messages = [...targetChat.messages, newMessage];
+        }
 
-      updatedChats[chatIndex] = targetChat;
+        updatedChats[chatIndex] = targetChat;
 
-      return updatedChats;
-    });
-  }, []);
+        return updatedChats;
+      });
+    },
+    [],
+  );
 
+  /**
+   * For storing the the messages from selected chat in initial rendering.
+   */
   useEffect(() => {
     if (currentChatId) {
       const currentChat = chats.find((chat) => chat._id === currentChatId);
@@ -147,9 +181,12 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
     currentUser.id,
     token,
     initialMessages,
-    handleChatUpdateFromSocket,
+    handleChatUpdateFromByNewMessage,
   );
 
+  /**
+   * For deleting the chat.
+   */
   const handleDeleteChat = useCallback(
     async (chatId: string, forEveryone?: boolean) => {
       try {
@@ -158,6 +195,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
         setChats((prev) => prev.filter((chat) => chat._id !== chatId));
         if (currentChatId === chatId) {
           router.push("/chats");
+          setInitialMessages([]);
         }
       } catch (error) {
         console.log(error);
@@ -167,6 +205,9 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
     [currentChatId, router, token],
   );
 
+  /**
+   * For searching the chat.
+   */
   const handleChatSearch = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value.toLowerCase();

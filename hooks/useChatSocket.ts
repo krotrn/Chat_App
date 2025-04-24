@@ -12,18 +12,48 @@ export default function useChatSocket(
   initialMessages: MessageType[] = [],
   onChatUpdate: (message: MessageType) => void,
 ) {
+  /**
+   * For storing messages.
+   */
   const [messages, setMessages] = useState<MessageType[]>([]);
+  /**
+   * For storing pinned message ids.
+   */
   const [pinnedMessageIds, setPinnedMessageIds] = useState<string[]>([]);
+  /**
+   * For storing socket connection state.
+   */
   const socketRef = useRef<SocketIOClient.Socket | null>(null);
+  /**
+   * For storing socket connection state.
+   */
   const [connectionState, setConnectionState] = useState<ConnectionState>(
     ConnectionState.DISCONNECTED,
   );
+  /**
+   * For storing the number of reconnect attempts.
+   */
   const reconnectAttempts = useRef(0);
+  /**
+   * For storing the maximum number of reconnect attempts.
+   */
   const maxReconnectAttempts = 5;
+  /**
+   * For storing the reconnect timer.
+   */
   const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const isConnected = connectionState === ConnectionState.CONNECTED;
+
+  /**
+   * For storing the initial messages processed state.
+   */
   const initialMessagesProcessed = useRef(false);
 
+  /**
+   * For Updating multiple messages in the state.
+   * @param messageIds - The ids of the messages to update.
+   * @param updateFn - The function to update the message.
+   * @returns void
+   */
   const updateMultipleMessages = useCallback(
     (messageIds: string[], updateFn: (msg: MessageType) => MessageType) => {
       setMessages((prev) => {
@@ -38,6 +68,9 @@ export default function useChatSocket(
     [],
   );
 
+  /**
+   * For Cleaning the Timer.
+   */
   const cleanupTimer = useCallback(() => {
     if (reconnectTimerRef.current) {
       clearInterval(reconnectTimerRef.current);
@@ -45,6 +78,9 @@ export default function useChatSocket(
     }
   }, []);
 
+  /**
+   * For setting messages When mount and if initial messages not processes
+   */
   useEffect(() => {
     if (initialMessages.length > 0 && !initialMessagesProcessed.current) {
       const filteredMessages = initialMessages.filter(
@@ -60,17 +96,17 @@ export default function useChatSocket(
     };
   }, [initialChatId, initialMessages, currentUserId]);
 
+  /**
+   * For connecting to soocket
+   */
   useEffect(() => {
     if (!currentUserId || !initialChatId || !token) return;
 
     try {
       console.log("Initializing socket connection for chat:", initialChatId);
       setConnectionState(ConnectionState.CONNECTING);
-      if (!socketRef.current) {
-        socketRef.current = initSocket(token);
-      } else {
-        console.log("Socket already initialized, joining chat:", initialChatId);
-      }
+      socketRef.current = initSocket(token);
+      console.log("Socket already initialized, joining chat:", initialChatId);
       joinChat(initialChatId);
 
       const socket = socketRef.current;
@@ -109,38 +145,19 @@ export default function useChatSocket(
 
       socket.on(
         ChatEventEnum.MESSAGE_RECEIVED_EVENT,
-        (message: MessageType & { tempId?: string }) => {
-          if (message.chatId === initialChatId || message.chatId === null) {
+        (message: MessageType) => {
+          if (message.chatId === initialChatId) {
             setMessages((prev) => {
-              const existingIndex = {
-                ...message,
-                chatId: message.chatId || initialChatId,
-              };
-
               const serverIdIndex = prev.findIndex(
-                (msg) => msg._id === existingIndex._id,
+                (msg) => msg._id === message._id,
               );
               if (serverIdIndex >= 0) {
                 console.log(
-                  `Updating existing message ${existingIndex._id} from socket event.`,
+                  `Updating existing message ${message._id} from socket event.`,
                 );
                 const updatedMessages = [...prev];
-                updatedMessages[serverIdIndex] = existingIndex;
+                updatedMessages[serverIdIndex] = message;
                 return updatedMessages;
-              }
-
-              if (existingIndex.tempId) {
-                const tempIdIndex = prev.findIndex(
-                  (msg) => msg._id === existingIndex.tempId,
-                );
-                if (tempIdIndex >= 0) {
-                  console.log(
-                    `Replacing temp message ${existingIndex.tempId} with server message ${existingIndex._id} from socket event.`,
-                  );
-                  const updatedMessages = [...prev];
-                  updatedMessages[tempIdIndex] = existingIndex;
-                  return updatedMessages;
-                }
               }
 
               if (message.sender.userId === currentUserId) {
@@ -157,18 +174,18 @@ export default function useChatSocket(
 
                 if (tempIndex >= 0) {
                   console.log(
-                    `Replacing temp message via heuristic match with ${existingIndex._id} from socket event.`,
+                    `Replacing message match with ${message._id} from socket event.`,
                   );
                   const updatedMessages = [...prev];
-                  updatedMessages[tempIndex] = existingIndex;
+                  updatedMessages[tempIndex] = message;
                   return updatedMessages;
                 }
               }
 
               console.log(
-                `Adding new message ${existingIndex._id} from socket event.`,
+                `Adding new message ${message._id} from socket event.`,
               );
-              return [...prev, existingIndex];
+              return [...prev, message];
             });
           }
           onChatUpdate(message);
@@ -398,7 +415,7 @@ export default function useChatSocket(
     messages,
     setMessages,
     pinnedMessageIds,
-    isConnected,
+    isConnected: connectionState === ConnectionState.CONNECTED,
     connectionState,
   };
 }
