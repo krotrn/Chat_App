@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useState, useEffect, use, useCallback, useMemo } from "react";
+import {
+  createContext,
+  useState,
+  useEffect,
+  use,
+  useCallback,
+  useMemo,
+} from "react";
 import useChatSocket from "@/hooks/useChatSocket";
 import useTypingIndicator from "@/hooks/useTypingIndicator";
 import { ChatType, ConnectionState, MessageType } from "@/types/ChatType";
@@ -99,24 +106,20 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
     pinnedMessageIds,
     chats,
     setChats,
-  } = useChatSocket(
-    currentChatId || "",
-    currentUser.id,
-    token,
-    );
-  
-    /**
+  } = useChatSocket(currentChatId || "", currentUser.id, token);
+
+  /**
    * Load chat from server.
    */
-    const loadChats = useCallback(async () => {
-      try {
-        setAuthToken(token);
-        const response = await fetchChats();
-        setChats(response.chats);
-      } catch (error) {
-        console.error("Error loading chats:", error);
-      }
-    }, [token, setChats]);
+  const loadChats = useCallback(async () => {
+    try {
+      setAuthToken(token);
+      const response = await fetchChats();
+      setChats(response.chats);
+    } catch (error) {
+      console.error("Error loading chats:", error);
+    }
+  }, [token, setChats]);
   useEffect(() => {
     if (currentChatId) {
       const currentChat = chats.find((chat) => chat._id === currentChatId);
@@ -180,7 +183,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
     loadChats();
   }, [loadChats]);
 
-  const chatContextValue = useMemo(() =>{
+  const chatContextValue = useMemo(() => {
     return {
       chats,
       setChats,

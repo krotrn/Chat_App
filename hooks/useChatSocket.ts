@@ -8,7 +8,7 @@ import { toast } from "sonner";
 export default function useChatSocket(
   initialChatId: string,
   currentUserId: string,
-  token: string
+  token: string,
 ) {
   /**
    * For storing chats.
@@ -30,7 +30,7 @@ export default function useChatSocket(
    * For storing socket connection state.
    */
   const [connectionState, setConnectionState] = useState<ConnectionState>(
-    ConnectionState.DISCONNECTED
+    ConnectionState.DISCONNECTED,
   );
   /**
    * For storing the number of reconnect attempts.
@@ -58,11 +58,11 @@ export default function useChatSocket(
         if (!needsUpdate) return prev;
 
         return prev.map((msg) =>
-          messageIds.includes(msg._id) ? updateFn(msg) : msg
+          messageIds.includes(msg._id) ? updateFn(msg) : msg,
         );
       });
     },
-    []
+    [],
   );
 
   /**
@@ -71,7 +71,7 @@ export default function useChatSocket(
   const onChatUpdate = useCallback((newMessage: MessageType) => {
     setChats((prevChats) => {
       const chatIndex = prevChats.findIndex(
-        (chat) => chat._id === newMessage.chatId
+        (chat) => chat._id === newMessage.chatId,
       );
 
       if (chatIndex === -1) {
@@ -143,22 +143,22 @@ export default function useChatSocket(
             }
             reconnectAttempts.current++;
             console.log(
-              `Attempting to reconnect (${reconnectAttempts.current}/${maxReconnectAttempts})...`
+              `Attempting to reconnect (${reconnectAttempts.current}/${maxReconnectAttempts})...`,
             );
             socket.connect();
           },
-          3000 * Math.min(reconnectAttempts.current, 3)
+          3000 * Math.min(reconnectAttempts.current, 3),
         );
       });
 
       socket.on(
         ChatEventEnum.MESSAGE_RECEIVED_EVENT,
         (message: MessageType) => {
-          console.log(message)
+          console.log(message);
           if (message.chatId === initialChatId) {
             setMessages((prev) => {
               const serverIdIndex = prev.findIndex(
-                (msg) => msg._id === message._id
+                (msg) => msg._id === message._id,
               );
               if (serverIdIndex >= 0) {
                 const updatedMessages = [...prev];
@@ -172,23 +172,23 @@ export default function useChatSocket(
             prev.map((chat) =>
               chat._id === message.chatId
                 ? { ...chat, messages: [...chat.messages, message] }
-                : chat
-            )
+                : chat,
+            ),
           );
           onChatUpdate(message);
-        }
+        },
       );
 
       socket.on(
         ChatEventEnum.MESSAGE_REACTION_EVENT,
         (updated: MessageType) => {
-          console.log(updated)
+          console.log(updated);
           console.log("Message reaction received:", updated);
           if (updated.chatId === initialChatId) {
             setMessages((prev) =>
               prev.map((message) =>
-                message._id === updated._id ? updated : message
-              )
+                message._id === updated._id ? updated : message,
+              ),
             );
           }
           setChats((prev) =>
@@ -197,14 +197,14 @@ export default function useChatSocket(
                 ? {
                     ...chat,
                     messages: chat.messages.map((msg) =>
-                      msg._id === updated._id ? updated : msg
+                      msg._id === updated._id ? updated : msg,
                     ),
                   }
-                : chat
-            )
+                : chat,
+            ),
           );
           onChatUpdate(updated);
-        }
+        },
       );
 
       socket.on(
@@ -227,7 +227,7 @@ export default function useChatSocket(
                   };
                 }
                 return msg;
-              })
+              }),
             );
             setChats((prev) =>
               prev.map((chat) =>
@@ -237,14 +237,14 @@ export default function useChatSocket(
                       messages: chat.messages.map((msg) =>
                         msg._id === data.messageId
                           ? { ...msg, isPinned: true }
-                          : msg
+                          : msg,
                       ),
                     }
-                  : chat
-              )
+                  : chat,
+              ),
             );
           }
-        }
+        },
       );
 
       socket.on(
@@ -265,7 +265,7 @@ export default function useChatSocket(
                   };
                 }
                 return msg;
-              })
+              }),
             );
             setChats((prev) =>
               prev.map((chat) =>
@@ -275,27 +275,27 @@ export default function useChatSocket(
                       messages: chat.messages.map((msg) =>
                         msg._id === data.messageId
                           ? { ...msg, isPinned: false }
-                          : msg
+                          : msg,
                       ),
                     }
-                  : chat
-              )
+                  : chat,
+              ),
             );
           }
-        }
+        },
       );
 
       socket.on(
         ChatEventEnum.MESSAGE_DELETE_EVENT,
-        (data: { chatId: string; messageId: string; deletedBy: string; }) => {
-          console.log(data)
+        (data: { chatId: string; messageId: string; deletedBy: string }) => {
+          console.log(data);
           if (data.chatId === initialChatId) {
             setMessages((prev) =>
-              prev.filter((msg) => msg._id !== data.messageId)
+              prev.filter((msg) => msg._id !== data.messageId),
             );
 
             setPinnedMessageIds((prev) =>
-              prev.filter((id) => id !== data.messageId)
+              prev.filter((id) => id !== data.messageId),
             );
           }
           setChats((prev) =>
@@ -304,20 +304,20 @@ export default function useChatSocket(
                 ? {
                     ...chat,
                     messages: chat.messages.filter(
-                      (msg) => msg._id !== data.messageId
+                      (msg) => msg._id !== data.messageId,
                     ),
                   }
-                : chat
-            )
+                : chat,
+            ),
           );
-        }
+        },
       );
 
       socket.on(ChatEventEnum.MESSAGE_EDITED_EVENT, (data: MessageType) => {
         console.log("Message edited event received:", data);
         if (data.chatId === initialChatId) {
           setMessages((prev) =>
-            prev.map((msg) => (msg._id === data._id ? data : msg))
+            prev.map((msg) => (msg._id === data._id ? data : msg)),
           );
         }
         setChats((prev) =>
@@ -326,11 +326,11 @@ export default function useChatSocket(
               ? {
                   ...chat,
                   messages: chat.messages.map((msg) =>
-                    msg._id === data._id ? data : msg
+                    msg._id === data._id ? data : msg,
                   ),
                 }
-              : chat
-          )
+              : chat,
+          ),
         );
       });
 
@@ -350,7 +350,7 @@ export default function useChatSocket(
             updateMultipleMessages(data.messageIds, (message) => {
               const readBy = message.readBy;
               const existingReadIndex = readBy.findIndex(
-                (read) => read.userId === data.readBy.userId
+                (read) => read.userId === data.readBy.userId,
               );
               if (existingReadIndex >= 0) {
                 return message;
@@ -368,7 +368,7 @@ export default function useChatSocket(
               }
             });
           }
-        }
+        },
       );
 
       socket.on(ChatEventEnum.SOCKET_ERROR_EVENT, (error: Error) => {
@@ -381,7 +381,7 @@ export default function useChatSocket(
 
       socket.on(ChatEventEnum.NEW_CHAT_EVENT, (data: ChatType) => {
         setChats((prevChats) => {
-          console.log(data)
+          console.log(data);
           if (prevChats.some((chat) => chat._id === data._id)) {
             return prevChats;
           }
@@ -390,17 +390,17 @@ export default function useChatSocket(
       });
 
       socket.on(ChatEventEnum.CHAT_UPDATED_EVENT, (data: ChatType) => {
-        console.log(data)
+        console.log(data);
         setChats((prev) =>
-          prev.map((chat) => (chat._id === data._id ? data : chat))
+          prev.map((chat) => (chat._id === data._id ? data : chat)),
         );
       });
       socket.on(ChatEventEnum.CHAT_DELETED_EVENT, (data: ChatType) => {
-        console.log(data)
+        console.log(data);
         setChats((prev) => prev.filter((chat) => chat._id !== data._id));
       });
       socket.on(ChatEventEnum.REMOVED_FROM_CHAT, (data: ChatType) => {
-        console.log(data)
+        console.log(data);
         setChats((prev) => prev.filter((chat) => chat._id !== data._id));
       });
 
