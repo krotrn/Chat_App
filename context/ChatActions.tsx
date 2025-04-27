@@ -8,7 +8,6 @@ import {
   useMemo,
   useEffect,
   use,
-  startTransition,
   Dispatch,
   SetStateAction,
 } from "react";
@@ -33,25 +32,26 @@ interface ChatActionsContextType {
   handleSendMessage: (
     content: string,
     attachments?: File[],
-    replyToId?: string,
+    replyToId?: string
   ) => Promise<void>;
   handleDeleteMessage: (
     messageId: string,
-    forEveryone: boolean,
+    forEveryone: boolean
   ) => Promise<void>;
   handleReactToMessage: (messageId: string, emoji: string) => Promise<void>;
   handleEditMessage: (
     messageId: string,
     content: string,
-    replyToId?: string,
+    replyToId?: string
   ) => Promise<void>;
   handleMarkAsRead: (messageIds: string[]) => Promise<void>;
   retryFailedMessage: (messageId: string) => Promise<void>;
   handleCancelReply: () => void;
+  messagesMap: React.RefObject<Map<string, MessageType>>;
 }
 
 const ChatActionsContext = createContext<ChatActionsContextType | undefined>(
-  undefined,
+  undefined
 );
 
 export const useChatActions = () => {
@@ -75,12 +75,13 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
     token,
     currentUser,
     currentChatId: chatId,
+    setChats,
   } = useChat();
   const [replyToMessage, setReplyToMessage] = useState<MessageType | undefined>(
-    undefined,
+    undefined
   );
 
-  if (!currentUser || !currentUser.id) {
+  if (!currentUser?.id) {
     toast.error("Current user not found");
     throw new Error("Current user not found");
   }
@@ -119,7 +120,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
    */
   useEffect(() => {
     messagesMap.current = new Map(
-      messages.map((message) => [message._id, message]),
+      messages.map((message) => [message._id, message])
     );
   }, [messages]);
 
@@ -136,7 +137,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
         } catch (error) {
           console.error(
             `Failed to revoke URL for message ${messageId}:`,
-            error,
+            error
           );
         }
       });
@@ -144,31 +145,18 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
     }
   }, []);
 
-  /**
-   * Clean up all attachment URLs on unmount
-   */
-  useEffect(() => {
-    const urls = attachmentUrls.current;
-    return () => {
-      urls.forEach((blobUrls) =>
-        blobUrls.forEach((url) => URL.revokeObjectURL(url)),
-      );
-      urls.clear();
-    };
-  }, []);
-
   const markAsRead = useCallback(
     async (messageIds: string[]) => {
-      if (!messageIds.length) return;
+      if (!messageIds.length || !chatId) return;
       try {
         setAuthToken(token);
-        await markMessagesAsRead({ chatId: chatId!, messageIds });
+        await markMessagesAsRead({ chatId, messageIds });
         messageIds.forEach((id) => pendingReadMessages.current.delete(id));
       } catch (error) {
         console.error("Mark as Read Error: ", error);
       }
     },
-    [chatId, token],
+    [chatId, token]
   );
 
   /**
@@ -176,9 +164,38 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
    * @param messageIds - The IDs of the messages to mark as read.
    */
   const debouncedMarkAsReadHandler = useMemo(
-    () => debounce(markAsRead, 1000),
-    [markAsRead],
+    () => debounce(markAsRead, 1000, { leading: false, trailing: true }),
+    [markAsRead]
   );
+
+  /**
+   * Clean up all attachment URLs and pending operations on unmount
+   */
+  useEffect(() => {
+    const urls = attachmentUrls.current;
+    const pendingMessages = pendingSendMessages.current;
+    const pendingReadMessagesRef = pendingReadMessages.current;
+    return () => {
+      urls.forEach((blobUrls) =>
+        blobUrls.forEach((url) => URL.revokeObjectURL(url))
+      );
+      urls.clear();
+      pendingMessages.forEach((_, messageId) => cleanupAttachments(messageId));
+      pendingMessages.clear();
+      debouncedMarkAsReadHandler.cancel();
+      const pendingReadIds = Array.from(pendingReadMessagesRef);
+      if (pendingReadIds.length && chatId && token) {
+        setAuthToken(token);
+        markMessagesAsRead({ chatId, messageIds: pendingReadIds }).catch(
+          (error) =>
+            console.error(
+              "Error marking messages as read during cleanup : ",
+              error
+            )
+        );
+      }
+    };
+  }, [cleanupAttachments, debouncedMarkAsReadHandler, chatId, token]);
 
   /**
    * Retry sending a failed message with optimistic UI update.
@@ -189,35 +206,54 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
   const retryFailedMessage = useCallback(
     async (messageId: string) => {
       const message = messagesMap.current.get(messageId);
-      if (!message || message.status !== StatusEnum.failed) return;
+      if (!message || message.status !== StatusEnum.failed)
+        return Promise.resolve();
 
       const requestId = `retry-${messageId}`;
-      if (pendingRequests.current.has(requestId)) return;
+      if (pendingRequests.current.has(requestId)) return Promise.resolve();
       pendingRequests.current.add(requestId);
       // Update status to sending
       setMessages((prev) =>
-        prev.map((m) =>
-          m._id === messageId
+        prev.map((msg) =>
+          msg._id === messageId
             ? {
                 ...message,
                 status: StatusEnum.sending,
               }
-            : m,
-        ),
+            : msg
+        )
+      );
+
+      setChats((chats) =>
+        chats.map((chat) =>
+          chat._id === chatId
+            ? {
+                ...chat,
+                messages: chat.messages.map((msg) =>
+                  msg._id === messageId
+                    ? { ...msg, status: StatusEnum.sending }
+                    : msg
+                ),
+              }
+            : chat
+        )
       );
 
       const pendingMessageData = pendingSendMessages.current.get(messageId);
       if (!pendingMessageData) {
         toast.error("Cannot retry: message data lost");
         pendingRequests.current.delete(requestId);
-        return;
+        return Promise.reject(new Error("Message data not found"));
       }
 
       try {
+        if (!chatId) {
+          throw new Error("No chat selected");
+        }
         setAuthToken(token);
         const { content, replyToId, attachments = [] } = pendingMessageData;
         const response = await sendMessage({
-          chatId: chatId!,
+          chatId,
           content,
           attachments,
           replyToId,
@@ -231,18 +267,29 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
         // Update with server response
         setMessages((prev) =>
           prev.map((message) =>
-            message._id === messageId
-              ? { ...response, tempId: messageId }
-              : message,
-          ),
+            message._id === messageId ? response : message
+          )
+        );
+        setChats((chats) =>
+          chats.map((chat) =>
+            chat._id === chatId
+              ? {
+                  ...chat,
+                  messages: chat.messages.map((msg) =>
+                    msg._id === messageId ? response : msg
+                  ),
+                }
+              : chat
+          )
         );
 
         toast.success("Message sent successfully");
+        return Promise.resolve();
       } catch (error) {
         // Update with failure status
         setMessages((prev) =>
-          prev.map((m) =>
-            m._id === messageId
+          prev.map((msg) =>
+            msg._id === messageId
               ? {
                   ...message,
                   attachments: message.attachments.map((attachment) => ({
@@ -251,18 +298,41 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
                   })),
                   status: StatusEnum.failed,
                 }
-              : m,
-          ),
+              : msg
+          )
+        );
+        setChats((chats) =>
+          chats.map((chat) =>
+            chat._id === chatId
+              ? {
+                  ...chat,
+                  messages: chat.messages.map((msg) =>
+                    msg._id === messageId
+                      ? {
+                          ...msg,
+                          attachments: msg.attachments.map((att) => ({
+                            ...att,
+                            status: StatusEnum.failed,
+                          })),
+                          status: StatusEnum.failed,
+                        }
+                      : msg
+                  ),
+                }
+              : chat
+          )
         );
 
-        toast.error(
-          error instanceof Error ? error.message : "Failed to send message",
-        );
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to send message";
+
+        toast.error(errorMessage);
+        return Promise.reject(new Error(errorMessage));
       } finally {
         pendingRequests.current.delete(requestId);
       }
     },
-    [chatId, token, setMessages, cleanupAttachments],
+    [chatId, token, setMessages, cleanupAttachments, setChats]
   );
 
   /**
@@ -277,15 +347,15 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
     async (
       content: string,
       attachments: File[] = [],
-      replyToId?: string,
+      replyToId?: string
     ): Promise<void> => {
       if (!content.trim() && !attachments.length) {
         toast.error("Message cannot be empty");
-        return;
+        return Promise.reject(new Error("Empty message"));
       }
       if (!chatId) {
         toast.error("No chat ID provided");
-        return;
+        return Promise.reject(new Error("No chat ID provided"));
       }
 
       const tempId = `temp-${Math.random().toString(36).slice(2, 11)}`;
@@ -329,6 +399,13 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
       });
 
       setMessages((prev) => [...prev, optimisticMessage]);
+      setChats((chats) =>
+        chats.map((chat) =>
+          chat._id === chatId
+            ? { ...chat, messages: [...chat.messages, optimisticMessage] }
+            : chat
+        )
+      );
 
       if (replyToId && replyToMessage?._id === replyToId) {
         setReplyToMessage(undefined);
@@ -348,27 +425,30 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
         pendingSendMessages.current.delete(tempId);
         cleanupAttachments(tempId);
 
-        const finalResponse = {
-          ...response,
-          chatId: response.chatId,
-        };
-
         setMessages((prev) => {
           const messageIndex = prev.findIndex((msg) => msg._id === tempId);
 
           if (messageIndex >= 0) {
-            console.log(
-              `Replacing temp message ${tempId} at index ${messageIndex} with server message: ${finalResponse._id}`,
-            );
             const updatedMessages = [...prev];
-            updatedMessages[messageIndex] = finalResponse;
+            updatedMessages[messageIndex] = response;
             return updatedMessages;
           }
-          console.log(
-            `Could not find temp message ${tempId}, adding server message: ${finalResponse._id} as new entry`,
-          );
-          return [...prev, finalResponse];
+          return [...prev, response];
         });
+
+        setChats((chats) =>
+          chats.map((chat) =>
+            chat._id === chatId
+              ? {
+                  ...chat,
+                  messages: chat.messages.map((msg) =>
+                    msg._id === optimisticMessage._id ? response : msg
+                  ),
+                }
+              : chat
+          )
+        );
+        return Promise.resolve();
       } catch (error) {
         // Update with failure status
 
@@ -383,10 +463,25 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
             })),
           },
         ]);
-
-        toast.error(
-          error instanceof Error ? error.message : "Failed to send message",
+        setChats((chats) =>
+          chats.map((chat) =>
+            chat._id === chatId
+              ? {
+                  ...chat,
+                  messages: chat.messages.map((msg) =>
+                    msg._id === optimisticMessage._id
+                      ? { ...msg, status: StatusEnum.failed }
+                      : msg
+                  ),
+                }
+              : chat
+          )
         );
+
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to send message";
+        toast.error(errorMessage);
+        return Promise.reject(new Error(errorMessage));
       }
     },
     [
@@ -397,75 +492,98 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
       currentUserId,
       cleanupAttachments,
       setMessages,
-    ],
+      setChats,
+    ]
   );
 
   const handleDeleteMessage = useCallback(
     async (messageId: string, forEveryone: boolean) => {
+      if (!chatId) {
+        toast.error("No chat selected");
+        return Promise.reject(new Error("No chat ID provided"));
+      }
       const requestId = `delete-${messageId}`;
-      if (pendingRequests.current.has(requestId)) return;
+      if (pendingRequests.current.has(requestId)) return Promise.resolve();
       pendingRequests.current.add(requestId);
 
       const message = messagesMap.current.get(messageId);
-      if (message) {
-        setMessages((prev) => [
-          ...prev,
-          { ...message, status: StatusEnum.deleting },
-        ]);
+      if (!message) {
+        pendingRequests.current.delete(requestId);
+        toast.error("Message not found");
+        return Promise.reject(new Error("Message not found"));
       }
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === messageId ? { ...msg, status: StatusEnum.deleting } : msg
+        )
+      );
+
+      setChats((chats) =>
+        chats.map((chat) =>
+          chat._id === chatId
+            ? {
+                ...chat,
+                messages: chat.messages.map((msg) =>
+                  msg._id === messageId
+                    ? { ...msg, status: StatusEnum.deleting }
+                    : msg
+                ),
+              }
+            : chat
+        )
+      );
 
       if (replyToMessage?._id === messageId) setReplyToMessage(undefined);
 
       try {
         setAuthToken(token);
-        await deleteMessage({ chatId: chatId!, messageId, forEveryone });
+        await deleteMessage({ chatId, messageId, forEveryone });
         pendingRequests.current.delete(requestId);
 
-        if (forEveryone) {
-          setMessages((prev) =>
-            prev.filter((message) => message._id !== messageId),
-          );
-        } else {
-          setMessages((prev) =>
-            prev
-              .map((message) =>
-                message._id === messageId
-                  ? {
-                      ...message,
-                      deletedFor: [
-                        ...message.deletedFor,
-                        { userId: currentUserId, deletedAt: new Date() },
-                      ],
-                    }
-                  : message,
-              )
-              .filter(
-                (message) =>
-                  !message.deletedFor.some(
-                    (ele) => ele.userId === currentUserId,
+        setMessages((prev) =>
+          prev.filter((message) => message._id !== messageId)
+        );
+        setChats((chats) =>
+          chats.map((chat) =>
+            chat._id === chatId
+              ? {
+                  ...chat,
+                  messages: chat.messages.filter(
+                    (msg) => msg._id !== messageId
                   ),
-              ),
-          );
-        }
+                }
+              : chat
+          )
+        );
 
         cleanupAttachments(messageId);
         toast.success("Message deleted");
+        return Promise.resolve();
       } catch (error) {
         pendingRequests.current.delete(requestId);
-        if (message) {
-          setMessages((prev) => [
-            ...prev,
-            { ...message, status: StatusEnum.sent },
-          ]);
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg._id === messageId ? { ...msg, status: StatusEnum.sent } : msg,
-            ),
-          );
-        }
-        toast.error(
-          error instanceof Error ? error.message : "Failed to delete message",
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg._id === messageId ? { ...msg, status: StatusEnum.sent } : msg
+          )
         );
+        setChats((chats) =>
+          chats.map((chat) =>
+            chat._id === chatId
+              ? {
+                  ...chat,
+                  messages: chat.messages.map((msg) =>
+                    msg._id === messageId
+                      ? { ...msg, status: StatusEnum.sent }
+                      : msg
+                  ),
+                }
+              : chat
+          )
+        );
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to delete message";
+        toast.error(errorMessage);
+        return Promise.reject(new Error(errorMessage));
       }
     },
     [
@@ -475,43 +593,64 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
       setMessages,
       token,
       cleanupAttachments,
-      currentUserId,
-    ],
+      setChats,
+    ]
   );
 
   const handleReactToMessage = useCallback(
     async (messageId: string, emoji: string) => {
+      if (!chatId) {
+        toast.error("No chat selected");
+        return Promise.reject(new Error("No chat ID provided"));
+      }
+
       const requestId = `react-${messageId}-${emoji}`;
       if (pendingRequests.current.has(requestId)) return;
       pendingRequests.current.add(requestId);
 
       const message = messagesMap.current.get(messageId);
       if (!message) {
-        toast.error("Message not found");
         pendingRequests.current.delete(requestId);
-        return;
+        toast.error("Message not found");
+        return Promise.reject(new Error("Message not found"));
       }
-      const prevReaction = [...message.reactions];
-      const hasReacted = prevReaction.some(
-        (r) => r.userId === currentUserId && r.emoji === emoji,
+      // Store original reactions for rollback if needed
+      const prevReactions = [...message.reactions];
+
+      // Optimistic update
+      const hasReacted = prevReactions.some(
+        (r) => r.userId === currentUserId && r.emoji === emoji
       );
+
       const updatedReactions = hasReacted
-        ? prevReaction.filter(
-            (r) => !(r.userId !== currentUserId && r.emoji !== emoji),
+        ? prevReactions.filter(
+            (r) => !(r.userId === currentUserId && r.emoji === emoji)
           )
         : [
-            ...prevReaction,
+            ...prevReactions,
             { userId: currentUserId, emoji, timestamp: new Date() },
           ];
-      if (message && currentUserId) {
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg._id === messageId
-              ? { ...msg, reactions: updatedReactions }
-              : msg,
-          ),
-        );
-      }
+
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === messageId ? { ...msg, reactions: updatedReactions } : msg
+        )
+      );
+
+      setChats((chats) =>
+        chats.map((chat) =>
+          chat._id === chatId
+            ? {
+                ...chat,
+                messages: chat.messages.map((msg) =>
+                  msg._id === messageId
+                    ? { ...msg, reactions: updatedReactions }
+                    : msg
+                ),
+              }
+            : chat
+        )
+      );
 
       try {
         setAuthToken(token);
@@ -524,56 +663,113 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
 
         setMessages((prev) =>
           prev.map((message) =>
-            message._id === messageId ? response : message,
-          ),
+            message._id === messageId ? response : message
+          )
         );
+        setChats((chats) =>
+          chats.map((chat) =>
+            chat._id === chatId
+              ? {
+                  ...chat,
+                  messages: chat.messages.map((msg) =>
+                    msg._id === messageId ? response : msg
+                  ),
+                }
+              : chat
+          )
+        );
+        return Promise.resolve();
       } catch (error) {
-        startTransition(() => {
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg._id === messageId ? { ...msg, reactions: prevReaction } : msg,
-            ),
-          );
-        });
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg._id === messageId ? { ...msg, reactions: prevReactions } : msg
+          )
+        );
+        setChats((chats) =>
+          chats.map((chat) =>
+            chat._id === chatId
+              ? {
+                  ...chat,
+                  messages: chat.messages.map((msg) =>
+                    msg._id === messageId
+                      ? { ...msg, reactions: prevReactions }
+                      : msg
+                  ),
+                }
+              : chat
+          )
+        );
         console.error("Reaction error:", error);
-        toast.error("Failed to react to message");
+        return Promise.reject(new Error("Failed to react to message"));
       } finally {
         pendingRequests.current.delete(requestId);
       }
     },
-    [chatId, setMessages, currentUserId, token],
+    [chatId, setMessages, currentUserId, token, setChats]
   );
 
   const handleEditMessage = useCallback(
     async (
       messageId: string,
       content: string,
-      replyToId?: string,
+      replyToId?: string
     ): Promise<void> => {
       if (!content.trim()) {
         toast.error("Message cannot be empty");
-        return;
+        return Promise.reject(new Error("Failed to react to message"));
+      }
+
+      if (!chatId) {
+        toast.error("No chat selected");
+        return Promise.reject(new Error("No chat ID provided"));
       }
 
       const requestId = `edit-${messageId}`;
-      if (pendingRequests.current.has(requestId)) return;
+      if (pendingRequests.current.has(requestId)) return Promise.resolve();
       pendingRequests.current.add(requestId);
 
       const message = messagesMap.current.get(messageId);
-      if (message) {
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg._id === messageId
-              ? {
-                  ...msg,
-                  content,
-                  edited: { editedAt: new Date(), isEdited: true },
-                  status: StatusEnum.sending,
-                }
-              : msg,
-          ),
-        );
+      if (!message) {
+        pendingRequests.current.delete(requestId);
+        toast.error("Message not found");
+        return Promise.reject(new Error("Message not found"));
       }
+      // Store original message for rollback if needed
+      const originalMessage = { ...message };
+
+      // Optimistic update
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === messageId
+            ? {
+                ...msg,
+                content: content.trim(),
+                edited: { editedAt: new Date(), isEdited: true },
+                status: StatusEnum.sending,
+              }
+            : msg
+        )
+      );
+
+      setChats((chats) =>
+        chats.map((chat) =>
+          chat._id === chatId
+            ? {
+                ...chat,
+                messages: chat.messages.map((msg) =>
+                  msg._id === messageId
+                    ? {
+                        ...msg,
+                        content: content.trim(),
+                        edited: { editedAt: new Date(), isEdited: true },
+                        status: StatusEnum.sending,
+                      }
+                    : msg
+                ),
+              }
+            : chat
+        )
+      );
 
       try {
         setAuthToken(token);
@@ -588,41 +784,75 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
 
         setMessages((prev) =>
           prev.map((message) =>
-            message._id === messageId ? response : message,
-          ),
+            message._id === messageId ? response : message
+          )
+        );
+
+        setChats((chats) =>
+          chats.map((chat) =>
+            chat._id === chatId
+              ? {
+                  ...chat,
+                  messages: chat.messages.map((msg) =>
+                    msg._id === messageId ? response : msg
+                  ),
+                }
+              : chat
+          )
         );
 
         toast.success("Message edited");
+        return Promise.resolve();
       } catch (error) {
-        if (message) {
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg._id === messageId
-                ? {
-                    ...msg,
-                    status: StatusEnum.failed,
-                  }
-                : msg,
-            ),
-          );
-        }
-
-        toast.error(
-          error instanceof Error ? error.message : "Failed to edit message",
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg._id === messageId
+              ? {
+                  ...originalMessage,
+                  status: StatusEnum.failed,
+                }
+              : msg
+          )
         );
+
+        setChats((chats) =>
+          chats.map((chat) =>
+            chat._id === chatId
+              ? {
+                  ...chat,
+                  messages: chat.messages.map((msg) =>
+                    msg._id === messageId
+                      ? { ...originalMessage, status: StatusEnum.failed }
+                      : msg
+                  ),
+                }
+              : chat
+          )
+        );
+
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to edit message";
+        toast.error(errorMessage);
+        return Promise.reject(new Error(errorMessage));
       } finally {
         pendingRequests.current.delete(requestId);
       }
     },
-    [chatId, setMessages, token],
+    [chatId, setMessages, token, setChats]
   );
 
+  /**
+   * Mark messages as read with optimistic UI update.
+   * @param messageIds - The IDs of the messages to mark as read.
+   * @returns A promise that resolves when the messages are marked as read.
+   */
   const handleMarkAsRead = useCallback(
     async (messageIds: string[]) => {
-      if (!currentUserId || !chatId) return;
+      if (!currentUserId || !chatId || !messageIds.length)
+        return Promise.resolve();
 
       const readAt = new Date();
-      const messagesToUpdateOptimistically: MessageType[] = [];
+      const validMessageIds: string[] = [];
 
       setMessages((prev) => {
         return prev.map((message) => {
@@ -631,72 +861,99 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
             message.sender.userId !== currentUserId &&
             !message.readBy.some((r) => r.userId === currentUserId)
           ) {
-            const updatedMessage = {
+            validMessageIds.push(message._id);
+            return {
               ...message,
               readBy: [...message.readBy, { userId: currentUserId, readAt }],
             };
-            messagesToUpdateOptimistically.push(updatedMessage);
-            return updatedMessage;
           }
           return message;
         });
       });
 
-      const idsToMarkForAPI = new Set(messageIds);
-      messagesToUpdateOptimistically.forEach((msg) =>
-        idsToMarkForAPI.add(msg._id),
+      setChats((chats) =>
+        chats.map((chat) =>
+          chat._id === chatId
+            ? {
+                ...chat,
+                messages: chat.messages.map((msg) => {
+                  if (
+                    validMessageIds.includes(msg._id) &&
+                    msg.sender.userId !== currentUserId &&
+                    !msg.readBy.some((r) => r.userId === currentUserId)
+                  ) {
+                    return {
+                      ...msg,
+                      readBy: [
+                        ...msg.readBy,
+                        { userId: currentUserId, readAt },
+                      ],
+                    };
+                  }
+                  return msg;
+                }),
+              }
+            : chat
+        )
       );
-      const finalIds = Array.from(idsToMarkForAPI);
 
-      if (!finalIds.length) return;
-
-      finalIds.forEach((id) => pendingReadMessages.current.add(id));
-      debouncedMarkAsReadHandler(finalIds);
-    },
-    [chatId, currentUserId, setMessages, debouncedMarkAsReadHandler],
-  );
-
-  // Handle pending read messages when component unmounts
-  useEffect(() => {
-    const pendingMessages = pendingReadMessages.current;
-
-    return () => {
-      if (pendingMessages.size && chatId) {
-        setAuthToken(token);
-        markMessagesAsRead({
-          chatId,
-          messageIds: [...pendingMessages],
-        }).catch(console.error);
+      if (!validMessageIds.length) {
+        return Promise.resolve();
       }
-    };
-  }, [chatId, currentUserId, token]);
+      // Add to pending read messages
+      validMessageIds.forEach((id) => pendingReadMessages.current.add(id));
+
+      // Schedule the API call using debounce
+      await debouncedMarkAsReadHandler(validMessageIds);
+      return Promise.resolve();
+    },
+    [chatId, currentUserId, setMessages, debouncedMarkAsReadHandler, setChats]
+  );
 
   const handleCancelReply = useCallback(
     () => setReplyToMessage(undefined),
-    [setReplyToMessage],
+    [setReplyToMessage]
   );
 
   const handleReplyToMessage = useCallback(
     (messageId: string) => {
-      const message = messages.find((msg) => messageId === msg._id);
+      const message = messagesMap.current.get(messageId);
+
       if (message) setReplyToMessage(message);
     },
-    [setReplyToMessage, messages],
+    [setReplyToMessage, messagesMap]
   );
 
-  const value = {
-    messages,
-    setMessages,
-    replyToMessage,
-    handleSendMessage,
-    handleDeleteMessage,
-    handleReactToMessage,
-    handleEditMessage,
-    handleMarkAsRead,
-    retryFailedMessage,
-    handleCancelReply,
-    handleReplyToMessage,
-  };
+  const value = useMemo(
+    () => ({
+      messages,
+      setMessages,
+      replyToMessage,
+      handleSendMessage,
+      handleDeleteMessage,
+      handleReactToMessage,
+      handleEditMessage,
+      handleMarkAsRead,
+      retryFailedMessage,
+      handleCancelReply,
+      handleReplyToMessage,
+      messagesMap,
+    }),
+    [
+      messages,
+      setMessages,
+      replyToMessage,
+      handleSendMessage,
+      handleDeleteMessage,
+      handleReactToMessage,
+      handleEditMessage,
+      handleMarkAsRead,
+      retryFailedMessage,
+      handleCancelReply,
+      handleReplyToMessage,
+      messagesMap,
+    ]
+  );
 
   return (
     <ChatActionsContext.Provider value={value}>

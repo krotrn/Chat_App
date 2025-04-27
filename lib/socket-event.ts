@@ -11,7 +11,6 @@ export const ChatEventEnum = Object.freeze({
   TYPING_EVENT: "typing",
   MESSAGE_DELETE_EVENT: "messageDeleted",
   CHAT_DELETED_EVENT: "chatDeleted",
-  MESSAGE_PIN_EVENT: "messagePin",
   MESSAGE_PINNED_EVENT: "messagePinned",
   MESSAGE_UNPINNED_EVENT: "messageUnpinned",
   CHAT_UPDATED_EVENT: "chatUpdated",
@@ -22,5 +21,3 @@ export const ChatEventEnum = Object.freeze({
   MESSAGE_EDITED_EVENT: "messageEdited",
   MESSAGE_READ_EVENT: "messageRead",
 });
-
-export const AvailableChatEvents = Object.values(ChatEventEnum);

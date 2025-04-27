@@ -1,7 +1,7 @@
 "use client";
 
 import { groupMessagesByDate } from "@/lib/utils/groupMessageByDate";
-import { MessageType, ParticipantsType } from "@/types/ChatType";
+import { ParticipantsType } from "@/types/ChatType";
 import { Fragment, useEffect, useMemo, useRef, useCallback } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import DateDivider from "@/components/chat/date-divider";
@@ -16,19 +16,13 @@ export default function MessageList({
 }) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const { handleMarkAsRead } = useChatActions();
+  const { handleMarkAsRead, messagesMap } = useChatActions();
   const { messages, currentUser } = useChat();
   const currentUserId = currentUser?.id;
 
   const observerRef = useRef<IntersectionObserver | null>(null);
   const observedMessagesRef = useRef<Set<string>>(new Set());
   const pendingReadIdsRef = useRef<Set<string>>(new Set());
-
-  const messagesMap = useMemo(() => {
-    const map = new Map<string, MessageType>();
-    messages.forEach((msg) => map.set(msg._id, msg));
-    return map;
-  }, [messages]);
 
   const groupedMessages = useMemo(() => {
     return groupMessagesByDate(messages);
@@ -48,7 +42,7 @@ export default function MessageList({
         const messageId = entry.target.getAttribute("data-message-id");
         if (!messageId) return;
 
-        const message = messagesMap.get(messageId);
+        const message = messagesMap.current.get(messageId);
         if (
           !message ||
           message.sender.userId === currentUserId ||
@@ -114,7 +108,7 @@ export default function MessageList({
       const messageId = element.getAttribute("data-message-id");
       if (!messageId) return;
 
-      const message = messagesMap.get(messageId);
+      const message = messagesMap.current.get(messageId);
       if (
         !message ||
         message.sender.userId === currentUserId ||
@@ -162,7 +156,7 @@ export default function MessageList({
           <DateDivider date={date} />
           {dateMessages.map((message, index) => {
             const replyMessage = message.replyToId
-              ? messagesMap.get(message.replyToId) || null
+              ? messagesMap.current.get(message.replyToId) || null
               : null;
 
             const previous = dateMessages[index - 1];

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useState, useEffect, use, useCallback } from "react";
+import { createContext, useState, useEffect, use, useCallback, useMemo } from "react";
 import useChatSocket from "@/hooks/useChatSocket";
 import useTypingIndicator from "@/hooks/useTypingIndicator";
 import { ChatType, ConnectionState, MessageType } from "@/types/ChatType";
@@ -16,7 +16,6 @@ import { User } from "next-auth";
 interface ChatContextType {
   chats: ChatType[];
   setChats: React.Dispatch<React.SetStateAction<ChatType[]>>;
-  loadChats: () => Promise<void>;
   currentChatId: string | null;
   setCurrentChatId: (chatId: string | null) => void;
   connectionState: ConnectionState;
@@ -25,12 +24,12 @@ interface ChatContextType {
   setMessages: React.Dispatch<React.SetStateAction<MessageType[]>>;
   currentUser: User;
   messages: MessageType[];
-  isConnected: boolean;
   pinnedMessageIds: string[];
   handleDeleteChat: (chatId: string, forEveryone?: boolean) => Promise<void>;
   searchChatQuery: string;
   handleChatSearch: (e: React.ChangeEvent<HTMLInputElement>) => void;
   token: string;
+  loadChats: () => Promise<void>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -55,10 +54,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
   token,
 }) => {
   /**
-   * For storing chats.
-   */
-  const [chats, setChats] = useState<ChatType[]>([]);
-  /**'
    * for getting search query.
    */
   const searchParams = useSearchParams();
@@ -95,70 +90,33 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
   });
 
   /**
-   * Load chat from server.
-   */
-  const loadChats = useCallback(async () => {
-    try {
-      setAuthToken(token);
-      const response = await fetchChats();
-      setChats(response.chats);
-    } catch (error) {
-      console.error("Error loading chats:", error);
-    }
-  }, [token]);
-
-  /**
-   * update chat when a new message is received.
-   */
-  const handleChatUpdateFromByNewMessage = useCallback(
-    (newMessage: MessageType) => {
-      setChats((prevChats) => {
-        const chatIndex = prevChats.findIndex(
-          (chat) => chat._id === newMessage.chatId,
-        );
-
-        if (chatIndex === -1) {
-          console.warn(
-            `Chat ${newMessage.chatId} not found for socket update.`,
-          );
-          return prevChats;
-        }
-
-        const updatedChats = [...prevChats];
-        const targetChat = { ...updatedChats[chatIndex] };
-
-        // Update last message
-        if (updatedChats[chatIndex].lastMessage?._id === newMessage._id) {
-          targetChat.lastMessage = newMessage;
-        }
-
-        if (!targetChat.messages.some((msg) => msg._id === newMessage._id)) {
-          targetChat.messages = [...targetChat.messages, newMessage];
-        }
-
-        updatedChats[chatIndex] = targetChat;
-
-        return updatedChats;
-      });
-    },
-    [],
-  );
-
-  /**
    * For storing the the messages from selected chat in initial rendering.
    */
   const {
     connectionState,
     setMessages,
     messages,
-    isConnected,
     pinnedMessageIds,
+    chats,
+    setChats,
   } = useChatSocket(
     currentChatId || "",
     currentUser.id,
     token,
-    handleChatUpdateFromByNewMessage,
-  );
+    );
+  
+    /**
+   * Load chat from server.
+   */
+    const loadChats = useCallback(async () => {
+      try {
+        setAuthToken(token);
+        const response = await fetchChats();
+        setChats(response.chats);
+      } catch (error) {
+        console.error("Error loading chats:", error);
+      }
+    }, [token, setChats]);
   useEffect(() => {
     if (currentChatId) {
       const currentChat = chats.find((chat) => chat._id === currentChatId);
@@ -192,7 +150,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
         toast.error("Failed to delete chat");
       }
     },
-    [currentChatId, router, token, setMessages],
+    [currentChatId, router, token, setMessages, setChats],
   );
 
   /**
@@ -215,17 +173,35 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
         );
       }
     },
-    [loadChats],
+    [loadChats, setChats],
   );
 
   useEffect(() => {
     loadChats();
   }, [loadChats]);
 
-  const chatContextValue = {
+  const chatContextValue = useMemo(() =>{
+    return {
+      chats,
+      setChats,
+      currentChatId,
+      setCurrentChatId,
+      connectionState,
+      typingUserIds,
+      handleLocalUserTyping,
+      setMessages,
+      messages,
+      currentUser,
+      pinnedMessageIds,
+      handleDeleteChat,
+      searchChatQuery,
+      handleChatSearch,
+      token,
+      loadChats,
+    };
+  }, [
     chats,
     setChats,
-    loadChats,
     currentChatId,
     setCurrentChatId,
     connectionState,
@@ -234,13 +210,13 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({
     setMessages,
     messages,
     currentUser,
-    isConnected,
     pinnedMessageIds,
     handleDeleteChat,
     searchChatQuery,
     handleChatSearch,
     token,
-  };
+    loadChats,
+  ]);
 
   return (
     <ChatContext.Provider value={chatContextValue}>
