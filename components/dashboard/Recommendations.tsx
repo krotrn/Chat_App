@@ -1,7 +1,10 @@
+"use client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { RecommendationWithRelations } from "@/actions/userUtils";
 import RecommendationCard from "./recommendation-card";
+import { Carousel, CarouselContent, CarouselItem } from "../ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 
 interface RecommendationsProps {
   recommendations: RecommendationWithRelations[];
@@ -25,15 +28,34 @@ export default function Recommendations({
             type="empty"
           />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {recommendations.map((recommendation) => (
-              <RecommendationCard
-                recommendation={recommendation}
-                key={recommendation.id}
-                userId={userId}
-              />
-            ))}
-          </div>
+          <Carousel
+            opts={{
+              align: "start",
+              loop: true,
+              active: true,
+            }}
+            plugins={[
+              Autoplay({
+                delay: 2000,
+              }),
+            ]}
+          >
+            <CarouselContent>
+              {recommendations.map((recommendation) => (
+                <CarouselItem
+                  key={recommendation.id}
+                  defaultValue={recommendation.id}
+                  className="md:basis-1/2 lg:basis-1/2 flex items-center space-x-4 p-4"
+                >
+                  <RecommendationCard
+                    recommendation={recommendation}
+                    key={recommendation.id}
+                    userId={userId}
+                  />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+          </Carousel>
         )}
       </CardContent>
     </Card>

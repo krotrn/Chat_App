@@ -3,15 +3,13 @@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Sun, Moon, Monitor } from "lucide-react";
-import { Theme } from "../ThemeProvider";
 import { config } from "@/config";
+import { cn } from "@/lib/utils";
+import { useSettings } from "../ThemeProvider";
 
-interface ThemeSelectorProps {
-  value: Theme;
-  onValueChange: (value: Theme) => void;
-}
+export function ThemeSelector() {
+  const { theme, setTheme, themes } = useSettings();
 
-export function ThemeSelector({ value, onValueChange }: ThemeSelectorProps) {
   return (
     <div>
       <div className="flex items-center justify-between">
@@ -24,11 +22,11 @@ export function ThemeSelector({ value, onValueChange }: ThemeSelectorProps) {
       </div>
       <RadioGroup
         id="theme"
-        value={value}
-        onValueChange={onValueChange}
+        value={theme}
+        onValueChange={setTheme}
         className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3"
       >
-        {["light", "dark", "system"].map((themeOption) => (
+        {themes.map((themeOption) => (
           <div key={themeOption}>
             <RadioGroupItem
               value={themeOption}
@@ -37,7 +35,10 @@ export function ThemeSelector({ value, onValueChange }: ThemeSelectorProps) {
             />
             <Label
               htmlFor={`theme-${themeOption}`}
-              className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-primary"
+              className={cn(
+                "flex flex-col items-center justify-between rounded-md border-2 border-muted p-4 hover:bg-accent",
+                themeOption === theme && " border-primary bg-accent",
+              )}
             >
               {themeOption === "light" && <Sun className="mb-2 h-6 w-6" />}
               {themeOption === "dark" && <Moon className="mb-2 h-6 w-6" />}

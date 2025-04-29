@@ -18,14 +18,13 @@ import { config } from "@/config";
 import { signout } from "@/actions/signout";
 
 export default function SettingsForm() {
-  const { theme, fontSize, setTheme, setFontSize } = useSettings();
+  const { setFontSize } = useSettings();
 
   const handleSaveChanges = () => {
     toast.success("Settings saved successfully");
   };
 
   const handleResetDefaults = () => {
-    setTheme("system");
     setFontSize("medium");
     toast.success("Settings reset to defaults");
   };
@@ -63,8 +62,8 @@ export default function SettingsForm() {
             description={`Customize how ${config.appName} looks and feels.`}
             footer={footer}
           >
-            <ThemeSelector value={theme} onValueChange={setTheme} />
-            <FontSizeSelector value={fontSize} onValueChange={setFontSize} />
+            <ThemeSelector />
+            <FontSizeSelector />
             <SwitchGroup switches={appearanceSwitches} />
           </SettingsCard>
         </TabsContent>

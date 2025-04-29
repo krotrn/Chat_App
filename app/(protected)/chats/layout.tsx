@@ -1,7 +1,10 @@
 import APICheckWrapper from "@/components/offline/api-check-wrapper";
-import { cn } from "@/lib/utils";
+import {
+  ResizableHandle,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 
-export default function ChatsLayout({
+export default async function ChatsLayout({
   chatList,
   chatMain,
 }: {
@@ -11,17 +14,14 @@ export default function ChatsLayout({
 }) {
   return (
     <APICheckWrapper>
-      <div className="flex h-full overflow-hidden bg-background">
+      <ResizablePanelGroup
+        direction="horizontal"
+        className="flex h-full overflow-hidden bg-background"
+      >
         {chatList}
-        <section
-          className={cn(
-            "flex flex-col h-full flex-1",
-            !chatMain && "hidden md:flex",
-          )}
-        >
-          {chatMain}
-        </section>
-      </div>
+        <ResizableHandle />
+        {chatMain}
+      </ResizablePanelGroup>
     </APICheckWrapper>
   );
 }

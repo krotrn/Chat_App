@@ -3,17 +3,12 @@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Type } from "lucide-react";
-import { FontSize } from "../ThemeProvider";
+import { useSettings } from "../ThemeProvider";
+import { cn } from "@/lib/utils";
 
-interface FontSizeSelectorProps {
-  value: FontSize;
-  onValueChange: (value: FontSize) => void;
-}
+export function FontSizeSelector() {
+  const { fontSize, setFontSize } = useSettings();
 
-export function FontSizeSelector({
-  value,
-  onValueChange,
-}: FontSizeSelectorProps) {
   return (
     <div>
       <div className="flex items-center justify-between">
@@ -26,8 +21,8 @@ export function FontSizeSelector({
       </div>
       <RadioGroup
         id="font-size"
-        value={value}
-        onValueChange={onValueChange}
+        value={fontSize}
+        onValueChange={setFontSize}
         className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3"
       >
         {["small", "medium", "large"].map((size) => (
@@ -39,7 +34,10 @@ export function FontSizeSelector({
             />
             <Label
               htmlFor={`font-${size}`}
-              className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-primary"
+              className={cn(
+                "flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent",
+                fontSize === size && "border-primary bg-accent",
+              )}
             >
               <Type
                 className={`mb-2 h-${

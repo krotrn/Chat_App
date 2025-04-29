@@ -9,6 +9,7 @@ interface SettingsContextType {
   fontSize: FontSize;
   setTheme: (theme: Theme) => void;
   setFontSize: (size: FontSize) => void;
+  themes: Theme[];
 }
 
 const initialSettings: SettingsContextType = {
@@ -16,6 +17,7 @@ const initialSettings: SettingsContextType = {
   fontSize: "medium",
   setTheme: () => null,
   setFontSize: () => null,
+  themes: ["dark", "light", "system"],
 };
 
 const SettingsContext = createContext<SettingsContextType>(initialSettings);
@@ -32,6 +34,7 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   const [theme, setTheme] = useState<Theme>("system");
   const [fontSize, setFontSize] = useState<FontSize>("medium");
   const [mounted, setMounted] = useState(false);
+  const themes: Theme[] = ["dark", "light", "system"];
 
   useEffect(() => {
     setMounted(true);
@@ -86,7 +89,7 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
 
   return (
     <SettingsContext.Provider
-      value={{ theme, fontSize, setTheme, setFontSize }}
+      value={{ theme, fontSize, setTheme, setFontSize, themes }}
     >
       {children}
     </SettingsContext.Provider>

@@ -15,7 +15,7 @@ const NavMenu = () => {
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b overflow-y-hidden">
       {/* Desktop Menu */}
-      <NavigationMenu className="hidden overflow-x-hidden md:flex items-center justify-center max-w-7xl mx-auto px-4 py-2">
+      <NavigationMenu className="hidden  md:flex items-center justify-center max-w-7xl mx-auto px-4 py-2">
         <DesktopNav pathname={pathname} />
       </NavigationMenu>
       {/* Mobile Menu Trigger */}

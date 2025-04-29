@@ -8,6 +8,7 @@ import AIChatItem from "@/components/chat/ai-chat-item";
 import { AIModel } from "@/types/ChatType";
 import { useChat } from "@/context/ChatProvider";
 import { cn } from "@/lib/utils";
+import { ResizablePanel } from "../ui/resizable";
 
 interface ChatSidebarProps {
   aiModels?: AIModel[];
@@ -16,14 +17,16 @@ interface ChatSidebarProps {
 export default function ChatSidebar({ aiModels }: ChatSidebarProps) {
   const { chats, searchChatQuery, handleChatSearch, currentChatId } = useChat();
   return (
-    <aside
+    <ResizablePanel
       className={cn(
-        "flex flex-col h-full w-full md:w-80 border-r",
+        "flex flex-col h-full w-full border-r",
         currentChatId && "hidden md:flex",
       )}
+      minSize={20}
+      defaultSize={25}
     >
       <motion.div
-        className="flex h-full w-full md:w-80 flex-col border-r space-y-2"
+        className="flex h-full w-full flex-col border-r space-y-2"
         initial={{ x: -80, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.3 }}
@@ -67,6 +70,6 @@ export default function ChatSidebar({ aiModels }: ChatSidebarProps) {
           </div>
         </ScrollArea>
       </motion.div>
-    </aside>
+    </ResizablePanel>
   );
 }

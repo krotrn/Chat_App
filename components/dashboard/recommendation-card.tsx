@@ -82,7 +82,7 @@ export default function RecommendationCard({
     }
   };
   return (
-    <Card key={recommendation.id} className="overflow-hidden">
+    <Card className="overflow-hidden">
       <div className="h-32 bg-muted">
         <Image
           src={avatar || "/placeholder.svg"}

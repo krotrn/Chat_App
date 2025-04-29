@@ -23,7 +23,6 @@ const api = axios.create({
     "Content-Type": "application/json",
   },
   withCredentials: true,
-  timeout: 15000,
 });
 
 const handleApiResponse = <T>(response: { data: ApiResponse<T> }): T => {
