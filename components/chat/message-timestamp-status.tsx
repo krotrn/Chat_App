@@ -38,13 +38,13 @@ export function MessageTimestampStatus({
       </span>
 
       {/* Status indicators */}
-      {message.status === StatusEnum.sending && (
+      {message.status === StatusEnum.SENDING && (
         <span className="text-xs text-muted-foreground ml-1 flex items-center">
           Sending...
         </span>
       )}
 
-      {message.status === StatusEnum.failed && (
+      {message.status === StatusEnum.FAILED && (
         <span className="text-xs text-destructive ml-1 flex items-center gap-1">
           <AlertCircle size={12} />
           Failed

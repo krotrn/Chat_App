@@ -1,4 +1,4 @@
-import { UserFriends } from "@prisma/client";
+
 
 export interface MessageReaction {
   emoji: string;
@@ -18,10 +18,10 @@ export interface MessageEdit {
 }
 
 export enum ConnectionState {
-  DISCONNECTED = "disconnected",
-  CONNECTING = "connecting",
-  CONNECTED = "connected",
-  RECONNECTING = "reconnecting",
+  DISCONNECTED,
+  CONNECTING,
+  CONNECTED,
+  RECONNECTING,
 }
 
 export interface AttachmentResponse {
@@ -41,12 +41,12 @@ export interface ParticipantsType {
 }
 
 export enum StatusEnum {
-  sending = "sending",
-  sent = "sent",
-  delivered = "delivered",
-  read = "read",
-  failed = "failed",
-  deleting = "deleting",
+  SENDING,
+  SENT,
+  DELIVERED,
+  READ,
+  FAILED,
+  DELETING,
 }
 
 interface MessageUser {
@@ -121,64 +121,6 @@ export interface AIMessage {
   role: "user" | "assistant";
   content: string;
   timestamp: string;
-}
-
-export interface FriendRequest {
-  id: string;
-  senderId: string;
-  receiverId: string;
-  status: "pending" | "accepted" | "rejected" | "blocked";
-  createdAt: string;
-}
-
-export interface User {
-  id: string;
-  name: string;
-  avatar: string;
-  email?: string;
-  bio?: string;
-  role: "admin" | "user";
-  status?: "online" | "offline" | "away";
-  lastSeen?: string;
-  friends?: string[];
-  friendRequests?: {
-    incoming: FriendRequest[];
-    outgoing: FriendRequest[];
-  };
-  recentActivities?: Activity[];
-  recommendations?: Recommendation[];
-}
-
-export interface Activity {
-  id: string;
-  type: "message" | "friend_request" | "new_friend";
-  content: string;
-  timestamp: string;
-  user?: {
-    id: string;
-    name: string;
-    avatarUrl: string;
-  };
-}
-
-export interface Recommendation {
-  id: string;
-  type: "friend" | "group";
-  title: string;
-  description: string;
-  avatarUrl: string;
-}
-
-export interface statsProps {
-  username: string;
-  email: string;
-  avatarUrl: string | null;
-  name: string | null;
-  bio: string | null;
-  lastLogin: Date | null;
-  friends: UserFriends[];
-  sentRequests: FriendRequest[];
-  receivedRequests: FriendRequest[];
 }
 
 export interface ApiResponse<T> {

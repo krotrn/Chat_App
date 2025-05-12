@@ -32,17 +32,17 @@ interface ChatActionsContextType {
   handleSendMessage: (
     content: string,
     attachments?: File[],
-    replyToId?: string,
+    replyToId?: string
   ) => Promise<void>;
   handleDeleteMessage: (
     messageId: string,
-    forEveryone: boolean,
+    forEveryone: boolean
   ) => Promise<void>;
   handleReactToMessage: (messageId: string, emoji: string) => Promise<void>;
   handleEditMessage: (
     messageId: string,
     content: string,
-    replyToId?: string,
+    replyToId?: string
   ) => Promise<void>;
   handleMarkAsRead: (messageIds: string[]) => Promise<void>;
   retryFailedMessage: (messageId: string) => Promise<void>;
@@ -51,7 +51,7 @@ interface ChatActionsContextType {
 }
 
 const ChatActionsContext = createContext<ChatActionsContextType | undefined>(
-  undefined,
+  undefined
 );
 
 export const useChatActions = () => {
@@ -78,7 +78,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
     setChats,
   } = useChat();
   const [replyToMessage, setReplyToMessage] = useState<MessageType | undefined>(
-    undefined,
+    undefined
   );
 
   if (!currentUser?.id) {
@@ -120,7 +120,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
    */
   useEffect(() => {
     messagesMap.current = new Map(
-      messages.map((message) => [message._id, message]),
+      messages.map((message) => [message._id, message])
     );
   }, [messages]);
 
@@ -137,7 +137,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
         } catch (error) {
           console.error(
             `Failed to revoke URL for message ${messageId}:`,
-            error,
+            error
           );
         }
       });
@@ -156,7 +156,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
         console.error("Mark as Read Error: ", error);
       }
     },
-    [chatId, token],
+    [chatId, token]
   );
 
   /**
@@ -165,7 +165,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
    */
   const debouncedMarkAsReadHandler = useMemo(
     () => debounce(markAsRead, 1000, { leading: false, trailing: true }),
-    [markAsRead],
+    [markAsRead]
   );
 
   /**
@@ -177,7 +177,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
     const pendingReadMessagesRef = pendingReadMessages.current;
     return () => {
       urls.forEach((blobUrls) =>
-        blobUrls.forEach((url) => URL.revokeObjectURL(url)),
+        blobUrls.forEach((url) => URL.revokeObjectURL(url))
       );
       urls.clear();
       pendingMessages.forEach((_, messageId) => cleanupAttachments(messageId));
@@ -190,8 +190,8 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
           (error) =>
             console.error(
               "Error marking messages as read during cleanup : ",
-              error,
-            ),
+              error
+            )
         );
       }
     };
@@ -206,7 +206,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
   const retryFailedMessage = useCallback(
     async (messageId: string) => {
       const message = messagesMap.current.get(messageId);
-      if (!message || message.status !== StatusEnum.failed)
+      if (!message || message.status !== StatusEnum.FAILED)
         return Promise.resolve();
 
       const requestId = `retry-${messageId}`;
@@ -218,10 +218,10 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
           msg._id === messageId
             ? {
                 ...message,
-                status: StatusEnum.sending,
+                status: StatusEnum.SENDING,
               }
-            : msg,
-        ),
+            : msg
+        )
       );
 
       setChats((chats) =>
@@ -231,12 +231,12 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
                 ...chat,
                 messages: chat.messages.map((msg) =>
                   msg._id === messageId
-                    ? { ...msg, status: StatusEnum.sending }
-                    : msg,
+                    ? { ...msg, status: StatusEnum.SENDING }
+                    : msg
                 ),
               }
-            : chat,
-        ),
+            : chat
+        )
       );
 
       const pendingMessageData = pendingSendMessages.current.get(messageId);
@@ -267,8 +267,8 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
         // Update with server response
         setMessages((prev) =>
           prev.map((message) =>
-            message._id === messageId ? response : message,
-          ),
+            message._id === messageId ? response : message
+          )
         );
         setChats((chats) =>
           chats.map((chat) =>
@@ -276,11 +276,11 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
               ? {
                   ...chat,
                   messages: chat.messages.map((msg) =>
-                    msg._id === messageId ? response : msg,
+                    msg._id === messageId ? response : msg
                   ),
                 }
-              : chat,
-          ),
+              : chat
+          )
         );
 
         toast.success("Message sent successfully");
@@ -294,12 +294,12 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
                   ...message,
                   attachments: message.attachments.map((attachment) => ({
                     ...attachment,
-                    status: StatusEnum.failed,
+                    status: StatusEnum.FAILED,
                   })),
-                  status: StatusEnum.failed,
+                  status: StatusEnum.FAILED,
                 }
-              : msg,
-          ),
+              : msg
+          )
         );
         setChats((chats) =>
           chats.map((chat) =>
@@ -312,15 +312,15 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
                           ...msg,
                           attachments: msg.attachments.map((att) => ({
                             ...att,
-                            status: StatusEnum.failed,
+                            status: StatusEnum.FAILED,
                           })),
-                          status: StatusEnum.failed,
+                          status: StatusEnum.FAILED,
                         }
-                      : msg,
+                      : msg
                   ),
                 }
-              : chat,
-          ),
+              : chat
+          )
         );
 
         const errorMessage =
@@ -332,7 +332,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
         pendingRequests.current.delete(requestId);
       }
     },
-    [chatId, token, setMessages, cleanupAttachments, setChats],
+    [chatId, token, setMessages, cleanupAttachments, setChats]
   );
 
   /**
@@ -347,7 +347,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
     async (
       content: string,
       attachments: File[] = [],
-      replyToId?: string,
+      replyToId?: string
     ): Promise<void> => {
       if (!content.trim() && !attachments.length) {
         toast.error("Message cannot be empty");
@@ -373,7 +373,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
         chatId,
         createdAt: new Date(),
         updatedAt: new Date(),
-        status: StatusEnum.sending,
+        status: StatusEnum.SENDING,
         reactions: [],
         isPinned: false,
         receivers: [],
@@ -382,7 +382,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
           url: blobUrls[i],
           type: file.type,
           localPath: file.name,
-          status: StatusEnum.sending,
+          status: StatusEnum.SENDING,
         })),
         edited: { isEdited: false, editedAt: new Date() },
         edits: [],
@@ -403,8 +403,8 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
         chats.map((chat) =>
           chat._id === chatId
             ? { ...chat, messages: [...chat.messages, optimisticMessage] }
-            : chat,
-        ),
+            : chat
+        )
       );
 
       if (replyToId && replyToMessage?._id === replyToId) {
@@ -442,11 +442,11 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
               ? {
                   ...chat,
                   messages: chat.messages.map((msg) =>
-                    msg._id === optimisticMessage._id ? response : msg,
+                    msg._id === optimisticMessage._id ? response : msg
                   ),
                 }
-              : chat,
-          ),
+              : chat
+          )
         );
         return Promise.resolve();
       } catch (error) {
@@ -456,10 +456,10 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
           ...prev,
           {
             ...optimisticMessage,
-            status: StatusEnum.failed,
+            status: StatusEnum.FAILED,
             attachments: optimisticMessage.attachments.map((a) => ({
               ...a,
-              status: StatusEnum.failed,
+              status: StatusEnum.FAILED,
             })),
           },
         ]);
@@ -470,12 +470,12 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
                   ...chat,
                   messages: chat.messages.map((msg) =>
                     msg._id === optimisticMessage._id
-                      ? { ...msg, status: StatusEnum.failed }
-                      : msg,
+                      ? { ...msg, status: StatusEnum.FAILED }
+                      : msg
                   ),
                 }
-              : chat,
-          ),
+              : chat
+          )
         );
 
         const errorMessage =
@@ -493,7 +493,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
       cleanupAttachments,
       setMessages,
       setChats,
-    ],
+    ]
   );
 
   const handleDeleteMessage = useCallback(
@@ -514,8 +514,8 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
       }
       setMessages((prev) =>
         prev.map((msg) =>
-          msg._id === messageId ? { ...msg, status: StatusEnum.deleting } : msg,
-        ),
+          msg._id === messageId ? { ...msg, status: StatusEnum.DELETING } : msg
+        )
       );
 
       setChats((chats) =>
@@ -525,12 +525,12 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
                 ...chat,
                 messages: chat.messages.map((msg) =>
                   msg._id === messageId
-                    ? { ...msg, status: StatusEnum.deleting }
-                    : msg,
+                    ? { ...msg, status: StatusEnum.DELETING }
+                    : msg
                 ),
               }
-            : chat,
-        ),
+            : chat
+        )
       );
 
       if (replyToMessage?._id === messageId) setReplyToMessage(undefined);
@@ -541,7 +541,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
         pendingRequests.current.delete(requestId);
 
         setMessages((prev) =>
-          prev.filter((message) => message._id !== messageId),
+          prev.filter((message) => message._id !== messageId)
         );
         setChats((chats) =>
           chats.map((chat) =>
@@ -549,11 +549,11 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
               ? {
                   ...chat,
                   messages: chat.messages.filter(
-                    (msg) => msg._id !== messageId,
+                    (msg) => msg._id !== messageId
                   ),
                 }
-              : chat,
-          ),
+              : chat
+          )
         );
 
         cleanupAttachments(messageId);
@@ -563,8 +563,8 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
         pendingRequests.current.delete(requestId);
         setMessages((prev) =>
           prev.map((msg) =>
-            msg._id === messageId ? { ...msg, status: StatusEnum.sent } : msg,
-          ),
+            msg._id === messageId ? { ...msg, status: StatusEnum.SENT } : msg
+          )
         );
         setChats((chats) =>
           chats.map((chat) =>
@@ -573,12 +573,12 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
                   ...chat,
                   messages: chat.messages.map((msg) =>
                     msg._id === messageId
-                      ? { ...msg, status: StatusEnum.sent }
-                      : msg,
+                      ? { ...msg, status: StatusEnum.SENT }
+                      : msg
                   ),
                 }
-              : chat,
-          ),
+              : chat
+          )
         );
         const errorMessage =
           error instanceof Error ? error.message : "Failed to delete message";
@@ -594,7 +594,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
       token,
       cleanupAttachments,
       setChats,
-    ],
+    ]
   );
 
   const handleReactToMessage = useCallback(
@@ -619,12 +619,12 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
 
       // Optimistic update
       const hasReacted = prevReactions.some(
-        (r) => r.userId === currentUserId && r.emoji === emoji,
+        (r) => r.userId === currentUserId && r.emoji === emoji
       );
 
       const updatedReactions = hasReacted
         ? prevReactions.filter(
-            (r) => !(r.userId === currentUserId && r.emoji === emoji),
+            (r) => !(r.userId === currentUserId && r.emoji === emoji)
           )
         : [
             ...prevReactions,
@@ -633,8 +633,8 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
 
       setMessages((prev) =>
         prev.map((msg) =>
-          msg._id === messageId ? { ...msg, reactions: updatedReactions } : msg,
-        ),
+          msg._id === messageId ? { ...msg, reactions: updatedReactions } : msg
+        )
       );
 
       setChats((chats) =>
@@ -645,11 +645,11 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
                 messages: chat.messages.map((msg) =>
                   msg._id === messageId
                     ? { ...msg, reactions: updatedReactions }
-                    : msg,
+                    : msg
                 ),
               }
-            : chat,
-        ),
+            : chat
+        )
       );
 
       try {
@@ -663,8 +663,8 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
 
         setMessages((prev) =>
           prev.map((message) =>
-            message._id === messageId ? response : message,
-          ),
+            message._id === messageId ? response : message
+          )
         );
         setChats((chats) =>
           chats.map((chat) =>
@@ -672,18 +672,18 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
               ? {
                   ...chat,
                   messages: chat.messages.map((msg) =>
-                    msg._id === messageId ? response : msg,
+                    msg._id === messageId ? response : msg
                   ),
                 }
-              : chat,
-          ),
+              : chat
+          )
         );
         return Promise.resolve();
       } catch (error) {
         setMessages((prev) =>
           prev.map((msg) =>
-            msg._id === messageId ? { ...msg, reactions: prevReactions } : msg,
-          ),
+            msg._id === messageId ? { ...msg, reactions: prevReactions } : msg
+          )
         );
         setChats((chats) =>
           chats.map((chat) =>
@@ -693,11 +693,11 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
                   messages: chat.messages.map((msg) =>
                     msg._id === messageId
                       ? { ...msg, reactions: prevReactions }
-                      : msg,
+                      : msg
                   ),
                 }
-              : chat,
-          ),
+              : chat
+          )
         );
         console.error("Reaction error:", error);
         return Promise.reject(new Error("Failed to react to message"));
@@ -705,14 +705,14 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
         pendingRequests.current.delete(requestId);
       }
     },
-    [chatId, setMessages, currentUserId, token, setChats],
+    [chatId, setMessages, currentUserId, token, setChats]
   );
 
   const handleEditMessage = useCallback(
     async (
       messageId: string,
       content: string,
-      replyToId?: string,
+      replyToId?: string
     ): Promise<void> => {
       if (!content.trim()) {
         toast.error("Message cannot be empty");
@@ -745,10 +745,10 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
                 ...msg,
                 content: content.trim(),
                 edited: { editedAt: new Date(), isEdited: true },
-                status: StatusEnum.sending,
+                status: StatusEnum.SENDING,
               }
-            : msg,
-        ),
+            : msg
+        )
       );
 
       setChats((chats) =>
@@ -762,13 +762,13 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
                         ...msg,
                         content: content.trim(),
                         edited: { editedAt: new Date(), isEdited: true },
-                        status: StatusEnum.sending,
+                        status: StatusEnum.SENDING,
                       }
-                    : msg,
+                    : msg
                 ),
               }
-            : chat,
-        ),
+            : chat
+        )
       );
 
       try {
@@ -784,8 +784,8 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
 
         setMessages((prev) =>
           prev.map((message) =>
-            message._id === messageId ? response : message,
-          ),
+            message._id === messageId ? response : message
+          )
         );
 
         setChats((chats) =>
@@ -794,11 +794,11 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
               ? {
                   ...chat,
                   messages: chat.messages.map((msg) =>
-                    msg._id === messageId ? response : msg,
+                    msg._id === messageId ? response : msg
                   ),
                 }
-              : chat,
-          ),
+              : chat
+          )
         );
 
         toast.success("Message edited");
@@ -809,10 +809,10 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
             msg._id === messageId
               ? {
                   ...originalMessage,
-                  status: StatusEnum.failed,
+                  status: StatusEnum.FAILED,
                 }
-              : msg,
-          ),
+              : msg
+          )
         );
 
         setChats((chats) =>
@@ -822,12 +822,12 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
                   ...chat,
                   messages: chat.messages.map((msg) =>
                     msg._id === messageId
-                      ? { ...originalMessage, status: StatusEnum.failed }
-                      : msg,
+                      ? { ...originalMessage, status: StatusEnum.FAILED }
+                      : msg
                   ),
                 }
-              : chat,
-          ),
+              : chat
+          )
         );
 
         const errorMessage =
@@ -838,7 +838,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
         pendingRequests.current.delete(requestId);
       }
     },
-    [chatId, setMessages, token, setChats],
+    [chatId, setMessages, token, setChats]
   );
 
   /**
@@ -893,8 +893,8 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
                   return msg;
                 }),
               }
-            : chat,
-        ),
+            : chat
+        )
       );
 
       if (!validMessageIds.length) {
@@ -907,12 +907,12 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
       await debouncedMarkAsReadHandler(validMessageIds);
       return Promise.resolve();
     },
-    [chatId, currentUserId, setMessages, debouncedMarkAsReadHandler, setChats],
+    [chatId, currentUserId, setMessages, debouncedMarkAsReadHandler, setChats]
   );
 
   const handleCancelReply = useCallback(
     () => setReplyToMessage(undefined),
-    [setReplyToMessage],
+    [setReplyToMessage]
   );
 
   const handleReplyToMessage = useCallback(
@@ -921,7 +921,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
 
       if (message) setReplyToMessage(message);
     },
-    [setReplyToMessage, messagesMap],
+    [setReplyToMessage, messagesMap]
   );
 
   const value = useMemo(
@@ -952,7 +952,7 @@ export const ChatActionsProvider: React.FC<ChatActionsProviderProps> = ({
       handleCancelReply,
       handleReplyToMessage,
       messagesMap,
-    ],
+    ]
   );
 
   return (

@@ -57,7 +57,7 @@ export function MessageContextMenu({
     <ContextMenu>
       <ContextMenuTrigger>{children}</ContextMenuTrigger>
       <ContextMenuContent>
-        {message.status === StatusEnum.failed && onRetry ? (
+        {message.status === StatusEnum.FAILED && onRetry ? (
           <ContextMenuItem onClick={() => onRetry(message._id)}>
             <RefreshCw className="mr-2 h-4 w-4" />
             Retry sending
