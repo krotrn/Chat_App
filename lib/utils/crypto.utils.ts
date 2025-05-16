@@ -1,11 +1,5 @@
 "use server";
 
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
-
-if (!ENCRYPTION_KEY) {
-  throw new Error("ENCRYPTION_KEY is not defined in environment variables.");
-}
-
 const IV_LENGTH = 16;
 
 /**
@@ -36,7 +30,7 @@ const uint8ArrayToBase64 = (array: Uint8Array): string => {
  * Derive a crypto key from the environment key.
  */
 const getCryptoKey = async (): Promise<CryptoKey> => {
-  const keyBuffer = new TextEncoder().encode(ENCRYPTION_KEY);
+  const keyBuffer = new TextEncoder().encode(process.env.ENCRYPTION_KEY);
   return crypto.subtle.importKey("raw", keyBuffer, { name: "AES-CBC" }, false, [
     "encrypt",
     "decrypt",
