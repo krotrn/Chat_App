@@ -30,7 +30,7 @@ const uint8ArrayToBase64 = (array: Uint8Array): string => {
  * Derive a crypto key from the environment key.
  */
 const getCryptoKey = async (): Promise<CryptoKey> => {
-  const keyBuffer = new TextEncoder().encode(process.env.ENCRYPTION_KEY);
+  const keyBuffer = new TextEncoder().encode(process.env.ENCRYPTION_KEY!);
   return crypto.subtle.importKey("raw", keyBuffer, { name: "AES-CBC" }, false, [
     "encrypt",
     "decrypt",
