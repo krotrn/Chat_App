@@ -2,11 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/prisma";
 import { v4 as uuidv4 } from "uuid";
 import { config } from "@/config";
-export const dynamic = "force-static";
-
-export function generateStaticParams() {
-  return [];
-}
 
 /**
  * This endpoint creates a new email verification token
