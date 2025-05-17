@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendVerificationEmail } from "@/services/emailService";
 
+export const dynamic = "force-static";
+
+export function generateStaticParams() {
+  return [];
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { email } = await req.json();
