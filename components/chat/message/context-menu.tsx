@@ -131,7 +131,7 @@ export function MessageContextMenu({
             <ContextMenuItem
               onClick={() =>
                 onDelete({
-                  chatId: message._id,
+                  chatId: message.chatId,
                   messageId: message._id,
                   forEveryone: false,
                   token: token!,
@@ -145,7 +145,7 @@ export function MessageContextMenu({
             <ContextMenuItem
               onClick={() =>
                 onDelete({
-                  chatId: message._id,
+                  chatId: message.chatId,
                   messageId: message._id,
                   forEveryone: true,
                   token: token!,
