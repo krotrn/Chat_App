@@ -1,7 +1,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { fetchChats } from "@/services/chat-api";
 
-export function useFetchChatsInfiniteQuery(limit = 20) {
+export function useFetchChatsInfiniteQuery(limit = "20") {
   return useInfiniteQuery({
     queryKey: ["chats-infinite", limit],
     initialPageParam: 1,

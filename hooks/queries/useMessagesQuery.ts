@@ -1,12 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { getAllMessages } from "@/services/chat-api";
+import { useAppSelector } from "../useReduxType";
 
 export function useMessagesQuery(
   chatId: string,
   options?: { page?: number; limit?: number; before?: string; after?: string },
 ) {
+  const token = useAppSelector((state) => state.user.token);
   return useQuery({
-    enabled: !!chatId,
+    enabled: !!chatId && !!token,
     queryKey: [
       "messages",
       chatId,
@@ -15,6 +17,6 @@ export function useMessagesQuery(
       options?.before,
       options?.after,
     ],
-    queryFn: () => getAllMessages({ chatId, ...options }),
+    queryFn: () => getAllMessages({ chatId, token: token!, ...options }),
   });
 }
