@@ -72,7 +72,11 @@ export default function FriendsList({
     try {
       startTransition(async () => {
         console.log("Creating chat with friend ID:", participants[0].userId);
-        const response = await createOrGetAOneOnOneChat({ participants, name, token: accessToken });
+        const response = await createOrGetAOneOnOneChat({
+          participants,
+          name,
+          token: accessToken,
+        });
         console.log("Chat created/retrieved:", response);
         router.push(`/chats?chat=${response._id}`);
       });

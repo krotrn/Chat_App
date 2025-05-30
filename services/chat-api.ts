@@ -59,7 +59,7 @@ const handleApiError = (error: unknown): never => {
     !("response" in error)
   ) {
     throw new NetworkError(
-      "Network connection failed. Please check your connection or try again later."
+      "Network connection failed. Please check your connection or try again later.",
     );
   }
 
@@ -81,21 +81,21 @@ api.interceptors.response.use(
       console.error("Network error:", error.message);
       return Promise.reject(
         new NetworkError(
-          "No response received from server. Please check your connection."
-        )
+          "No response received from server. Please check your connection.",
+        ),
       );
     } else if (error.response) {
       console.error(
         "Error response:",
         error.response.status,
-        error.response.data
+        error.response.data,
       );
       return Promise.reject(error.response.data);
     } else {
       console.error("Error message:", error.message);
       return Promise.reject(error);
     }
-  }
+  },
 );
 
 export const isConnectionHealthy = (): boolean => {
@@ -126,12 +126,12 @@ export const ensureConnection = async (): Promise<boolean> => {
 };
 
 export const withConnectionCheck = async <T>(
-  apiCall: () => Promise<T>
+  apiCall: () => Promise<T>,
 ): Promise<T> => {
   const isConnected = await ensureConnection();
   if (!isConnected) {
     throw new NetworkError(
-      "Server is currently unavailable. Please try again later."
+      "Server is currently unavailable. Please try again later.",
     );
   }
   return apiCall();
@@ -185,14 +185,18 @@ export const createOrGetAOneOnOneChat = async ({
   token: string;
 }): Promise<ChatType> => {
   try {
-    const response = await api.post<ApiResponse<ChatType>>("/chats", {
-      participants,
-      name,
-    }, {
-      headers: {
-        Authorization: `Bearer ${token}`,
+    const response = await api.post<ApiResponse<ChatType>>(
+      "/chats",
+      {
+        participants,
+        name,
       },
-    });
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
     return handleApiResponse(response);
   } catch (error) {
     console.error("Error creating or getting one-on-one chat:", error);
@@ -213,9 +217,9 @@ export const getChatById = async ({
       `/chats/chat/${chatId}`,
       {
         headers: {
-          Authorization: `Bearer ${token}`
-        }
-      }
+          Authorization: `Bearer ${token}`,
+        },
+      },
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -231,7 +235,7 @@ export const deleteOneOnOneChat = async ({
   token,
 }: {
   chatId: string;
-    forEveryone?: boolean;
+  forEveryone?: boolean;
   token: string;
 }): Promise<null> => {
   try {
@@ -240,19 +244,20 @@ export const deleteOneOnOneChat = async ({
         `/chats/chat/${chatId}`,
         {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
+            Authorization: `Bearer ${token}`,
+          },
+        },
       );
       return handleApiResponse(response);
     }
     // If forEveryone is false, delete the chat for the current user only
-    const response = await api.delete<ApiResponse<null>>(`/chats/${chatId}/me`,
+    const response = await api.delete<ApiResponse<null>>(
+      `/chats/${chatId}/me`,
       {
         headers: {
-          Authorization: `Bearer ${token}`
-        }
-      }
+          Authorization: `Bearer ${token}`,
+        },
+      },
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -272,15 +277,17 @@ export const createAGroupChat = async ({
   token: string;
 }): Promise<ChatType> => {
   try {
-    const response = await api.post<ApiResponse<ChatType>>("/chats/group", {
-      participants,
-      name,
-    },
+    const response = await api.post<ApiResponse<ChatType>>(
+      "/chats/group",
+      {
+        participants,
+        name,
+      },
       {
         headers: {
-          Authorization: `Bearer ${token}`
-        }
-      }
+          Authorization: `Bearer ${token}`,
+        },
+      },
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -300,7 +307,7 @@ export const getGroupChatDetails = async ({
   try {
     const response = await api.get<ApiResponse<ChatType>>(
       `/chats/group/${chatId}`,
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${token}` } },
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -314,18 +321,18 @@ export const updateGroupChat = async ({
   chatId,
   name,
   avatarUrl,
-  token
+  token,
 }: {
   chatId: string;
   name: string;
-    avatarUrl: string;
+  avatarUrl: string;
   token: string;
 }): Promise<ChatType> => {
   try {
     const response = await api.patch<ApiResponse<ChatType>>(
       `/chats/group/${chatId}`,
       { name, avatarUrl },
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${token}` } },
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -345,7 +352,7 @@ export const deleteGroupChat = async ({
   try {
     const response = await api.delete<ApiResponse<null>>(
       `/chats/group/${chatId}`,
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${token}` } },
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -358,7 +365,7 @@ export const deleteGroupChat = async ({
 export const addNewParticipantInGroupChat = async ({
   chatId,
   participants,
-  token
+  token,
 }: {
   chatId: string;
   participants: ParticipantsType[];
@@ -368,7 +375,7 @@ export const addNewParticipantInGroupChat = async ({
     const response = await api.post<ApiResponse<ChatType>>(
       `/chats/group/${chatId}/participant`,
       { participants },
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${token}` } },
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -390,7 +397,7 @@ export const removeParticipantFromGroupChat = async ({
   try {
     const response = await api.delete<ApiResponse<ChatType>>(
       `/chats/group/${chatId}/participant/${participantId}`,
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${token}` } },
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -410,7 +417,7 @@ export const leaveGroupChat = async ({
   try {
     const response = await api.delete<ApiResponse<ChatType>>(
       `/chats/group/${chatId}/leave`,
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${token}` } },
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -425,14 +432,14 @@ export const pinMessage = async ({
   messageId,
   token,
 }: {
-    chatId: string;
+  chatId: string;
   token: string;
   messageId: string;
 }): Promise<ChatType> => {
   try {
     const response = await api.post<ApiResponse<ChatType>>(
       `/chats/${chatId}/pin/${messageId}`,
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${token}` } },
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -448,13 +455,13 @@ export const unpinMessage = async ({
   token,
 }: {
   chatId: string;
-    messageId: string;
+  messageId: string;
   token: string;
 }): Promise<ChatType> => {
   try {
     const response = await api.delete<ApiResponse<ChatType>>(
       `/chats/${chatId}/pin/${messageId}`,
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${token}` } },
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -527,7 +534,7 @@ export const sendMessage = async ({
   tempId,
 }: {
   chatId: string;
-    content: string;
+  content: string;
   token: string;
   attachments?: File[];
   replyToId?: string;
@@ -553,7 +560,7 @@ export const sendMessage = async ({
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -577,13 +584,13 @@ export const deleteMessage = async ({
     if (forEveryone) {
       const response = await api.delete<ApiResponse<MessageType>>(
         `/messages/${chatId}/${messageId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       return handleApiResponse(response);
     } else {
       const response = await api.delete<ApiResponse<MessageType>>(
         `/messages/${chatId}/${messageId}/me`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       return handleApiResponse(response);
     }
@@ -601,14 +608,14 @@ export const updateReaction = async ({
 }: {
   chatId: string;
   messageId: string;
-    emoji: string;
+  emoji: string;
   token: string;
 }): Promise<MessageType> => {
   try {
     const response = await api.patch<ApiResponse<MessageType>>(
       `/messages/${chatId}/${messageId}/reaction`,
       { emoji },
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${token}` } },
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -628,7 +635,7 @@ export const editMessage = async ({
   chatId: string;
   messageId: string;
   content: string;
-    replyToId?: string;
+  replyToId?: string;
   token: string;
 }) => {
   try {
@@ -636,7 +643,7 @@ export const editMessage = async ({
     const response = await api.patch<ApiResponse<MessageType>>(
       `/messages/${chatId}/${messageId}/edit`,
       { content, replyToId },
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${token}` } },
     );
     return handleApiResponse(response);
   } catch (error) {
@@ -652,14 +659,14 @@ export const markMessagesAsRead = async ({
   token,
 }: {
   chatId: string;
-    messageIds?: string[];
+  messageIds?: string[];
   token: string;
 }) => {
   try {
     const response = await api.post<ApiResponse<MessageType[]>>(
       `/messages/${chatId}/read`,
       { messageIds },
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${token}` } },
     );
     return handleApiResponse(response);
   } catch (error) {

@@ -61,37 +61,37 @@ export const chatSocketMiddleware: Middleware =
             ChatEventEnum.MESSAGE_RECEIVED_EVENT,
             (message: MessageType) => {
               store.dispatch(addMessage(message));
-            }
+            },
           );
           socket.on(
             ChatEventEnum.MESSAGE_REACTION_EVENT,
             (message: MessageType) => {
               store.dispatch(updateMessage(message));
-            }
+            },
           );
           socket.on(
             ChatEventEnum.MESSAGE_PINNED_EVENT,
             (data: { chatId: string; messageId: string }) => {
               store.dispatch(addPinnedMessageId(data.messageId));
-            }
+            },
           );
           socket.on(
             ChatEventEnum.MESSAGE_UNPINNED_EVENT,
             (data: { chatId: string; messageId: string }) => {
               store.dispatch(removePinnedMessageId(data.messageId));
-            }
+            },
           );
           socket.on(
             ChatEventEnum.MESSAGE_DELETE_EVENT,
             (data: { chatId: string; messageId: string }) => {
               store.dispatch(removeMessage(data.messageId));
-            }
+            },
           );
           socket.on(
             ChatEventEnum.MESSAGE_EDITED_EVENT,
             (message: MessageType) => {
               store.dispatch(updateMessage(message));
-            }
+            },
           );
           socket.on(ChatEventEnum.NEW_CHAT_EVENT, (chat: ChatType) => {
             store.dispatch(addChat(chat));

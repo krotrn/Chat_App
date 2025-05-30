@@ -79,7 +79,9 @@ export default function ChatSidebar({ aiModels }: ChatSidebarProps) {
           <div className="px-2">
             <div className="space-y-1">
               {filteredChats.length > 0 ? (
-                filteredChats.map((chat) => <ChatItem key={chat._id} chat={chat} />)
+                filteredChats.map((chat) => (
+                  <ChatItem key={chat._id} chat={chat} />
+                ))
               ) : (
                 <div className="py-4 text-center text-sm text-muted-foreground">
                   No chats found

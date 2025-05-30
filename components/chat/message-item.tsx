@@ -60,7 +60,7 @@ export default function MessageItem({
       longPressTimeoutRef,
       setIsLongPressed,
     );
-    const token = useAppSelector((state) => state.user.token);
+  const token = useAppSelector((state) => state.user.token);
 
   const handleEdit = useCallback(() => {
     if (onEdit && editContent.trim() && editContent !== message.content) {
@@ -75,7 +75,15 @@ export default function MessageItem({
       });
       setEditMode(false);
     }
-  }, [onEdit, editContent, message.content, message.chatId, message._id, message.replyToId, token]);
+  }, [
+    onEdit,
+    editContent,
+    message.content,
+    message.chatId,
+    message._id,
+    message.replyToId,
+    token,
+  ]);
 
   const handleCancelEdit = () => {
     setEditMode(false);

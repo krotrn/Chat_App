@@ -27,7 +27,7 @@ export default function ChatMain() {
   const { connectionState, currentChat } = useAppSelector(
     (state) => state.chat,
   );
-  const {data} = useChatsQuery();
+  const { data } = useChatsQuery();
   const dispatch = useAppDispatch();
   const currentUserId = useAppSelector((state) => state.user.user?.id);
   const token = useAppSelector((state) => state.user.token);
@@ -45,7 +45,7 @@ export default function ChatMain() {
         },
       });
     }
-  },[currentChat, dispatch, router, token]);
+  }, [currentChat, dispatch, router, token]);
   const chat = data?.chats.find((chat) => chat._id === currentChat?._id);
   const { typingUserIds } = useTypingIndicator({
     chatId: currentChat?._id || "",

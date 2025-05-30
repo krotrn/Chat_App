@@ -17,14 +17,14 @@ const userSlice = createSlice({
     setUser: (state, action: PayloadAction<User>) => {
       state.user = action.payload;
     },
-    setAuth: (state, action: PayloadAction<{token:string, user:User}>) => {
+    setAuth: (state, action: PayloadAction<{ token: string; user: User }>) => {
       state.token = action.payload.token;
       state.user = action.payload.user;
     },
     clearAuth: (state) => {
       state.token = null;
       state.user = null;
-    }
+    },
   },
 });
 

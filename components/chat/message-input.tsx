@@ -69,7 +69,15 @@ export default function MessageInput({ participants }: MessageInputProps) {
       setAttachments([]);
       dispatch(setReplyMessage(null));
     },
-    [message, attachments, handleSendMessage, dispatch, replyMessage, chat, token],
+    [
+      message,
+      attachments,
+      handleSendMessage,
+      dispatch,
+      replyMessage,
+      chat,
+      token,
+    ],
   );
 
   const handleKeyDown = useCallback(

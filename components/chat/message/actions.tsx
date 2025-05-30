@@ -28,7 +28,7 @@ export function MessageActions({ message, isOwn }: MessageActionsProps) {
   const [showReactions, setShowReactions] = useState(false);
   const dispatch = useAppDispatch();
   const { mutate: onReact } = useReactToMessageMutation();
-    const token = useAppSelector((state) => state.user.token);
+  const token = useAppSelector((state) => state.user.token);
 
   const onReply = (id: MessageType) => {
     dispatch(setReplyMessage(id));
@@ -79,7 +79,7 @@ export function MessageActions({ message, isOwn }: MessageActionsProps) {
                       chatId: message.chatId,
                       emoji,
                       messageId: message._id,
-                      token: token!
+                      token: token!,
                     });
                     setShowReactions(false);
                   }}

@@ -29,7 +29,7 @@ export default function ChatItem({ chat }: ChatItemProps) {
   const currentUser = useAppSelector((state) => state.user.user);
   const currentChat = useAppSelector((state) => state.chat.currentChat);
   const isSelected = currentChat?._id === chat._id;
-    const token = useAppSelector((state) => state.user.token);
+  const token = useAppSelector((state) => state.user.token);
 
   const onClick = () => {
     dispatch(setCurrentChat(chat));
@@ -38,7 +38,8 @@ export default function ChatItem({ chat }: ChatItemProps) {
   const onDelete = (forEveryone: boolean) => {
     if (chat.type === "direct")
       handleDeleteDirectChat({ chatId: chat._id, forEveryone, token: token! });
-    else if (chat.type === "group") handleDeleteGroupChat({ chatId: chat._id, token: token! });
+    else if (chat.type === "group")
+      handleDeleteGroupChat({ chatId: chat._id, token: token! });
   };
 
   let title: string;

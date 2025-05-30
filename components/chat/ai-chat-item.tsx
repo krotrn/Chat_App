@@ -17,8 +17,7 @@ export default function AIChatItem({ model }: AIChatItemProps) {
   // const { currentChat } = useAppSelector((state) => state.chat);
   // const dispatch = useAppDispatch();
   // const isSelected = currentChat?._id === model.id;
-  const onClick = () => {
-  };
+  const onClick = () => {};
   return (
     <motion.div
       className={cn(

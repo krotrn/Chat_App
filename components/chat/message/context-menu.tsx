@@ -56,7 +56,7 @@ export function MessageContextMenu({
   const onReply = (message: MessageType) => {
     dispatch(setReplyMessage(message));
   };
-    const token = useAppSelector((state) => state.user.token);
+  const token = useAppSelector((state) => state.user.token);
 
   return (
     <ContextMenu>
@@ -112,7 +112,7 @@ export function MessageContextMenu({
                             chatId: message.chatId,
                             messageId: message._id,
                             emoji,
-                            token: token!
+                            token: token!,
                           })
                         }
                       >
@@ -134,7 +134,7 @@ export function MessageContextMenu({
                   chatId: message._id,
                   messageId: message._id,
                   forEveryone: false,
-                  token: token!
+                  token: token!,
                 })
               }
               className="text-destructive focus:text-destructive"
@@ -148,7 +148,7 @@ export function MessageContextMenu({
                   chatId: message._id,
                   messageId: message._id,
                   forEveryone: true,
-                  token: token!
+                  token: token!,
                 })
               }
               className="text-destructive focus:text-destructive"
