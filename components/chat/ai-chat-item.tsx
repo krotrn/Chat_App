@@ -6,24 +6,24 @@ import { Bot } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { AIModel } from "@/types/ChatType";
 import { cn } from "@/lib/utils";
-import { useChat } from "@/context/ChatProvider";
+// import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
+// import { setCurrentChat } from "@/lib/redux/slices/chat-slice";
 
 interface AIChatItemProps {
   model: AIModel;
 }
 
 export default function AIChatItem({ model }: AIChatItemProps) {
-  const { currentChatId, setCurrentChatId } = useChat();
-
-  const isSelected = currentChatId === model.id;
+  // const { currentChat } = useAppSelector((state) => state.chat);
+  // const dispatch = useAppDispatch();
+  // const isSelected = currentChat?._id === model.id;
   const onClick = () => {
-    setCurrentChatId(model.id);
   };
   return (
     <motion.div
       className={cn(
         "flex cursor-pointer items-center gap-3 rounded-md p-2 bg-primary/5",
-        isSelected ? "bg-accent" : "hover:bg-muted",
+        // isSelected ? "bg-accent" : "hover:bg-muted",
       )}
       onClick={onClick}
       whileHover={{ scale: 1.02 }}

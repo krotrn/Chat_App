@@ -10,7 +10,6 @@ interface ChatHeaderProps {
   chat: ChatType;
   userId: string;
   onToggleDetails: () => void;
-  onDeleteChat: (chatId: string, forEveryone: boolean) => Promise<void>;
   onBack?: () => void;
   currentUser?: User;
 }
@@ -19,7 +18,6 @@ export default function ChatHeader({
   chat,
   userId,
   onToggleDetails,
-  onDeleteChat,
   onBack,
   currentUser,
 }: ChatHeaderProps) {
@@ -77,12 +75,7 @@ export default function ChatHeader({
         </div>
       </div>
 
-      <HeaderActions
-        isAdmin={isAdmin}
-        onToggleDetails={onToggleDetails}
-        onDeleteChat={onDeleteChat}
-        chatId={chat._id}
-      />
+      <HeaderActions isAdmin={isAdmin} onToggleDetails={onToggleDetails} />
     </div>
   );
 }

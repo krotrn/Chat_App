@@ -15,7 +15,9 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { reactionEmoji } from "@/lib/emojis";
-import { useChatActions } from "@/context/ChatActions";
+import { useReactToMessageMutation } from "@/hooks/queries/useReactToMessageMutation";
+import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
+import { setReplyMessage } from "@/lib/redux/slices/chat-slice";
 
 interface MessageActionsProps {
   message: MessageType;
@@ -24,9 +26,13 @@ interface MessageActionsProps {
 
 export function MessageActions({ message, isOwn }: MessageActionsProps) {
   const [showReactions, setShowReactions] = useState(false);
-  const { handleReactToMessage: onReact, handleReplyToMessage: onReply } =
-    useChatActions();
+  const dispatch = useAppDispatch();
+  const { mutate: onReact } = useReactToMessageMutation();
+    const token = useAppSelector((state) => state.user.token);
 
+  const onReply = (id: MessageType) => {
+    dispatch(setReplyMessage(id));
+  };
   return (
     <>
       <div className="absolute -right-2 -top-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -37,7 +43,7 @@ export function MessageActions({ message, isOwn }: MessageActionsProps) {
                 size="icon"
                 variant="secondary"
                 className="h-6 w-6 rounded-full shadow-xs"
-                onClick={() => onReply(message._id)}
+                onClick={() => onReply(message)}
               >
                 <Reply className="h-3 w-3" />
               </Button>
@@ -69,7 +75,12 @@ export function MessageActions({ message, isOwn }: MessageActionsProps) {
                   key={emoji}
                   className="text-lg hover:scale-125 transition-transform p-1"
                   onClick={() => {
-                    onReact(message._id, emoji);
+                    onReact({
+                      chatId: message.chatId,
+                      emoji,
+                      messageId: message._id,
+                      token: token!
+                    });
                     setShowReactions(false);
                   }}
                 >

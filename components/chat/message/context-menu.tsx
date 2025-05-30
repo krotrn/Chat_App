@@ -22,7 +22,10 @@ import {
   Pin,
 } from "lucide-react";
 import { reactionEmoji } from "@/lib/emojis";
-import { useChatActions } from "@/context/ChatActions";
+import { useDeleteMessageMutation } from "@/hooks/queries/useDeleteMessageMutation";
+import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
+import { setReplyMessage } from "@/lib/redux/slices/chat-slice";
+import { useReactToMessageMutation } from "@/hooks/queries/useReactToMessageMutation";
 
 interface MessageContextMenuProps {
   message: MessageType;
@@ -47,11 +50,13 @@ export function MessageContextMenu({
   onUnpin,
   isPinned,
 }: MessageContextMenuProps) {
-  const {
-    handleReactToMessage: onReact,
-    handleDeleteMessage: onDelete,
-    handleReplyToMessage: onReply,
-  } = useChatActions();
+  const { mutate: onDelete } = useDeleteMessageMutation();
+  const { mutate: onReact } = useReactToMessageMutation();
+  const dispatch = useAppDispatch();
+  const onReply = (message: MessageType) => {
+    dispatch(setReplyMessage(message));
+  };
+    const token = useAppSelector((state) => state.user.token);
 
   return (
     <ContextMenu>
@@ -64,7 +69,7 @@ export function MessageContextMenu({
           </ContextMenuItem>
         ) : (
           <>
-            <ContextMenuItem onClick={() => onReply(message._id)}>
+            <ContextMenuItem onClick={() => onReply(message)}>
               <Reply className="mr-2 h-4 w-4" />
               Reply
             </ContextMenuItem>
@@ -102,7 +107,14 @@ export function MessageContextMenu({
                       <button
                         key={emoji}
                         className="text-lg hover:scale-125 transition-transform p-1"
-                        onClick={() => onReact(message._id, emoji)}
+                        onClick={() =>
+                          onReact({
+                            chatId: message.chatId,
+                            messageId: message._id,
+                            emoji,
+                            token: token!
+                          })
+                        }
                       >
                         {emoji}
                       </button>
@@ -117,14 +129,28 @@ export function MessageContextMenu({
           <>
             <ContextMenuSeparator />
             <ContextMenuItem
-              onClick={() => onDelete(message._id, false)}
+              onClick={() =>
+                onDelete({
+                  chatId: message._id,
+                  messageId: message._id,
+                  forEveryone: false,
+                  token: token!
+                })
+              }
               className="text-destructive focus:text-destructive"
             >
               <Trash2 className="mr-2 h-4 w-4" />
               Delete for me
             </ContextMenuItem>
             <ContextMenuItem
-              onClick={() => onDelete(message._id, true)}
+              onClick={() =>
+                onDelete({
+                  chatId: message._id,
+                  messageId: message._id,
+                  forEveryone: true,
+                  token: token!
+                })
+              }
               className="text-destructive focus:text-destructive"
             >
               <Trash2 className="mr-2 h-4 w-4" />

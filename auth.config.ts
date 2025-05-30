@@ -177,6 +177,9 @@ export default {
   ],
   pages: {
     signIn: "/login",
+    error: "/login",
+    signOut: "/",
+    newUser: "/register",
   },
   events: {
     async linkAccount({ user }) {

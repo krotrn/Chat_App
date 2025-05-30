@@ -15,7 +15,7 @@ import { FormattedFriendType } from "@/types/formattedDataTypes";
 import { useState, useTransition, useEffect } from "react";
 import { removeFriend } from "@/actions/userUtils";
 import { toast } from "sonner";
-import { createOrGetAOneOnOneChat, setAuthToken } from "@/services/chat-api";
+import { createOrGetAOneOnOneChat } from "@/services/chat-api";
 import { ParticipantsType } from "@/types/ChatType";
 import { useRouter } from "next/navigation";
 interface FriendsListProps {
@@ -72,8 +72,7 @@ export default function FriendsList({
     try {
       startTransition(async () => {
         console.log("Creating chat with friend ID:", participants[0].userId);
-        setAuthToken(accessToken);
-        const response = await createOrGetAOneOnOneChat({ participants, name });
+        const response = await createOrGetAOneOnOneChat({ participants, name, token: accessToken });
         console.log("Chat created/retrieved:", response);
         router.push(`/chats?chat=${response._id}`);
       });

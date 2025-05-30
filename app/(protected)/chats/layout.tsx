@@ -1,4 +1,8 @@
+import { AuthProvider } from "@/components/AuthProvider";
 import APICheckWrapper from "@/components/offline/api-check-wrapper";
+import { QueryProvider } from "@/components/query-provider";
+import SessionProviderWrapper from "@/components/SessionProvider";
+import StoreProvider from "@/components/StoreProvider";
 import {
   ResizableHandle,
   ResizablePanelGroup,
@@ -13,15 +17,23 @@ export default async function ChatsLayout({
   chatMain: React.ReactNode;
 }) {
   return (
-    <APICheckWrapper>
-      <ResizablePanelGroup
-        direction="horizontal"
-        className="flex h-full overflow-hidden bg-background"
-      >
-        {chatList}
-        <ResizableHandle />
-        {chatMain}
-      </ResizablePanelGroup>
-    </APICheckWrapper>
+    <StoreProvider>
+      <QueryProvider>
+        <APICheckWrapper>
+          <SessionProviderWrapper>
+            <AuthProvider>
+              <ResizablePanelGroup
+                direction="horizontal"
+                className="flex h-full overflow-hidden bg-background"
+              >
+                {chatList}
+                <ResizableHandle />
+                {chatMain}
+              </ResizablePanelGroup>
+            </AuthProvider>
+          </SessionProviderWrapper>
+        </APICheckWrapper>
+      </QueryProvider>
+    </StoreProvider>
   );
 }

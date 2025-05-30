@@ -1,7 +1,7 @@
 "use client";
 import { MessageReaction } from "@/types/ChatType";
 import { cn } from "@/lib/utils";
-import { useChat } from "@/context/ChatProvider";
+import { useAppSelector } from "@/hooks/useReduxType";
 
 interface ReactionsDisplayProps {
   reactions: MessageReaction[];
@@ -9,8 +9,7 @@ interface ReactionsDisplayProps {
 }
 
 export function ReactionsDisplay({ reactions, isOwn }: ReactionsDisplayProps) {
-  const { currentUser } = useChat();
-  const currentUserId = currentUser?.id;
+  const currentUserId = useAppSelector((state) => state.user.user?.id);
   const groupedReactions = reactions.reduce<Record<string, string[]>>(
     (acc, reaction) => {
       if (!acc[reaction.emoji]) {

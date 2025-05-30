@@ -11,49 +11,60 @@ import TypingIndicator from "@/components/chat/typing-indicator";
 
 import { ConnectionState } from "@/types/ChatType";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { setAuthToken } from "@/services/chat-api";
-
-import { useChat } from "@/context/ChatProvider";
-import { useChatActions } from "@/context/ChatActions";
 import { WifiOff } from "lucide-react";
 import { ResizablePanel } from "../ui/resizable";
 import { cn } from "@/lib/utils";
+import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
+import useTypingIndicator from "@/hooks/useTypingIndicator";
+import { setCurrentChat } from "@/lib/redux/slices/chat-slice";
+import { useChatsQuery } from "@/hooks/queries/useChatsQuery";
+import { CONNECT_SOCKET } from "@/lib/redux/chatSocketActions";
 
 export default function ChatMain() {
   const router = useRouter();
   const isMobile = useIsMobile();
   const [showDetails, setShowDetails] = useState(false);
-
-  const {
-    connectionState,
-    typingUserIds,
-    handleDeleteChat,
-    token,
-    chats,
-    currentChatId,
-    currentUser,
-  } = useChat();
-  const isConnected = connectionState === ConnectionState.CONNECTED;
-
-  const currentUserId = currentUser.id!;
-
+  const { connectionState, currentChat } = useAppSelector(
+    (state) => state.chat,
+  );
+  const {data} = useChatsQuery();
+  const dispatch = useAppDispatch();
+  const currentUserId = useAppSelector((state) => state.user.user?.id);
+  const token = useAppSelector((state) => state.user.token);
   useEffect(() => {
-    setAuthToken(token);
-  }, [token]);
-
-  const chat = chats.find((chat) => chat._id === currentChatId);
-  const { replyToMessage, handleSendMessage, handleCancelReply } =
-    useChatActions();
+    if (!currentChat) {
+      dispatch(setCurrentChat(null));
+    } else {
+      router.push(`/chats?chat=${currentChat._id}`);
+      dispatch(setCurrentChat(currentChat));
+      dispatch({
+        type: CONNECT_SOCKET,
+        payload: {
+          chat: currentChat,
+          token: token!,
+        },
+      });
+    }
+  },[currentChat, dispatch, router, token]);
+  const chat = data?.chats.find((chat) => chat._id === currentChat?._id);
+  const { typingUserIds } = useTypingIndicator({
+    chatId: currentChat?._id || "",
+    currentUserId: currentUserId!,
+  });
 
   const toggleDetails = useCallback(() => setShowDetails((prev) => !prev), []);
-  const handleBack = useCallback(() => router.push("/chats"), [router]);
+  const handleBack = useCallback(() => {
+    setShowDetails(false);
+    dispatch(setCurrentChat(null));
+    router.push("/chats");
+  }, [router, dispatch]);
 
   if (!chat) {
     return (
       <ResizablePanel
         className={cn(
           "h-full flex items-center justify-center",
-          !currentChatId && "hidden md:flex",
+          !currentChat && "hidden md:flex",
         )}
         minSize={40}
       >
@@ -76,13 +87,12 @@ export default function ChatMain() {
       >
         <ChatHeader
           chat={chat}
-          userId={currentUserId}
+          userId={currentUserId!}
           onToggleDetails={toggleDetails}
-          onDeleteChat={handleDeleteChat}
           onBack={isMobile ? handleBack : undefined}
         />
 
-        {!isConnected && (
+        {connectionState !== ConnectionState.CONNECTED && (
           <div className="mx-4 mt-2 p-3 w-fit bg-destructive/15 text-destructive rounded-md flex self-center gap-2">
             <WifiOff className="h-4 w-4" />
             <p>
@@ -108,15 +118,7 @@ export default function ChatMain() {
               )}
             </AnimatePresence>
 
-            <MessageInput
-              participants={chat.participants}
-              onSendMessage={handleSendMessage}
-              replyToMessage={replyToMessage}
-              onCancelReply={handleCancelReply}
-              disabled={!isConnected}
-              chatId={chat._id}
-              currentUserId={currentUser.id!}
-            />
+            <MessageInput participants={chat.participants} />
           </div>
           {showDetails && <ChatDetails onClose={toggleDetails} />}
         </div>

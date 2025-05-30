@@ -9,7 +9,7 @@ import {
 type TypingCallback = (chatId: string) => void;
 
 interface UseTypingIndicatorProps {
-  chatId: string;
+  chatId: string | null;
   currentUserId: string;
 }
 

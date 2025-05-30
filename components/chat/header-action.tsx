@@ -8,20 +8,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useDeleteDirectChatMutation } from "@/hooks/queries/useDirectChatMutation";
+import { useAppSelector } from "@/hooks/useReduxType";
 
 interface HeaderActionsProps {
   isAdmin: boolean;
   onToggleDetails: () => void;
-  onDeleteChat: (chatId: string, forEveryone: boolean) => void;
-  chatId: string;
 }
 
 export default function HeaderActions({
   isAdmin,
   onToggleDetails,
-  onDeleteChat,
-  chatId,
 }: HeaderActionsProps) {
+  const { mutate: onDeleteChat } = useDeleteDirectChatMutation();
+  const chatId = useAppSelector((state) => state.chat.currentChat?._id);
+  const token = useAppSelector((state) => state.user.token);
+  if (!chatId) {
+    return null;
+  }
+
   return (
     <div className="flex items-center gap-2">
       <Button
@@ -46,7 +51,9 @@ export default function HeaderActions({
           {isAdmin && (
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"
-              onClick={() => onDeleteChat(chatId, true)}
+              onClick={() =>
+                onDeleteChat({ chatId, forEveryone: true, token: token! })
+              }
             >
               <Trash2 className="mr-2 h-4 w-4" />
               Delete chat
@@ -55,7 +62,9 @@ export default function HeaderActions({
           {!isAdmin && (
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"
-              onClick={() => onDeleteChat(chatId, false)}
+              onClick={() =>
+                onDeleteChat({ chatId, forEveryone: false, token: token! })
+              }
             >
               <Trash2 className="mr-2 h-4 w-4" />
               Leave chat

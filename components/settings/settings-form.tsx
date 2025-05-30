@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { useSettings } from "@/components/ThemeProvider";
+import { useSettings } from "@/context/ThemeProvider";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SettingsCard } from "@/components/settings/setting-card";

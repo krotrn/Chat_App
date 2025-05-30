@@ -5,7 +5,7 @@ import { ChatEventEnum } from "./socket-event";
 let socket: SocketIOClient.Socket | null = null;
 const MAX_RECONNECT_ATTEMPTS = 5;
 
-export const initSocket = (token: string) => {
+export function initSocket(token: string): SocketIOClient.Socket {
   if (socket?.connected) {
     return socket;
   }
@@ -44,9 +44,17 @@ export const initSocket = (token: string) => {
   });
 
   return socket;
-};
+}
 
-export const joinChat = (chatId: string) => {
+export function getSocket(): SocketIOClient.Socket | null {
+  return socket;
+}
+
+export function setSocket(s: SocketIOClient.Socket | null): void {
+  socket = s;
+}
+
+export function joinChat(chatId: string): boolean {
   if (!socket?.connected) {
     console.warn("Socket not connected, cannot join chat");
     return false;
@@ -54,30 +62,30 @@ export const joinChat = (chatId: string) => {
 
   socket.emit(ChatEventEnum.ONLINE_EVENT, chatId);
   return true;
-};
+}
 
-export const onTyping = (callback: (chatId: string) => void) => {
+export function onTyping(callback: (chatId: string) => void): () => void {
   socket?.on(ChatEventEnum.TYPING_EVENT, callback);
   return () => socket?.off(ChatEventEnum.TYPING_EVENT, callback);
-};
+}
 
-export const onStopTyping = (callback: (chatId: string) => void) => {
+export function onStopTyping(callback: (chatId: string) => void): () => void {
   socket?.on(ChatEventEnum.STOP_TYPING_EVENT, callback);
   return () => socket?.off(ChatEventEnum.STOP_TYPING_EVENT, callback);
-};
+}
 
-export const emitTyping = (chatId: string) => {
+export function emitTyping(chatId: string): boolean {
   if (socket?.connected) {
     socket.emit(ChatEventEnum.TYPING_EVENT, chatId);
     return true;
   }
   return false;
-};
+}
 
-export const emitStopTyping = (chatId: string) => {
+export function emitStopTyping(chatId: string): boolean {
   if (socket?.connected) {
     socket.emit(ChatEventEnum.STOP_TYPING_EVENT, chatId);
     return true;
   }
   return false;
-};
+}

@@ -1,6 +1,6 @@
 "use client";
 import { MessageType, ParticipantsType } from "@/types/ChatType";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { messageVariants } from "@/animations/chat/messageVariants";
@@ -15,7 +15,8 @@ import { MessageTimestampStatus } from "@/components/chat/message-timestamp-stat
 import useTouchActions from "@/hooks/useTouchActions";
 import { motion } from "framer-motion";
 import { AttachmentPreviews } from "./attachment-previews";
-import { useChatActions } from "@/context/ChatActions";
+import { useEditMessageMutation } from "@/hooks/queries/useEditMessageMutation";
+import { useAppSelector } from "@/hooks/useReduxType";
 
 interface MessageItemProps {
   participants: ParticipantsType[];
@@ -42,7 +43,7 @@ export default function MessageItem({
   const sender = participants.find(
     (user) => user.userId === message.sender.userId,
   );
-  const { handleEditMessage: onEdit } = useChatActions();
+  const { mutate: onEdit } = useEditMessageMutation();
   const replySender = replyMessage
     ? participants.find((user) => user.userId === replyMessage.sender.userId)
     : null;
@@ -59,15 +60,22 @@ export default function MessageItem({
       longPressTimeoutRef,
       setIsLongPressed,
     );
+    const token = useAppSelector((state) => state.user.token);
 
-  const handleEdit = () => {
+  const handleEdit = useCallback(() => {
     if (onEdit && editContent.trim() && editContent !== message.content) {
       console.log(editContent);
       console.log(message._id, editContent, message.replyToId);
-      onEdit(message._id, editContent, message.replyToId);
+      onEdit({
+        chatId: message.chatId,
+        messageId: message._id,
+        content: editContent,
+        replyToId: message.replyToId,
+        token: token!,
+      });
       setEditMode(false);
     }
-  };
+  }, [onEdit, editContent, message.content, message.chatId, message._id, message.replyToId, token]);
 
   const handleCancelEdit = () => {
     setEditMode(false);

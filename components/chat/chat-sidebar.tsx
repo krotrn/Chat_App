@@ -5,22 +5,52 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ChatItem from "@/components/chat/chat-item";
 import AIChatItem from "@/components/chat/ai-chat-item";
-import { AIModel } from "@/types/ChatType";
-import { useChat } from "@/context/ChatProvider";
+import { AIModel, ChatType } from "@/types/ChatType";
 import { cn } from "@/lib/utils";
 import { ResizablePanel } from "../ui/resizable";
+import { useAppSelector } from "@/hooks/useReduxType";
+import { useCallback, useEffect, useState } from "react";
+import { useChatsQuery } from "@/hooks/queries/useChatsQuery";
 
 interface ChatSidebarProps {
   aiModels?: AIModel[];
 }
 
 export default function ChatSidebar({ aiModels }: ChatSidebarProps) {
-  const { chats, searchChatQuery, handleChatSearch, currentChatId } = useChat();
+  const [searchChatQuery, setSearchQuery] = useState<string>("");
+  const { currentChat, chats } = useAppSelector((state) => state.chat);
+  const [filteredChats, setFilteredChats] = useState<ChatType[]>(chats || []);
+  const { data } = useChatsQuery();
+  useEffect(() => {
+    if (data && data.chats) {
+      setFilteredChats(data.chats);
+    }
+  }, [data]);
+  const handleChatSearch = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value.toLowerCase();
+      setSearchQuery(value);
+      if (!value.trim()) {
+        setFilteredChats(chats || []);
+      } else {
+        setFilteredChats(
+          chats.filter(
+            (chat) =>
+              chat.name.toLowerCase().includes(value) ||
+              (chat.lastMessage?.content &&
+                chat.lastMessage.content.toLowerCase().includes(value)),
+          ) || [],
+        );
+      }
+    },
+    [chats],
+  );
+
   return (
     <ResizablePanel
       className={cn(
         "flex flex-col h-full w-full border-r",
-        currentChatId && "hidden md:flex",
+        currentChat && "hidden md:flex",
       )}
       minSize={20}
       defaultSize={25}
@@ -48,8 +78,8 @@ export default function ChatSidebar({ aiModels }: ChatSidebarProps) {
         <ScrollArea className="flex-1">
           <div className="px-2">
             <div className="space-y-1">
-              {chats.length > 0 ? (
-                chats.map((chat) => <ChatItem key={chat._id} chat={chat} />)
+              {filteredChats.length > 0 ? (
+                filteredChats.map((chat) => <ChatItem key={chat._id} chat={chat} />)
               ) : (
                 <div className="py-4 text-center text-sm text-muted-foreground">
                   No chats found

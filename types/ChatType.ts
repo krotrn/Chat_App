@@ -1,5 +1,3 @@
-
-
 export interface MessageReaction {
   emoji: string;
   userId: string;
@@ -22,6 +20,7 @@ export enum ConnectionState {
   CONNECTING,
   CONNECTED,
   RECONNECTING,
+  FAILED,
 }
 
 export interface AttachmentResponse {

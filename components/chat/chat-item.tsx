@@ -12,7 +12,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
-import { useChat } from "@/context/ChatProvider";
+import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
+import { useDeleteDirectChatMutation } from "@/hooks/queries/useDirectChatMutation";
+import { useDeleteGroupChatMutation } from "@/hooks/queries/useGroupChatMutations";
+import { setCurrentChat } from "@/lib/redux/slices/chat-slice";
 
 interface ChatItemProps {
   chat: ChatType;
@@ -20,32 +23,31 @@ interface ChatItemProps {
 
 export default function ChatItem({ chat }: ChatItemProps) {
   const { name, avatarUrl, lastMessage } = chat;
-  const { currentUser, currentChatId, handleDeleteChat, setCurrentChatId } =
-    useChat();
-  const isSelected = currentChatId === chat._id;
+  const dispatch = useAppDispatch();
+  const { mutate: handleDeleteDirectChat } = useDeleteDirectChatMutation();
+  const { mutate: handleDeleteGroupChat } = useDeleteGroupChatMutation();
+  const currentUser = useAppSelector((state) => state.user.user);
+  const currentChat = useAppSelector((state) => state.chat.currentChat);
+  const isSelected = currentChat?._id === chat._id;
+    const token = useAppSelector((state) => state.user.token);
 
   const onClick = () => {
-    setCurrentChatId(chat._id);
+    dispatch(setCurrentChat(chat));
   };
 
   const onDelete = (forEveryone: boolean) => {
-    handleDeleteChat(chat._id, forEveryone)
-      .then(() => {
-        if (isSelected) {
-          setCurrentChatId(null);
-        }
-      })
-      .catch((error) => {
-        console.error("Error deleting chat:", error);
-      });
+    if (chat.type === "direct")
+      handleDeleteDirectChat({ chatId: chat._id, forEveryone, token: token! });
+    else if (chat.type === "group") handleDeleteGroupChat({ chatId: chat._id, token: token! });
   };
 
   let title: string;
   let avatar: string | undefined;
   if (chat.type === "direct") {
     [title, avatar] = [
-      chat.participants.filter((p) => p.userId !== currentUser.id)[0].name,
-      chat.participants.filter((p) => p.userId !== currentUser.id)[0].avatarUrl,
+      chat.participants.filter((p) => p.userId !== currentUser?.id)[0].name,
+      chat.participants.filter((p) => p.userId !== currentUser?.id)[0]
+        .avatarUrl,
     ];
   } else {
     title = name;

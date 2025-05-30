@@ -1,18 +1,9 @@
 "use client";
-import { MessageType, ParticipantsType } from "@/types/ChatType";
+import { ConnectionState, ParticipantsType } from "@/types/ChatType";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Paperclip,
-  Send,
-  X,
-  FileText,
-  Film,
-  ImageIcon,
-  Music,
-  File as FileIcon,
-} from "lucide-react";
+import { Paperclip, Send, X } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -23,146 +14,62 @@ import { Textarea } from "@/components/ui/textarea";
 import EmojiPicker from "@/components/chat/emoji-picker";
 import CameraCapture from "@/components/chat/camera-capture";
 import useTypingIndicator from "@/hooks/useTypingIndicator";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import Image from "next/image";
-
-function SimpleAttachmentPreview({
-  file,
-  onRemove,
-}: {
-  file: File;
-  onRemove: () => void;
-}) {
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const url = URL.createObjectURL(file);
-
-  const getIcon = () => {
-    if (file.type.startsWith("image/"))
-      return <ImageIcon className="h-6 w-6" />;
-    if (file.type.startsWith("video/")) return <Film className="h-6 w-6" />;
-    if (file.type.startsWith("audio/")) return <Music className="h-6 w-6" />;
-    if (file.type.startsWith("text/")) return <FileText className="h-6 w-6" />;
-    return <FileIcon className="h-6 w-6" />;
-  };
-
-  const handleClick = () => {
-    if (file.type.startsWith("image/")) {
-      setPreviewOpen(true);
-    } else {
-      window.open(url, "_blank");
-    }
-  };
-
-  return (
-    <>
-      <div className="group relative flex items-center gap-2 rounded-md border p-2 hover:bg-muted/50">
-        <div className="flex h-10 w-10 items-center justify-center rounded bg-muted">
-          {getIcon()}
-        </div>
-        <div className="flex-1 overflow-hidden">
-          <p className="truncate text-sm font-medium">{file.name}</p>
-          <p className="text-xs text-muted-foreground">
-            {file.size > 1024 * 1024
-              ? `${(file.size / (1024 * 1024)).toFixed(2)} MB`
-              : `${(file.size / 1024).toFixed(2)} KB`}
-          </p>
-        </div>
-        {onRemove && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 opacity-0 group-hover:opacity-100"
-            onClick={(e) => {
-              e.stopPropagation();
-              onRemove();
-            }}
-            aria-label={`Remove ${file.name}`}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        )}
-        <button
-          className="absolute inset-0"
-          onClick={handleClick}
-          type="button"
-          aria-label={`Preview ${file.name}`}
-        />
-      </div>
-      <Sheet open={previewOpen} onOpenChange={setPreviewOpen}>
-        <SheetContent className="max-w-3xl">
-          <SheetHeader>
-            <SheetTitle>{file.name}</SheetTitle>
-          </SheetHeader>
-          <div className="relative aspect-video w-full overflow-hidden rounded-lg">
-            <Image
-              src={url || "/placeholder.svg"}
-              alt={file.name}
-              fill
-              className="object-contain"
-            />
-          </div>
-        </SheetContent>
-      </Sheet>
-    </>
-  );
-}
+import { useSendMessageMutation } from "@/hooks/queries/useSendMessageMutation";
+import { SimpleAttachmentPreview } from "./simple-attachment-preview";
+import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
+import { setReplyMessage } from "@/lib/redux/slices/chat-slice";
 
 export interface MessageInputProps {
   participants: Array<ParticipantsType>;
-  onSendMessage: (
-    message: string,
-    attachments?: File[],
-    replyToId?: string,
-  ) => void;
-  replyToMessage?: MessageType;
-  onCancelReply?: () => void;
-  disabled?: boolean;
-  chatId: string;
-  currentUserId: string;
 }
 
-export default function MessageInput({
-  participants,
-  onSendMessage,
-  replyToMessage,
-  onCancelReply,
-  disabled = false,
-  chatId,
-  currentUserId,
-}: MessageInputProps) {
+export default function MessageInput({ participants }: MessageInputProps) {
   const [message, setMessage] = useState<string>("");
   const [attachments, setAttachments] = useState<File[]>([]);
   const [isAttaching, setIsAttaching] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { currentChat: chat, connectionState } = useAppSelector(
+    (state) => state.chat,
+  );
+  const disabled = connectionState !== ConnectionState.CONNECTED;
+  const { mutate: handleSendMessage } = useSendMessageMutation();
+  const currentUserId = useAppSelector((state) => state.user.user?.id);
+  const { replyMessage } = useAppSelector((state) => state.chat);
+  const dispatch = useAppDispatch();
 
   const { handleLocalUserTyping } = useTypingIndicator({
-    chatId,
-    currentUserId,
+    chatId: chat?._id || "",
+    currentUserId: currentUserId!,
   });
 
+  const token = useAppSelector((state) => state.user.token);
+
   useEffect(() => {
-    if (replyToMessage && textareaRef.current) {
+    if (replyMessage && textareaRef.current) {
       textareaRef.current.focus();
     } else {
       setMessage("");
     }
-  }, [replyToMessage]);
+  }, [replyMessage]);
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
+      if (!chat) return;
       if (!message.trim() && !attachments.length) return;
-      onSendMessage(message, attachments, replyToMessage?._id);
+      handleSendMessage({
+        chatId: chat._id,
+        content: message,
+        attachments,
+        replyToId: replyMessage?._id,
+        token: token!,
+      });
+      setMessage("");
       setMessage("");
       setAttachments([]);
-      onCancelReply?.();
+      dispatch(setReplyMessage(null));
     },
-    [message, attachments, onSendMessage, onCancelReply, replyToMessage],
+    [message, attachments, handleSendMessage, dispatch, replyMessage, chat, token],
   );
 
   const handleKeyDown = useCallback(
@@ -170,11 +77,11 @@ export default function MessageInput({
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         handleSubmit(e);
-      } else if (e.key === "Escape" && replyToMessage) {
-        onCancelReply?.();
+      } else if (e.key === "Escape" && replyMessage) {
+        dispatch(setReplyMessage(null));
       }
     },
-    [handleSubmit, replyToMessage, onCancelReply],
+    [handleSubmit, replyMessage, dispatch],
   );
 
   const handleEmojiSelect = useCallback(
@@ -216,8 +123,8 @@ export default function MessageInput({
     [handleLocalUserTyping],
   );
 
-  const replyToUser = replyToMessage
-    ? participants.find((user) => user.userId === replyToMessage.sender.userId)
+  const replyToUser = replyMessage
+    ? participants.find((user) => user.userId === replyMessage.sender.userId)
     : null;
 
   const attachmentPreview =
@@ -236,7 +143,7 @@ export default function MessageInput({
   return (
     <div className="bottom-0 border-t p-4">
       <AnimatePresence>
-        {replyToMessage && (
+        {replyMessage && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
@@ -248,10 +155,14 @@ export default function MessageInput({
                 Replying to {replyToUser?.name}
               </p>
               <p className="text-xs text-muted-foreground truncate">
-                {replyToMessage.content}
+                {replyMessage.content}
               </p>
             </div>
-            <Button variant="ghost" size="icon" onClick={onCancelReply}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => dispatch(setReplyMessage(null))}
+            >
               <X className="h-4 w-4" />
             </Button>
           </motion.div>
@@ -279,12 +190,13 @@ export default function MessageInput({
           <Textarea
             ref={textareaRef}
             value={message}
+            name="message"
             onChange={handleMessageChange}
             onKeyDown={handleKeyDown}
             placeholder={
               disabled
                 ? "Connection lost. Reconnecting..."
-                : replyToMessage
+                : replyMessage
                   ? "Type your reply..."
                   : "Type a message..."
             }
