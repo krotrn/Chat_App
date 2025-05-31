@@ -35,4 +35,15 @@ export const queryKeys = {
       groupChatId,
     ],
   },
+  friends: {
+    all: ["friends"],
+    lists: () => [...queryKeys.friends.all, "list"],
+    list: (filter: { pages?: number; limit?: number }) => [
+      ...queryKeys.friends.lists(),
+      filter,
+    ],
+    infinite: (limit: number) => [...queryKeys.friends.all, "infinite", limit],
+    details: () => [...queryKeys.friends.all, "details"],
+    detail: (friendId: string) => [...queryKeys.friends.details(), friendId],
+  }
 };

@@ -11,6 +11,7 @@ import { ResizablePanel } from "@/components/ui/resizable";
 import { useAppSelector } from "@/hooks/useReduxType";
 import { useCallback, useEffect, useState } from "react";
 import { useFetchChatsInfiniteQuery } from "@/hooks/queries/useFetchChatsInfiniteQuery";
+import CreateGroupDialog from "../ui/group-dialog";
 
 interface ChatSidebarProps {
   aiModels?: AIModel[];
@@ -89,6 +90,9 @@ export default function ChatSidebar({ aiModels }: ChatSidebarProps) {
                   No chats found
                 </div>
               )}
+              <div className="flex bottom-0 justify-center items-center">
+                <CreateGroupDialog />
+              </div>
               {/* For Future Ai Models */}
               {aiModels && aiModels.length > 0 && (
                 <>

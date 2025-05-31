@@ -18,31 +18,32 @@ import { toast } from "sonner";
 import { createOrGetAOneOnOneChat } from "@/services/chat-api";
 import { ParticipantsType } from "@/types/ChatType";
 import { useRouter } from "next/navigation";
+import { useFetchFriendsQuery } from "@/hooks/queries/useFetchFriendsQuery";
 interface FriendsListProps {
-  friends: FormattedFriendType[];
   userId: string;
   accessToken: string;
 }
 
-export default function FriendsList({
-  friends,
-  userId,
-  accessToken,
-}: FriendsListProps) {
+export default function FriendsList({ userId, accessToken }: FriendsListProps) {
   const [searchQuery, setSearchQuery] = useSearchQuery("fr", "");
   const [isPending, startTransition] = useTransition();
-  const [filteredFriends, setFilteredFriends] = useState(friends);
+  const { data: friends } = useFetchFriendsQuery();
+  const [filteredFriends, setFilteredFriends] = useState<FormattedFriendType[]>(
+    friends || []
+  );
 
   const router = useRouter();
 
   useEffect(() => {
-    setFilteredFriends(
-      friends.filter((friend) =>
-        (friend.name ? friend.name + friend.username : friend.username)
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase()),
-      ),
-    );
+    if (friends) {
+      setFilteredFriends(
+        friends.filter((friend) =>
+          (friend.name ? friend.name + friend.username : friend.username)
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())
+        )
+      );
+    }
   }, [friends, searchQuery]);
 
   const handleRemoveFriend = (friendId: string) => {
@@ -56,7 +57,7 @@ export default function FriendsList({
 
         toast.success(response.message);
         setFilteredFriends((prev) =>
-          prev.filter((friend) => friend.id !== friendId),
+          prev.filter((friend) => friend.id !== friendId)
         );
       });
     } catch (error) {
