@@ -30,8 +30,7 @@ export function useReactToMessageMutation() {
               if (message._id !== messageId) return message;
 
               const existingReaction = message.reactions.find(
-                (reaction) =>
-                  reaction.userId === userId,
+                (reaction) => reaction.userId === userId,
               );
               if (existingReaction) {
                 if (existingReaction.emoji === emoji) {

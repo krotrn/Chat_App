@@ -2,6 +2,10 @@ import { db } from "@/prisma";
 import { decryptToken } from "@/lib/utils/crypto.utils";
 import { NextRequest, NextResponse } from "next/server";
 
+export async function generateStaticParams() {
+  return [];
+}
+
 export async function POST(
   req: NextRequest,
   context: { params: Promise<{ encodedEmail: string; encodedToken: string }> },
