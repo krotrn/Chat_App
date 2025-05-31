@@ -3,10 +3,6 @@ import { db } from "@/prisma";
 import { v4 as uuidv4 } from "uuid";
 import { config } from "@/config";
 
-/**
- * This endpoint creates a new email verification token
- * and saves it along with its expiration in the user's record.
- */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const { email } = await request.json();

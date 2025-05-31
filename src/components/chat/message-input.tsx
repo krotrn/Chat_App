@@ -20,7 +20,7 @@ import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
 import { setReplyMessage } from "@/lib/redux/slices/chat-slice";
 
 export interface MessageInputProps {
-  participants: Array<ParticipantsType>;
+  participants: ParticipantsType[];
 }
 
 export default function MessageInput({ participants }: MessageInputProps) {
