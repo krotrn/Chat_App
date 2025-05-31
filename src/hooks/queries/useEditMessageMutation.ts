@@ -1,9 +1,11 @@
-import { useMutation, useQueryClient, InfiniteData } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQueryClient,
+  InfiniteData,
+} from "@tanstack/react-query";
 import { editMessage } from "@/services/chat-api";
 import { queryKeys } from "@/lib/config";
 import { MessagesPageData, MessageType } from "@/types/ChatType";
-
-
 
 export function useEditMessageMutation() {
   const queryClient = useQueryClient();
@@ -12,16 +14,13 @@ export function useEditMessageMutation() {
     onMutate: async (variable) => {
       const { messageId, chatId, content } = variable;
 
-
       await queryClient.cancelQueries({
         queryKey: queryKeys.messages.infinite(chatId, 20),
       });
 
-
-      const previousMessages = queryClient.getQueryData<InfiniteData<MessagesPageData>>(
-        queryKeys.messages.infinite(chatId, 20)
-      );
-
+      const previousMessages = queryClient.getQueryData<
+        InfiniteData<MessagesPageData>
+      >(queryKeys.messages.infinite(chatId, 20));
 
       queryClient.setQueryData<InfiniteData<MessagesPageData>>(
         queryKeys.messages.infinite(chatId, 20),
@@ -37,18 +36,17 @@ export function useEditMessageMutation() {
             }),
           }));
           return { ...old, pages: newPages };
-        }
+        },
       );
       return { previousMessages };
     },
 
-
     onError: (error, variable, context) => {
-      if(!context) return;
+      if (!context) return;
       queryClient.setQueryData<InfiniteData<MessagesPageData>>(
         queryKeys.messages.infinite(variable.chatId, 20),
-        context.previousMessages
+        context.previousMessages,
       );
-    }
+    },
   });
 }

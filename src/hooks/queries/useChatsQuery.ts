@@ -8,6 +8,6 @@ export function useChatsQuery(options?: { limit?: number; page?: number }) {
     queryKey: ["chats", options?.page, options?.limit],
     queryFn: () => fetchChats(token!, options?.limit, options?.page),
     enabled: !!token,
-    staleTime:1000 * 30,
+    staleTime: 1000 * 30,
   });
 }

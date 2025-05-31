@@ -18,9 +18,8 @@ export function useDeleteMessageMutation() {
       });
 
       const previousMessages = queryClient.getQueryData(
-        queryKeys.messages.infinite(chatId, 20)
+        queryKeys.messages.infinite(chatId, 20),
       );
-
 
       queryClient.setQueryData<InfiniteData<MessagesPageData>>(
         queryKeys.messages.infinite(chatId, 20),
@@ -30,11 +29,11 @@ export function useDeleteMessageMutation() {
           const newPages = old.pages.map((page: MessagesPageData) => ({
             ...page,
             messages: page.messages.filter(
-              (message) => message._id !== messageId
+              (message) => message._id !== messageId,
             ),
           }));
           return { ...old, pages: newPages };
-        }
+        },
       );
       return { previousMessages };
     },
@@ -43,7 +42,7 @@ export function useDeleteMessageMutation() {
       if (!context) return;
       queryClient.setQueryData(
         queryKeys.messages.infinite(variable.chatId, 20),
-        context.previousMessages
+        context.previousMessages,
       );
     },
   });

@@ -128,7 +128,6 @@ export interface ApiResponse<T> {
   success: boolean;
 }
 
-
 export interface MessagesPageData {
   messages: MessageType[];
 }

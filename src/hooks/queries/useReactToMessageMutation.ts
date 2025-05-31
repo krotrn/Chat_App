@@ -19,7 +19,7 @@ export function useReactToMessageMutation() {
         queryKey: queryKeys.messages.infinite(chatId, 20),
       });
       const previousMessages = queryClient.getQueryData(
-        queryKeys.messages.infinite(chatId, 20)
+        queryKeys.messages.infinite(chatId, 20),
       );
       queryClient.setQueryData<InfiniteData<MessagesPageData>>(
         queryKeys.messages.infinite(chatId, 20),
@@ -31,27 +31,25 @@ export function useReactToMessageMutation() {
 
               const existingReaction = message.reactions.find(
                 (reaction) =>
-                  reaction.emoji === emoji && reaction.userId === userId
+                  reaction.userId === userId,
               );
               if (existingReaction) {
                 if (existingReaction.emoji === emoji) {
                   return {
                     ...message,
                     reactions: message.reactions.filter(
-                      (reaction) => reaction.userId !== userId
+                      (reaction) => reaction.userId !== userId,
                     ),
                   };
                 }
                 return {
                   ...message,
-                  reactions: message.reactions.map(
-                    (reaction) => {
-                      if (reaction.userId === userId) {
-                        return { ...reaction, emoji, timestamp: new Date()};
-                      }
-                      return reaction;
+                  reactions: message.reactions.map((reaction) => {
+                    if (reaction.userId === userId) {
+                      return { ...reaction, emoji, timestamp: new Date() };
                     }
-                  ),
+                    return reaction;
+                  }),
                 };
               }
               return {
@@ -65,7 +63,7 @@ export function useReactToMessageMutation() {
             return { ...page, messages: newMessages };
           });
           return { ...old, pages: newPages };
-        }
+        },
       );
       return { previousMessages };
     },
@@ -73,12 +71,12 @@ export function useReactToMessageMutation() {
       if (context?.previousMessages) {
         queryClient.setQueryData(
           queryKeys.messages.infinite(variables.chatId, 20),
-          context.previousMessages
+          context.previousMessages,
         );
       }
     },
     onSuccess: () => {
       console.log("Reaction updated successfully");
-    }
+    },
   });
 }

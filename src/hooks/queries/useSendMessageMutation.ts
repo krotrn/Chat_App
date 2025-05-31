@@ -19,7 +19,7 @@ export function useSendMessageMutation() {
         queryKey: queryKeys.messages.infinite(chatId, 20),
       });
       const previousMessages = queryClient.getQueryData(
-        queryKeys.messages.infinite(chatId, 20)
+        queryKeys.messages.infinite(chatId, 20),
       );
 
       const optimisticMessage: MessageType = {
@@ -57,10 +57,9 @@ export function useSendMessageMutation() {
               ...newPages[0],
               messages: [optimisticMessage, ...newPages[0].messages],
             };
-
           }
           return { ...old, pages: newPages };
-        }
+        },
       );
       return { previousMessages, optimisticMessage };
     },
@@ -68,7 +67,7 @@ export function useSendMessageMutation() {
       if (context?.previousMessages) {
         queryClient.setQueryData(
           queryKeys.messages.infinite(variables.chatId, 20),
-          context.previousMessages
+          context.previousMessages,
         );
       }
       console.error("Error sending message:", error);
@@ -81,11 +80,11 @@ export function useSendMessageMutation() {
           const newPages = old.pages.map((page) => ({
             ...page,
             messages: page.messages.map((msg) =>
-              msg._id === context.optimisticMessage._id ? data : msg
+              msg._id === context.optimisticMessage._id ? data : msg,
             ),
           }));
           return { ...old, pages: newPages };
-        }
+        },
       );
 
       queryClient.invalidateQueries({
