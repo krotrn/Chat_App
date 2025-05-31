@@ -4,9 +4,14 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { sendMessage } from "@/services/chat-api";
-import { MessagesPageData, MessageType, StatusEnum } from "@/types/ChatType";
+import {
+  ChatType,
+  MessagesPageData,
+  MessageType,
+  StatusEnum,
+} from "@/types/ChatType";
 import { queryKeys } from "@/lib/config";
-import { useAppSelector } from "../useReduxType";
+import { useAppSelector } from "@/hooks/useReduxType";
 
 export function useSendMessageMutation() {
   const queryClient = useQueryClient();
@@ -21,7 +26,6 @@ export function useSendMessageMutation() {
       const previousMessages = queryClient.getQueryData(
         queryKeys.messages.infinite(chatId, 20),
       );
-
       const optimisticMessage: MessageType = {
         _id: `temp-${Date.now()}`,
         chatId,
@@ -59,6 +63,25 @@ export function useSendMessageMutation() {
             };
           }
           return { ...old, pages: newPages };
+        },
+      );
+      queryClient.setQueryData<InfiniteData<{ chats: ChatType[] }>>(
+        queryKeys.chats.infinite(20),
+        (old) => {
+          if (!old) return;
+          const newChats = old.pages.map((page) => ({
+            ...page,
+            chats: page.chats.map((chat) => {
+              if (chat._id === chatId) {
+                return {
+                  ...chat,
+                  lastMessage: optimisticMessage,
+                };
+              }
+              return chat;
+            }),
+          }));
+          return { ...old, pages: newChats };
         },
       );
       return { previousMessages, optimisticMessage };

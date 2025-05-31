@@ -5,7 +5,11 @@ import { MessageSquare, User, UserPlus } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Activity, ActivityType } from "@prisma/client";
 import { format } from "date-fns";
-import { Carousel, CarouselContent, CarouselItem } from "../ui/carousel";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 
 interface RecentActivityProps {

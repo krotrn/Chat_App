@@ -1,5 +1,8 @@
 import type { Middleware } from "@reduxjs/toolkit";
-import { CONNECT_SOCKET, ConnectSocketPayload } from "../chatSocketActions";
+import {
+  CONNECT_SOCKET,
+  ConnectSocketPayload,
+} from "@/lib/redux/chatSocketActions";
 import {
   setConnectionState,
   addMessage,
@@ -12,7 +15,7 @@ import {
   removePinnedMessageId,
   clearChatState,
   setCurrentChat,
-} from "../slices/chat-slice";
+} from "@/lib/redux/slices/chat-slice";
 import {
   ConnectionState,
   MessageType,
@@ -96,6 +99,25 @@ export const chatSocketMiddleware: Middleware =
                       return { ...old, pages: newPages };
                     }
                     return old;
+                  },
+                );
+                queryClient.setQueryData<InfiniteData<{ chats: ChatType[] }>>(
+                  queryKeys.chats.infinite(20),
+                  (old) => {
+                    if (!old) return old;
+                    const newPages = old.pages.map((page) => ({
+                      ...page,
+                      chats: page.chats.map((chat) => {
+                        if (chat._id === message.chatId) {
+                          return {
+                            ...chat,
+                            lastMessage: message,
+                          };
+                        }
+                        return chat;
+                      }),
+                    }));
+                    return { ...old, pages: newPages };
                   },
                 );
               }
@@ -197,6 +219,28 @@ export const chatSocketMiddleware: Middleware =
                     return { ...old, pages: newPages };
                   },
                 );
+                queryClient.setQueryData<InfiniteData<{ chats: ChatType[] }>>(
+                  queryKeys.chats.infinite(20),
+                  (old) => {
+                    if (!old) return old;
+                    const newPages = old.pages.map((page) => ({
+                      ...page,
+                      chats: page.chats.map((chat) => {
+                        if (chat._id === data.chatId) {
+                          return {
+                            ...chat,
+                            lastMessage:
+                              chat.lastMessage?._id === data.messageId
+                                ? null
+                                : chat.lastMessage,
+                          };
+                        }
+                        return chat;
+                      }),
+                    }));
+                    return { ...old, pages: newPages };
+                  },
+                );
               }
             },
           );
@@ -216,6 +260,28 @@ export const chatSocketMiddleware: Middleware =
                       );
                       return { ...page, messages: newMessages };
                     });
+                    return { ...old, pages: newPages };
+                  },
+                );
+                queryClient.setQueryData<InfiniteData<{ chats: ChatType[] }>>(
+                  queryKeys.chats.infinite(20),
+                  (old) => {
+                    if (!old) return old;
+                    const newPages = old.pages.map((page) => ({
+                      ...page,
+                      chats: page.chats.map((chat) => {
+                        if (chat._id === message.chatId) {
+                          return {
+                            ...chat,
+                            lastMessage:
+                              chat.lastMessage?._id === message._id
+                                ? message
+                                : chat.lastMessage,
+                          };
+                        }
+                        return chat;
+                      }),
+                    }));
                     return { ...old, pages: newPages };
                   },
                 );

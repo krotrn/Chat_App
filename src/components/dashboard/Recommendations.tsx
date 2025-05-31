@@ -2,8 +2,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { RecommendationWithRelations } from "@/actions/userUtils";
-import RecommendationCard from "./recommendation-card";
-import { Carousel, CarouselContent, CarouselItem } from "../ui/carousel";
+import RecommendationCard from "@/components/dashboard/recommendation-card";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 
 interface RecommendationsProps {

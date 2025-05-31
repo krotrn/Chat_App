@@ -2,11 +2,11 @@ import {
   RecommendationWithRelations,
   sendFriendRequest,
 } from "@/actions/userUtils";
-import { Card, CardContent } from "../ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 import { RecommendationType } from "@prisma/client";
 import { UserPlus, Users } from "lucide-react";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 export default function RecommendationCard({

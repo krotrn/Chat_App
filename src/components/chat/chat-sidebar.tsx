@@ -7,10 +7,10 @@ import ChatItem from "@/components/chat/chat-item";
 import AIChatItem from "@/components/chat/ai-chat-item";
 import { AIModel, ChatType } from "@/types/ChatType";
 import { cn } from "@/lib/utils";
-import { ResizablePanel } from "../ui/resizable";
+import { ResizablePanel } from "@/components/ui/resizable";
 import { useAppSelector } from "@/hooks/useReduxType";
 import { useCallback, useEffect, useState } from "react";
-import { useChatsQuery } from "@/hooks/queries/useChatsQuery";
+import { useFetchChatsInfiniteQuery } from "@/hooks/queries/useFetchChatsInfiniteQuery";
 
 interface ChatSidebarProps {
   aiModels?: AIModel[];
@@ -18,12 +18,14 @@ interface ChatSidebarProps {
 
 export default function ChatSidebar({ aiModels }: ChatSidebarProps) {
   const [searchChatQuery, setSearchQuery] = useState<string>("");
-  const { currentChat, chats } = useAppSelector((state) => state.chat);
-  const [filteredChats, setFilteredChats] = useState<ChatType[]>(chats || []);
-  const { data } = useChatsQuery();
+  const { currentChat } = useAppSelector((state) => state.chat);
+  const { data } = useFetchChatsInfiniteQuery();
+  const [filteredChats, setFilteredChats] = useState<ChatType[]>(
+    data?.pages[0].chats || [],
+  );
   useEffect(() => {
-    if (data && data.chats) {
-      setFilteredChats(data.chats);
+    if (data && data.pages[0].chats) {
+      setFilteredChats(data.pages[0].chats);
     }
   }, [data]);
   const handleChatSearch = useCallback(
@@ -31,10 +33,10 @@ export default function ChatSidebar({ aiModels }: ChatSidebarProps) {
       const value = e.target.value.toLowerCase();
       setSearchQuery(value);
       if (!value.trim()) {
-        setFilteredChats(chats || []);
+        setFilteredChats(data?.pages[0].chats || []);
       } else {
         setFilteredChats(
-          chats.filter(
+          data?.pages[0].chats.filter(
             (chat) =>
               chat.name.toLowerCase().includes(value) ||
               (chat.lastMessage?.content &&
@@ -43,7 +45,7 @@ export default function ChatSidebar({ aiModels }: ChatSidebarProps) {
         );
       }
     },
-    [chats],
+    [data?.pages],
   );
 
   return (

@@ -5,7 +5,7 @@ import {
 } from "@tanstack/react-query";
 import { editMessage } from "@/services/chat-api";
 import { queryKeys } from "@/lib/config";
-import { MessagesPageData, MessageType } from "@/types/ChatType";
+import { ChatType, MessagesPageData, MessageType } from "@/types/ChatType";
 
 export function useEditMessageMutation() {
   const queryClient = useQueryClient();
@@ -36,6 +36,43 @@ export function useEditMessageMutation() {
             }),
           }));
           return { ...old, pages: newPages };
+        },
+      );
+      queryClient.setQueryData<InfiniteData<{ chats: ChatType[] }>>(
+        queryKeys.chats.infinite(20),
+        (old) => {
+          if (!old) return;
+          const newChats = old.pages.map((page) => ({
+            ...page,
+            chats: page.chats.map((chat) => {
+              if (chat._id === chatId) {
+                if (chat.lastMessage) {
+                  return {
+                    ...chat,
+                    lastMessage: {
+                      ...chat.lastMessage,
+                      content,
+                      edited: {
+                        isEdited: true,
+                        editedAt: new Date(),
+                      },
+                      edits: [
+                        ...(chat.lastMessage.edits || []),
+                        {
+                          content: chat.lastMessage.content,
+                          editedAt: new Date(),
+                          sender: chat.lastMessage.sender,
+                          editedBy: chat.lastMessage.sender.userId,
+                        },
+                      ],
+                    },
+                  };
+                }
+              }
+              return chat;
+            }),
+          }));
+          return { ...old, pages: newChats };
         },
       );
       return { previousMessages };

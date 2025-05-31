@@ -141,7 +141,7 @@ export const withConnectionCheck = async <T>(
 export const fetchChats = async (
   token: string,
   limit?: number,
-  page?: number,
+  page: number = 1,
 ): Promise<{
   chats: ChatType[];
   totals: number;

@@ -7,14 +7,14 @@ import { messageVariants } from "@/animations/chat/messageVariants";
 import DateDivider from "@/components/chat/date-divider";
 import { MessageContextMenu } from "@/components/chat/message/context-menu";
 import { MessageContent } from "@/components/chat/message/content";
-import { MessageActions } from "./message/actions";
+import { MessageActions } from "@/components/chat/message/actions";
 import { MessageEditor } from "@/components/chat/message/editor";
 import { ReplyPreview } from "@/components/chat/reply-preview";
 import { ReactionsDisplay } from "@/components/chat/reaction-display";
 import { MessageTimestampStatus } from "@/components/chat/message-timestamp-status";
 import useTouchActions from "@/hooks/useTouchActions";
 import { motion } from "framer-motion";
-import { AttachmentPreviews } from "./attachment-previews";
+import { AttachmentPreviews } from "@/components/chat/attachment-previews";
 import { useEditMessageMutation } from "@/hooks/queries/useEditMessageMutation";
 import { useAppSelector } from "@/hooks/useReduxType";
 

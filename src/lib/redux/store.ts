@@ -1,7 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
-import chatReducer from "./slices/chat-slice";
-import userReducer from "./slices/user-slice";
-import { chatSocketMiddleware } from "./middleware/chatSocketMiddleware";
+import chatReducer from "@/lib/redux/slices/chat-slice";
+import userReducer from "@/lib/redux/slices/user-slice";
+import { chatSocketMiddleware } from "@/lib/redux/middleware/chatSocketMiddleware";
 
 export const makeStore = () => {
   return configureStore({

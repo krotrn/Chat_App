@@ -1,6 +1,6 @@
 import { config } from "@/config";
 import io from "socket.io-client";
-import { ChatEventEnum } from "./socket-event";
+import { ChatEventEnum } from "@/lib/socket-event";
 
 let socket: SocketIOClient.Socket | null = null;
 const MAX_RECONNECT_ATTEMPTS = 5;

@@ -12,13 +12,13 @@ import TypingIndicator from "@/components/chat/typing-indicator";
 import { ConnectionState } from "@/types/ChatType";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { WifiOff } from "lucide-react";
-import { ResizablePanel } from "../ui/resizable";
+import { ResizablePanel } from "@/components/ui/resizable";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
 import useTypingIndicator from "@/hooks/useTypingIndicator";
 import { setCurrentChat } from "@/lib/redux/slices/chat-slice";
-import { useChatsQuery } from "@/hooks/queries/useChatsQuery";
 import { CONNECT_SOCKET } from "@/lib/redux/chatSocketActions";
+import { useFetchChatsInfiniteQuery } from "@/hooks/queries/useFetchChatsInfiniteQuery";
 
 export default function ChatMain() {
   const router = useRouter();
@@ -27,7 +27,12 @@ export default function ChatMain() {
   const { connectionState, currentChat } = useAppSelector(
     (state) => state.chat,
   );
-  const { data } = useChatsQuery();
+  new Promise((resolve) => {
+    if (connectionState === ConnectionState.CONNECTING) {
+      resolve(null);
+    }
+  });
+  const { data } = useFetchChatsInfiniteQuery();
   const dispatch = useAppDispatch();
   const currentUserId = useAppSelector((state) => state.user.user?.id);
   const token = useAppSelector((state) => state.user.token);
@@ -46,7 +51,9 @@ export default function ChatMain() {
       });
     }
   }, [currentChat, dispatch, router, token]);
-  const chat = data?.chats.find((chat) => chat._id === currentChat?._id);
+  const chat = data?.pages[0].chats.find(
+    (chat) => chat._id === currentChat?._id,
+  );
   const { typingUserIds } = useTypingIndicator({
     chatId: currentChat?._id || "",
     currentUserId: currentUserId!,
@@ -92,7 +99,7 @@ export default function ChatMain() {
           onBack={isMobile ? handleBack : undefined}
         />
 
-        {connectionState !== ConnectionState.CONNECTED && (
+        {connectionState === ConnectionState.FAILED && (
           <div className="mx-4 mt-2 p-3 w-fit bg-destructive/15 text-destructive rounded-md flex self-center gap-2">
             <WifiOff className="h-4 w-4" />
             <p>

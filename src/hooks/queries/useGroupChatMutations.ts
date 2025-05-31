@@ -9,7 +9,9 @@ import {
 } from "@/services/chat-api";
 
 export function useCreateGroupChatMutation() {
-  return useMutation({ mutationFn: createAGroupChat });
+  return useMutation({
+    mutationFn: createAGroupChat,
+  });
 }
 
 export function useUpdateGroupChatMutation() {

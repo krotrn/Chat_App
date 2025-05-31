@@ -3,7 +3,7 @@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Type } from "lucide-react";
-import { useSettings } from "../../context/ThemeProvider";
+import { useSettings } from "@/context/ThemeProvider";
 import { cn } from "@/lib/utils";
 
 export function FontSizeSelector() {

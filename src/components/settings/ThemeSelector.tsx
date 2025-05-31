@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Sun, Moon, Monitor } from "lucide-react";
 import { config } from "@/config";
 import { cn } from "@/lib/utils";
-import { useSettings } from "../../context/ThemeProvider";
+import { useSettings } from "@/context/ThemeProvider";
 
 export function ThemeSelector() {
   const { theme, setTheme, themes } = useSettings();

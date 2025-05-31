@@ -1,6 +1,6 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { getAllMessages } from "@/services/chat-api";
-import { useAppSelector } from "../useReduxType";
+import { useAppSelector } from "@/hooks/useReduxType";
 import { queryKeys } from "@/lib/config";
 
 export function useMessagesInfiniteQuery(chatId: string, limit = 20) {

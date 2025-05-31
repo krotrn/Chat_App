@@ -15,7 +15,7 @@ import EmojiPicker from "@/components/chat/emoji-picker";
 import CameraCapture from "@/components/chat/camera-capture";
 import useTypingIndicator from "@/hooks/useTypingIndicator";
 import { useSendMessageMutation } from "@/hooks/queries/useSendMessageMutation";
-import { SimpleAttachmentPreview } from "./simple-attachment-preview";
+import { SimpleAttachmentPreview } from "@/components/chat/simple-attachment-preview";
 import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
 import { setReplyMessage } from "@/lib/redux/slices/chat-slice";
 
