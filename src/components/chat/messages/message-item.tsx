@@ -4,17 +4,17 @@ import { useCallback, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { messageVariants } from "@/animations/chat/messageVariants";
-import DateDivider from "@/components/chat/date-divider";
-import { MessageContextMenu } from "@/components/chat/message/context-menu";
-import { MessageContent } from "@/components/chat/message/content";
-import { MessageActions } from "@/components/chat/message/actions";
-import { MessageEditor } from "@/components/chat/message/editor";
-import { ReplyPreview } from "@/components/chat/reply-preview";
-import { ReactionsDisplay } from "@/components/chat/reaction-display";
-import { MessageTimestampStatus } from "@/components/chat/message-timestamp-status";
+import DateDivider from "@/components/chat/messages/date-divider";
+import { MessageContextMenu } from "@/components/chat/messages/message/context-menu";
+import { MessageContent } from "@/components/chat/messages/message/content";
+import { MessageActions } from "@/components/chat/messages/message/actions";
+import { MessageEditor } from "@/components/chat/messages/message/editor";
+import { ReplyPreview } from "@/components/chat/messages/reply-preview";
+import { ReactionsDisplay } from "@/components/chat/input/reaction-display";
+import { MessageTimestampStatus } from "@/components/chat/messages/message-timestamp-status";
 import useTouchActions from "@/hooks/useTouchActions";
 import { motion } from "framer-motion";
-import { AttachmentPreviews } from "@/components/chat/attachment-previews";
+import { AttachmentPreviews } from "@/components/chat/attachments/attachment-previews";
 import { useEditMessageMutation } from "@/hooks/queries/useEditMessageMutation";
 import { useAppSelector } from "@/hooks/useReduxType";
 
@@ -41,7 +41,7 @@ export default function MessageItem({
   const [editMode, setEditMode] = useState(false);
   const [editContent, setEditContent] = useState(message.content);
   const sender = participants.find(
-    (user) => user.userId === message.sender.userId,
+    (user) => user.userId === message.sender.userId
   );
   const { mutate: onEdit } = useEditMessageMutation();
   const replySender = replyMessage
@@ -58,7 +58,7 @@ export default function MessageItem({
     useTouchActions(
       handleCopyToClipboard,
       longPressTimeoutRef,
-      setIsLongPressed,
+      setIsLongPressed
     );
   const token = useAppSelector((state) => state.user.token);
 
@@ -120,7 +120,7 @@ export default function MessageItem({
           <div
             className={cn(
               "flex max-w-[80%] gap-2",
-              isOwn ? "flex-row-reverse" : "flex-row",
+              isOwn ? "flex-row-reverse" : "flex-row"
             )}
           >
             {showAvatar && !isOwn ? (
@@ -153,7 +153,7 @@ export default function MessageItem({
                   <div
                     className={cn(
                       "relative rounded-lg px-3 py-2 group",
-                      isOwn ? "bg-primary text-primary-foreground" : "bg-muted",
+                      isOwn ? "bg-primary text-primary-foreground" : "bg-muted"
                     )}
                   >
                     {editMode ? (

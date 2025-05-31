@@ -2,7 +2,7 @@
 import { ArrowLeft, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import HeaderActions from "@/components/chat/header-action";
+import HeaderActions from "@/components/chat/ui/header-action";
 import { ChatType } from "@/types/ChatType";
 import { User } from "next-auth";
 

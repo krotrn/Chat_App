@@ -3,11 +3,11 @@ import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
-import ChatHeader from "@/components/chat/chat-header";
-import MessageList from "@/components/chat/message-list";
-import MessageInput from "@/components/chat/message-input";
-import ChatDetails from "@/components/chat/chat-details";
-import TypingIndicator from "@/components/chat/typing-indicator";
+import ChatHeader from "@/components/chat/layout/chat-header";
+import MessageList from "@/components/chat/messages/message-list";
+import MessageInput from "@/components/chat/messages/message-input";
+import ChatDetails from "@/components/chat/layout/chat-details";
+import TypingIndicator from "@/components/chat/messages/typing-indicator";
 
 import { ConnectionState } from "@/types/ChatType";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -25,7 +25,7 @@ export default function ChatMain() {
   const isMobile = useIsMobile();
   const [showDetails, setShowDetails] = useState(false);
   const { connectionState, currentChat } = useAppSelector(
-    (state) => state.chat,
+    (state) => state.chat
   );
   new Promise((resolve) => {
     if (connectionState === ConnectionState.CONNECTING) {
@@ -52,7 +52,7 @@ export default function ChatMain() {
     }
   }, [currentChat, dispatch, router, token]);
   const chat = data?.pages[0].chats.find(
-    (chat) => chat._id === currentChat?._id,
+    (chat) => chat._id === currentChat?._id
   );
   const { typingUserIds } = useTypingIndicator({
     chatId: currentChat?._id || "",
@@ -71,7 +71,7 @@ export default function ChatMain() {
       <ResizablePanel
         className={cn(
           "h-full flex items-center justify-center",
-          !currentChat && "hidden md:flex",
+          !currentChat && "hidden md:flex"
         )}
         minSize={40}
       >

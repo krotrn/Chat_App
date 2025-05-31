@@ -52,6 +52,8 @@ export function RecentActivity({ activities }: RecentActivityProps) {
             plugins={[
               Autoplay({
                 delay: 2000,
+                stopOnFocusIn: true,
+                stopOnInteraction: true,
               }),
             ]}
           >
