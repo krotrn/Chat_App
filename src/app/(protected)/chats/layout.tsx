@@ -1,6 +1,4 @@
-import { AuthProvider } from "@/components/AuthProvider";
 import APICheckWrapper from "@/components/offline/api-check-wrapper";
-import SessionProviderWrapper from "@/components/SessionProvider";
 import {
   ResizableHandle,
   ResizablePanelGroup,
@@ -16,18 +14,14 @@ export default async function ChatsLayout({
 }) {
   return (
     <APICheckWrapper>
-      <SessionProviderWrapper>
-        <AuthProvider>
-          <ResizablePanelGroup
-            direction="horizontal"
-            className="flex h-full overflow-hidden bg-background"
-          >
-            {chatList}
-            <ResizableHandle />
-            {chatMain}
-          </ResizablePanelGroup>
-        </AuthProvider>
-      </SessionProviderWrapper>
+      <ResizablePanelGroup
+        direction="horizontal"
+        className="flex h-full overflow-hidden bg-background"
+      >
+        {chatList}
+        <ResizableHandle />
+        {chatMain}
+      </ResizablePanelGroup>
     </APICheckWrapper>
   );
 }

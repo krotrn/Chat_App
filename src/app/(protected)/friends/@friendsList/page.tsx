@@ -4,10 +4,5 @@ import FriendsList from "@/components/friends/friends-list";
 export default async function FriendsListPage() {
   const session = await auth();
   if (!session || !session.user.id) throw new Error("unauthoriozed");
-  return (
-    <FriendsList
-      userId={session.user.id}
-      accessToken={session.accessToken}
-    />
-  );
+  return <FriendsList />;
 }

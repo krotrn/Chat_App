@@ -18,7 +18,7 @@ export const groupDetailsSchema = z.object({
           .date()
           .default(() => new Date())
           .optional(),
-      })
+      }),
     )
     .min(1, "At least one member is required"),
   avatarUrl: z.string().url("Invalid image URL").optional().or(z.literal("")),

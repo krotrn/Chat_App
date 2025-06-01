@@ -41,7 +41,7 @@ export default function MessageItem({
   const [editMode, setEditMode] = useState(false);
   const [editContent, setEditContent] = useState(message.content);
   const sender = participants.find(
-    (user) => user.userId === message.sender.userId
+    (user) => user.userId === message.sender.userId,
   );
   const { mutate: onEdit } = useEditMessageMutation();
   const replySender = replyMessage
@@ -58,7 +58,7 @@ export default function MessageItem({
     useTouchActions(
       handleCopyToClipboard,
       longPressTimeoutRef,
-      setIsLongPressed
+      setIsLongPressed,
     );
   const token = useAppSelector((state) => state.user.token);
 
@@ -120,7 +120,7 @@ export default function MessageItem({
           <div
             className={cn(
               "flex max-w-[80%] gap-2",
-              isOwn ? "flex-row-reverse" : "flex-row"
+              isOwn ? "flex-row-reverse" : "flex-row",
             )}
           >
             {showAvatar && !isOwn ? (
@@ -153,7 +153,7 @@ export default function MessageItem({
                   <div
                     className={cn(
                       "relative rounded-lg px-3 py-2 group",
-                      isOwn ? "bg-primary text-primary-foreground" : "bg-muted"
+                      isOwn ? "bg-primary text-primary-foreground" : "bg-muted",
                     )}
                   >
                     {editMode ? (

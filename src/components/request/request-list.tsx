@@ -16,46 +16,43 @@ import { FriendshipStatus } from "@prisma/client";
 import { actionMessages } from "@/lib/helper";
 interface RequestsListProps {
   requests: FriendRequestType[];
-  userId: string;
-  pending: string[];
 }
 
-export function RequestsList({ requests, userId, pending }: RequestsListProps) {
-  const [pendingRequests, setPendingRequests] = useState<string[]>(pending);
-  const [processedRequests, setProcessedRequests] = useState<string[]>([]);
+export function RequestsList({ requests }: RequestsListProps) {
+  const [pendingRequests, setPendingRequests] =
+    useState<FriendRequestType[]>(requests);
+  const [isLoading, setIsLoading] = useState(false);
   const handleRequest = useCallback(
     async (
-      requestId: string,
+      senderId: string,
       action: FriendshipStatus,
       status: FriendshipStatus,
     ) => {
-      setPendingRequests((prev) => [...prev, requestId]);
       try {
-        await handleFriendRequest(requestId, userId, action);
-        setProcessedRequests((prev) => [...prev, requestId]);
+        setIsLoading(true);
+        await handleFriendRequest(senderId, action);
+        setPendingRequests((prev) =>
+          prev.filter((req) => req.senderId !== senderId),
+        );
         toast.success(actionMessages[action === status ? "PENDING" : action]);
       } catch (error) {
         console.error("Error processing request:", error);
         toast.error("Failed to process friend request");
       } finally {
-        setPendingRequests((prev) => prev.filter((id) => id !== requestId));
+        setIsLoading(false);
       }
     },
-    [userId],
-  );
-
-  const filteredRequests = requests.filter(
-    (request) => !processedRequests.includes(request.id),
+    [],
   );
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Friend Requests ({filteredRequests?.length || 0})</CardTitle>
+        <CardTitle>Friend Requests ({pendingRequests?.length || 0})</CardTitle>
         <CardDescription>Manage your incoming friend requests.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {filteredRequests.length === 0 ? (
+        {pendingRequests.length === 0 ? (
           <div className="flex h-32 flex-col items-center justify-center rounded-md border border-dashed p-8 text-center">
             <p className="text-sm text-muted-foreground">
               No pending friend requests
@@ -64,11 +61,11 @@ export function RequestsList({ requests, userId, pending }: RequestsListProps) {
         ) : (
           <div className="space-y-4">
             <AnimatePresence>
-              {filteredRequests.map((request) => (
+              {pendingRequests.map((request) => (
                 <RequestItem
                   key={request.id}
                   request={request}
-                  isPending={pendingRequests.includes(request.id)}
+                  isPending={isLoading}
                   onAction={handleRequest}
                 />
               ))}

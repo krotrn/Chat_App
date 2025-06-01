@@ -5,17 +5,19 @@ import {
 } from "@/services/chat-api";
 import { useAppDispatch } from "@/hooks/useReduxType";
 import { setCurrentChat } from "@/lib/redux/slices/chat-slice";
+import { queryKeys } from "@/lib/config";
+import { useRouter } from "next/navigation";
 
 export function useCreateDirectChatMutation() {
   const dispatch = useAppDispatch();
   const queryClient = useQueryClient();
+  const router = useRouter();
   return useMutation({
     mutationFn: createOrGetAOneOnOneChat,
     onSuccess: (data) => {
       dispatch(setCurrentChat(data));
-      queryClient.invalidateQueries({
-        queryKey: ["chats"],
-      });
+      queryClient.setQueryData(queryKeys.chats.detail(data._id), data);
+      router.push(`/chats?chat=${data._id}`);
     },
   });
 }
@@ -25,10 +27,10 @@ export function useDeleteDirectChatMutation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: deleteOneOnOneChat,
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       dispatch(setCurrentChat(null));
-      queryClient.invalidateQueries({
-        queryKey: ["chats"],
+      queryClient.removeQueries({
+        queryKey: queryKeys.chats.detail(variables.chatId),
       });
     },
   });

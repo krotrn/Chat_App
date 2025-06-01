@@ -12,27 +12,15 @@ import useSearchQuery from "@/hooks/useSearchQuery";
 import { AnimatePresence } from "framer-motion";
 import FriendCard from "@/components/friends/friend-card";
 import { FormattedFriendType } from "@/types/formattedDataTypes";
-import { useState, useTransition, useEffect } from "react";
-import { removeFriend } from "@/actions/userUtils";
-import { toast } from "sonner";
-import { createOrGetAOneOnOneChat } from "@/services/chat-api";
-import { ParticipantsType } from "@/types/ChatType";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import { useFetchFriendsQuery } from "@/hooks/queries/useFetchFriendsQuery";
-interface FriendsListProps {
-  userId: string;
-  accessToken: string;
-}
 
-export default function FriendsList({ userId, accessToken }: FriendsListProps) {
+export default function FriendsList() {
   const [searchQuery, setSearchQuery] = useSearchQuery("fr", "");
-  const [isPending, startTransition] = useTransition();
   const { data: friends } = useFetchFriendsQuery();
   const [filteredFriends, setFilteredFriends] = useState<FormattedFriendType[]>(
-    friends || []
+    friends || [],
   );
-
-  const router = useRouter();
 
   useEffect(() => {
     if (friends) {
@@ -40,56 +28,11 @@ export default function FriendsList({ userId, accessToken }: FriendsListProps) {
         friends.filter((friend) =>
           (friend.name ? friend.name + friend.username : friend.username)
             .toLowerCase()
-            .includes(searchQuery.toLowerCase())
-        )
+            .includes(searchQuery.toLowerCase()),
+        ),
       );
     }
   }, [friends, searchQuery]);
-
-  const handleRemoveFriend = (friendId: string) => {
-    try {
-      startTransition(async () => {
-        const response = await removeFriend(userId, friendId);
-        if (!response.success) {
-          toast.error(response.message);
-          return;
-        }
-
-        toast.success(response.message);
-        setFilteredFriends((prev) =>
-          prev.filter((friend) => friend.id !== friendId)
-        );
-      });
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error(error.message);
-        toast.error(error.message);
-      } else {
-        toast.error("Error removing friend");
-      }
-    }
-  };
-  const handleGetChat = (participants: ParticipantsType[], name: string) => {
-    try {
-      startTransition(async () => {
-        console.log("Creating chat with friend ID:", participants[0].userId);
-        const response = await createOrGetAOneOnOneChat({
-          participants,
-          name,
-          token: accessToken,
-        });
-        console.log("Chat created/retrieved:", response);
-        router.push(`/chats?chat=${response._id}`);
-      });
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error(error.message);
-        toast.error(error.message);
-      } else {
-        toast.error("Error creating chat");
-      }
-    }
-  };
 
   return (
     <Card>
@@ -120,14 +63,7 @@ export default function FriendsList({ userId, accessToken }: FriendsListProps) {
           <div>
             <AnimatePresence>
               {filteredFriends?.map((friend) => (
-                <FriendCard
-                  handleRemoveFriend={handleRemoveFriend}
-                  handleGetChat={handleGetChat}
-                  isPending={isPending}
-                  userId={userId}
-                  friend={friend}
-                  key={friend.id}
-                />
+                <FriendCard friend={friend} key={friend.id} />
               ))}
             </AnimatePresence>
           </div>

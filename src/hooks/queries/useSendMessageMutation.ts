@@ -24,7 +24,7 @@ export function useSendMessageMutation() {
         queryKey: queryKeys.messages.infinite(chatId, 20),
       });
       const previousMessages = queryClient.getQueryData(
-        queryKeys.messages.infinite(chatId, 20)
+        queryKeys.messages.infinite(chatId, 20),
       );
       const optimisticMessage: MessageType = {
         _id: `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -63,7 +63,7 @@ export function useSendMessageMutation() {
             };
           }
           return { ...old, pages: newPages };
-        }
+        },
       );
       queryClient.setQueryData<InfiniteData<{ chats: ChatType[] }>>(
         queryKeys.chats.infinite(20),
@@ -82,7 +82,7 @@ export function useSendMessageMutation() {
             }),
           }));
           return { ...old, pages: newChats };
-        }
+        },
       );
       return { previousMessages, optimisticMessage };
     },
@@ -90,7 +90,7 @@ export function useSendMessageMutation() {
       if (context?.previousMessages) {
         queryClient.setQueryData(
           queryKeys.messages.infinite(variables.chatId, 20),
-          context.previousMessages
+          context.previousMessages,
         );
       }
       console.error("Error sending message:", error);
@@ -103,7 +103,7 @@ export function useSendMessageMutation() {
 
           // Check if the real message already exists (WebSocket might have already handled it)
           const realMessageExists = old.pages.some((page) =>
-            page.messages.some((msg) => msg._id === data._id)
+            page.messages.some((msg) => msg._id === data._id),
           );
 
           if (realMessageExists) {
@@ -111,7 +111,7 @@ export function useSendMessageMutation() {
             const newPages = old.pages.map((page) => ({
               ...page,
               messages: page.messages.filter(
-                (msg) => msg._id !== context.optimisticMessage._id
+                (msg) => msg._id !== context.optimisticMessage._id,
               ),
             }));
             return { ...old, pages: newPages };
@@ -121,11 +121,11 @@ export function useSendMessageMutation() {
           const newPages = old.pages.map((page) => ({
             ...page,
             messages: page.messages.map((msg) =>
-              msg._id === context.optimisticMessage._id ? data : msg
+              msg._id === context.optimisticMessage._id ? data : msg,
             ),
           }));
           return { ...old, pages: newPages };
-        }
+        },
       );
 
       // Update the last message in chats list
@@ -146,7 +146,7 @@ export function useSendMessageMutation() {
             }),
           }));
           return { ...old, pages: newPages };
-        }
+        },
       );
 
       // No need to invalidate since we're updating optimistically

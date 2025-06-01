@@ -25,7 +25,7 @@ export default function ChatMain() {
   const isMobile = useIsMobile();
   const [showDetails, setShowDetails] = useState(false);
   const { connectionState, currentChat } = useAppSelector(
-    (state) => state.chat
+    (state) => state.chat,
   );
   new Promise((resolve) => {
     if (connectionState === ConnectionState.CONNECTING) {
@@ -52,7 +52,7 @@ export default function ChatMain() {
     }
   }, [currentChat, dispatch, router, token]);
   const chat = data?.pages[0].chats.find(
-    (chat) => chat._id === currentChat?._id
+    (chat) => chat._id === currentChat?._id,
   );
   const { typingUserIds } = useTypingIndicator({
     chatId: currentChat?._id || "",
@@ -71,7 +71,7 @@ export default function ChatMain() {
       <ResizablePanel
         className={cn(
           "h-full flex items-center justify-center",
-          !currentChat && "hidden md:flex"
+          !currentChat && "hidden md:flex",
         )}
         minSize={40}
       >

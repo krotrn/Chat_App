@@ -23,7 +23,7 @@ export default function ChatSidebar({ aiModels }: ChatSidebarProps) {
   const { currentChat } = useAppSelector((state) => state.chat);
   const { data, isLoading } = useFetchChatsInfiniteQuery();
   const [filteredChats, setFilteredChats] = useState<ChatType[]>(
-    data?.pages[0].chats || []
+    data?.pages[0].chats || [],
   );
   useEffect(() => {
     if (data && data.pages[0].chats) {
@@ -42,23 +42,23 @@ export default function ChatSidebar({ aiModels }: ChatSidebarProps) {
             (chat) =>
               chat.name.toLowerCase().includes(value) ||
               (chat.lastMessage?.content &&
-                chat.lastMessage.content.toLowerCase().includes(value))
-          ) || []
+                chat.lastMessage.content.toLowerCase().includes(value)),
+          ) || [],
         );
       }
     },
-    [data?.pages]
+    [data?.pages],
   );
 
   if (isLoading) {
-    return <ChatSideBarSkeleton  />;
+    return <ChatSideBarSkeleton />;
   }
 
   return (
     <ResizablePanel
       className={cn(
         "flex flex-col h-full w-full border-r",
-        currentChat && "hidden md:flex"
+        currentChat && "hidden md:flex",
       )}
       minSize={20}
       defaultSize={25}

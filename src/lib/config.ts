@@ -45,5 +45,10 @@ export const queryKeys = {
     infinite: (limit: number) => [...queryKeys.friends.all, "infinite", limit],
     details: () => [...queryKeys.friends.all, "details"],
     detail: (friendId: string) => [...queryKeys.friends.details(), friendId],
-  }
+    search: (searchQuery: string) => [
+      ...queryKeys.friends.all,
+      "search",
+      searchQuery,
+    ],
+  },
 };

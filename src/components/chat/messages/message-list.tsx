@@ -9,7 +9,6 @@ import MessageItem from "@/components/chat/messages/message-item";
 import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
 import { useMessagesInfiniteQuery } from "@/hooks/queries/useMessagesInfiniteQuery";
 import { useMarkAsReadMutation } from "@/hooks/queries/useMarkAsReadMutation";
-import { markMessagesAsReadLocally } from "@/lib/redux/slices/chat-slice";
 
 interface MessageListProps {
   participants: ParticipantsType[];
@@ -44,18 +43,18 @@ export default function MessageList({ participants }: MessageListProps) {
           fetchNextPage();
         }
       },
-      { root: ele, threshold: 0 }
+      { root: ele, threshold: 0 },
     );
     if (topTrigger.current) observer.observe(topTrigger.current);
     return () => observer.disconnect();
   }, [fetchNextPage, isFetchingNextPage, hasNextPage]);
   const messages = useMemo(
     () => data?.pages.flatMap((page) => page.messages) ?? [],
-    [data]
+    [data],
   );
   const groupedMessages = useMemo(
     () => groupMessagesByDate(messages),
-    [messages]
+    [messages],
   );
 
   useEffect(() => {
@@ -78,11 +77,10 @@ export default function MessageList({ participants }: MessageListProps) {
       .filter(
         (msg) =>
           msg.sender.userId !== currentUserId &&
-          !msg.readBy.some((r) => r.userId === currentUserId)
+          !msg.readBy.some((r) => r.userId === currentUserId),
       )
       .map((msg) => msg._id);
     if (messageIds.length) {
-      dispatch(markMessagesAsReadLocally(messageIds));
       markAsReadMutation({ chatId, messageIds, token: token! });
     }
   }, [chatId, messages, currentUserId, dispatch, markAsReadMutation, token]);

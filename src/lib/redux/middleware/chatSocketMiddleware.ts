@@ -5,13 +5,6 @@ import {
 } from "@/lib/redux/chatSocketActions";
 import {
   setConnectionState,
-  updateMessage,
-  removeMessage,
-  addChat,
-  updateChat,
-  removeChat,
-  addPinnedMessageId,
-  removePinnedMessageId,
   clearChatState,
   setCurrentChat,
 } from "@/lib/redux/slices/chat-slice";
@@ -85,8 +78,8 @@ export const chatSocketMiddleware: Middleware =
                     // Check if this is a real message we already have
                     const realMessageExists = old.pages.some((page) =>
                       page.messages.some(
-                        (msg: MessageType) => msg._id === message._id
-                      )
+                        (msg: MessageType) => msg._id === message._id,
+                      ),
                     );
 
                     if (realMessageExists) {
@@ -106,7 +99,7 @@ export const chatSocketMiddleware: Middleware =
                           msg.sender.userId === message.sender.userId &&
                           Math.abs(
                             new Date(msg.createdAt).getTime() -
-                              new Date(message.createdAt).getTime()
+                              new Date(message.createdAt).getTime(),
                           ) < 10000
                         ) {
                           hasOptimisticMessage = true;
@@ -130,7 +123,7 @@ export const chatSocketMiddleware: Middleware =
                       }
                       return { ...old, pages: addPages };
                     }
-                  }
+                  },
                 );
                 queryClient.setQueryData<InfiniteData<{ chats: ChatType[] }>>(
                   queryKeys.chats.infinite(20),
@@ -149,15 +142,14 @@ export const chatSocketMiddleware: Middleware =
                       }),
                     }));
                     return { ...old, pages: newPages };
-                  }
+                  },
                 );
               }
-            }
+            },
           );
           socket.on(
             ChatEventEnum.MESSAGE_REACTION_EVENT,
             (newMessage: MessageType) => {
-              store.dispatch(updateMessage(newMessage));
               if (queryClient) {
                 queryClient.setQueryData<InfiniteData<MessagesPageData>>(
                   queryKeys.messages.infinite(newMessage.chatId, 20),
@@ -169,21 +161,20 @@ export const chatSocketMiddleware: Middleware =
                           return message._id === newMessage._id
                             ? newMessage
                             : message;
-                        }
+                        },
                       );
                       return { ...page, messages: newMessages };
                     });
                     return { ...old, pages: newPages };
-                  }
+                  },
                 );
               }
-            }
+            },
           );
 
           socket.on(
             ChatEventEnum.MESSAGE_PINNED_EVENT,
             (data: { chatId: string; messageId: string }) => {
-              store.dispatch(addPinnedMessageId(data.messageId));
               if (queryClient) {
                 queryClient.setQueryData<InfiniteData<MessagesPageData>>(
                   queryKeys.messages.infinite(data.chatId, 20),
@@ -195,20 +186,19 @@ export const chatSocketMiddleware: Middleware =
                       messages: page.messages.map((msg: MessageType) =>
                         msg._id === data.messageId
                           ? { ...msg, isPinned: true }
-                          : msg
+                          : msg,
                       ),
                     }));
 
                     return { ...old, pages: newPages };
-                  }
+                  },
                 );
               }
-            }
+            },
           );
           socket.on(
             ChatEventEnum.MESSAGE_UNPINNED_EVENT,
             (data: { chatId: string; messageId: string }) => {
-              store.dispatch(removePinnedMessageId(data.messageId));
               if (queryClient) {
                 queryClient.setQueryData<InfiniteData<MessagesPageData>>(
                   queryKeys.messages.infinite(data.chatId, 20),
@@ -220,20 +210,19 @@ export const chatSocketMiddleware: Middleware =
                       messages: page.messages.map((msg: MessageType) =>
                         msg._id === data.messageId
                           ? { ...msg, isPinned: false }
-                          : msg
+                          : msg,
                       ),
                     }));
 
                     return { ...old, pages: newPages };
-                  }
+                  },
                 );
               }
-            }
+            },
           );
           socket.on(
             ChatEventEnum.MESSAGE_DELETE_EVENT,
             (data: { chatId: string; messageId: string }) => {
-              store.dispatch(removeMessage(data.messageId));
               if (queryClient) {
                 queryClient.setQueryData<InfiniteData<MessagesPageData>>(
                   queryKeys.messages.infinite(data.chatId, 20),
@@ -243,12 +232,12 @@ export const chatSocketMiddleware: Middleware =
                     const newPages = old.pages.map((page) => ({
                       ...page,
                       messages: page.messages.filter(
-                        (msg) => msg._id !== data.messageId
+                        (msg) => msg._id !== data.messageId,
                       ),
                     }));
 
                     return { ...old, pages: newPages };
-                  }
+                  },
                 );
                 queryClient.setQueryData<InfiniteData<{ chats: ChatType[] }>>(
                   queryKeys.chats.infinite(20),
@@ -270,15 +259,14 @@ export const chatSocketMiddleware: Middleware =
                       }),
                     }));
                     return { ...old, pages: newPages };
-                  }
+                  },
                 );
               }
-            }
+            },
           );
           socket.on(
             ChatEventEnum.MESSAGE_EDITED_EVENT,
             (message: MessageType) => {
-              store.dispatch(updateMessage(message));
               if (queryClient) {
                 queryClient.setQueryData<InfiniteData<MessagesPageData>>(
                   queryKeys.messages.infinite(message.chatId, 20),
@@ -287,12 +275,12 @@ export const chatSocketMiddleware: Middleware =
 
                     const newPages = old.pages.map((page) => {
                       const newMessages: MessageType[] = page.messages.map(
-                        (msg) => (msg._id === message._id ? message : msg)
+                        (msg) => (msg._id === message._id ? message : msg),
                       );
                       return { ...page, messages: newMessages };
                     });
                     return { ...old, pages: newPages };
-                  }
+                  },
                 );
                 queryClient.setQueryData<InfiniteData<{ chats: ChatType[] }>>(
                   queryKeys.chats.infinite(20),
@@ -314,34 +302,62 @@ export const chatSocketMiddleware: Middleware =
                       }),
                     }));
                     return { ...old, pages: newPages };
-                  }
+                  },
                 );
               }
-            }
+            },
           );
           socket.on(ChatEventEnum.NEW_CHAT_EVENT, (chat: ChatType) => {
-            store.dispatch(addChat(chat));
             if (queryClient) {
-              queryClient.invalidateQueries({ queryKey: queryKeys.chats.all });
+              queryClient.setQueryData(queryKeys.chats.detail(chat._id), chat);
+              queryClient.setQueryData<InfiniteData<{ chats: ChatType[] }>>(
+                queryKeys.chats.infinite(20),
+                (old) => {
+                  if (!old) return old;
+                  const newPages = old.pages.map((page) => ({
+                    ...page,
+                    chats: [chat, ...page.chats],
+                  }));
+                  return { ...old, pages: newPages };
+                },
+              );
             }
           });
           socket.on(ChatEventEnum.CHAT_UPDATED_EVENT, (chat: ChatType) => {
-            store.dispatch(updateChat(chat));
             if (queryClient) {
               queryClient.setQueryData(queryKeys.chats.detail(chat._id), chat);
+              queryClient.setQueryData<InfiniteData<{ chats: ChatType[] }>>(
+                queryKeys.chats.infinite(20),
+                (old) => {
+                  if (!old) return old;
+                  const newPages = old.pages.map((page) => ({
+                    ...page,
+                    chats: page.chats.map((c) =>
+                      c._id === chat._id ? chat : c,
+                    ),
+                  }));
+                  return { ...old, pages: newPages };
+                },
+              );
             }
           });
           socket.on(ChatEventEnum.CHAT_DELETED_EVENT, (chat: ChatType) => {
-            store.dispatch(removeChat(chat._id));
             if (queryClient) {
               queryClient.removeQueries({
                 queryKey: queryKeys.chats.detail(chat._id),
               });
-              queryClient.invalidateQueries({ queryKey: queryKeys.chats.all });
+              queryClient.setQueryData<InfiniteData<{ chats: ChatType[] }>>(
+                queryKeys.chats.infinite(20),
+                (old) => {
+                  if (!old) return old;
+                  const newPages = old.pages.map((page) => ({
+                    ...page,
+                    chats: page.chats.filter((c) => c._id !== chat._id),
+                  }));
+                  return { ...old, pages: newPages };
+                },
+              );
             }
-          });
-          socket.on(ChatEventEnum.REMOVED_FROM_CHAT, (chat: ChatType) => {
-            store.dispatch(removeChat(chat._id));
           });
           socket.on(ChatEventEnum.SOCKET_ERROR_EVENT, () => {
             store.dispatch(setConnectionState(ConnectionState.FAILED));

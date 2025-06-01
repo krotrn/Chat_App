@@ -1,6 +1,6 @@
 "use client";
 import useSearchQuery from "@/hooks/useSearchQuery";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Card,
@@ -15,19 +15,21 @@ import { Button } from "@/components/ui/button";
 import { AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SearchUserType } from "@/types/formattedDataTypes";
-import { searchPeople, sendFriendRequest } from "@/actions/userUtils";
+import { handleFriendRequest, sendFriendRequest } from "@/actions/userUtils";
 import { toast } from "sonner";
+import { useFriendSearchQuery } from "@/hooks/queries/useFriendSearchQuery";
+import { FriendshipStatus } from "@prisma/client";
 
 interface FriendSearchProps {
   userId: string;
   pending: string[];
 }
 
-export default function FriendSearch({ userId, pending }: FriendSearchProps) {
+export default function FriendSearch({ pending }: FriendSearchProps) {
   const [searchQuery, setSearchQuery] = useSearchQuery("nfr", "");
   const [searchResults, setSearchResult] = useState<SearchUserType[]>([]);
   const [pendingRequests, setPendingRequests] = useState<string[]>(pending);
-  const [isSearching, startTransition] = useTransition();
+  const { mutate, isPending } = useFriendSearchQuery();
   useEffect(() => {
     if (!searchQuery) {
       setSearchResult([]);
@@ -36,24 +38,62 @@ export default function FriendSearch({ userId, pending }: FriendSearchProps) {
 
   const handleSearch = () => {
     if (!searchQuery.trim()) return;
-    startTransition(async () => {
-      try {
-        const results = await searchPeople(searchQuery);
-        setSearchResult(results);
-      } catch (error) {
-        console.log(error);
-        toast.error("Failed to search user");
-      }
-    });
+    mutate(
+      { contains: searchQuery },
+      {
+        onSuccess: (data) => {
+          setSearchResult(data);
+        },
+        onError: (error) => {
+          console.log(error);
+          toast.error("Failed to search user");
+        },
+      },
+    );
   };
   const handleSendRequest = async (id: string) => {
     try {
-      await sendFriendRequest(userId, id);
+      await sendFriendRequest(id);
       setPendingRequests((prev) => [...prev, id]);
       toast.success("Friend request sent");
     } catch (error) {
       toast.error((error as Error).message || "Failed to send friend request");
     }
+  };
+
+  const handleRecieveRequest = async (id: string) => {
+    try {
+      await handleFriendRequest(id, FriendshipStatus.ACCEPTED);
+    } catch (error) {
+      toast.error(
+        (error as Error).message || "Failed to handle friend request",
+      );
+    }
+  };
+
+  const handleClickButton = (user: SearchUserType) => {
+    if (user.isFriend) return;
+    else if (pendingRequests.includes(user.id) || user.hasSentRequest) return;
+    else if (user.hasIncomingRequest) {
+      handleRecieveRequest(user.id);
+      return;
+    }
+    handleSendRequest(user.id);
+  };
+  const buttonContent = (user: SearchUserType) => {
+    if (user.isFriend) {
+      return "Already Friend";
+    } else if (pendingRequests.includes(user.id) || user.hasSentRequest) {
+      return "Request Sent";
+    } else if (user.hasIncomingRequest) {
+      return "Accept Request";
+    }
+    return (
+      <>
+        <UserPlus className="mr-2 h-4 w-4" />
+        Add Friend
+      </>
+    );
   };
 
   return (
@@ -77,12 +117,8 @@ export default function FriendSearch({ userId, pending }: FriendSearchProps) {
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             />
           </div>
-          <Button
-            onClick={handleSearch}
-            disabled={isSearching}
-            className="h-10"
-          >
-            {isSearching ? <Loader2 /> : "Search"}
+          <Button onClick={handleSearch} disabled={isPending} className="h-10">
+            {isPending ? <Loader2 /> : "Search"}
           </Button>
         </div>
         <div className="space-y-4">
@@ -118,6 +154,12 @@ export default function FriendSearch({ userId, pending }: FriendSearchProps) {
                             {user.email}
                           </p>
                         )}
+                        {user.mutualFriendsCount > 0 && (
+                          <p className="text-xs text-muted-foreground">
+                            {user.mutualFriendsCount} mutual friend
+                            {user.mutualFriendsCount > 1 ? "s" : ""}
+                          </p>
+                        )}
                       </div>
                     </div>
                     <Button
@@ -126,24 +168,15 @@ export default function FriendSearch({ userId, pending }: FriendSearchProps) {
                       disabled={
                         pendingRequests.includes(user.id) || user.isFriend
                       }
-                      onClick={() => handleSendRequest(user.id)}
+                      onClick={() => handleClickButton(user)}
                       className="self-end sm:self-auto mt-2 sm:mt-0"
                     >
-                      {user.isFriend ? (
-                        "Aleady Friend"
-                      ) : pendingRequests.includes(user.id) ? (
-                        "Request Sent"
-                      ) : (
-                        <>
-                          <UserPlus className="mr-2 h-4 w-4" />
-                          Add Friend
-                        </>
-                      )}
+                      {buttonContent(user)}
                     </Button>
                   </motion.div>
                 ))
               : searchQuery &&
-                !isSearching && (
+                !isPending && (
                   <div className="flex h-32 flex-col items-center justify-center rounded-md border border-dashed p-8 text-center">
                     <p className="text-sm text-muted-foreground">
                       No users found matching {`"${searchQuery}"`}

@@ -23,7 +23,6 @@ enum AccountType {
 
 enum FriendshipStatus {
   PENDING
-  ACCEPTED
   FRIENDS
   REJECTED
   BLOCKED

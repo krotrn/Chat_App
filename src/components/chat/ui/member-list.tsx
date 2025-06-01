@@ -25,10 +25,10 @@ export default function MemberList({
   const [searchQuery, setSearchQuery] = useState("");
   const { data: friends, isLoading, isFetching } = useFetchFriendsQuery();
   const [filteredFriends, setFilteredFriends] = useState<FormattedFriendType[]>(
-    []
+    [],
   );
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
 
   useEffect(() => {
@@ -41,7 +41,7 @@ export default function MemberList({
             (friend.name || friend.username)
               .toLowerCase()
               .includes(searchQuery.toLowerCase()) ||
-            friend.username.toLowerCase().includes(searchQuery.toLowerCase())
+            friend.username.toLowerCase().includes(searchQuery.toLowerCase()),
         );
         setFilteredFriends(filtered);
       }
@@ -49,7 +49,7 @@ export default function MemberList({
   }, [searchQuery, friends]);
   const handleMemberToggle = (
     friend: FormattedFriendType,
-    checked: boolean
+    checked: boolean,
   ) => {
     if (!friends) return;
 

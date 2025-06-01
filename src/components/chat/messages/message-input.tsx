@@ -29,7 +29,7 @@ export default function MessageInput({ participants }: MessageInputProps) {
   const [isAttaching, setIsAttaching] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { currentChat: chat, connectionState } = useAppSelector(
-    (state) => state.chat
+    (state) => state.chat,
   );
   const disabled = connectionState !== ConnectionState.CONNECTED;
   const { mutate: handleSendMessage } = useSendMessageMutation();
@@ -77,7 +77,7 @@ export default function MessageInput({ participants }: MessageInputProps) {
       replyMessage,
       chat,
       token,
-    ]
+    ],
   );
 
   const handleKeyDown = useCallback(
@@ -89,7 +89,7 @@ export default function MessageInput({ participants }: MessageInputProps) {
         dispatch(setReplyMessage(null));
       }
     },
-    [handleSubmit, replyMessage, dispatch]
+    [handleSubmit, replyMessage, dispatch],
   );
 
   const handleEmojiSelect = useCallback(
@@ -107,7 +107,7 @@ export default function MessageInput({ participants }: MessageInputProps) {
         textarea.focus();
       }, 0);
     },
-    [message]
+    [message],
   );
 
   const handleFileSelect = useCallback((files: File[]) => {
@@ -128,7 +128,7 @@ export default function MessageInput({ participants }: MessageInputProps) {
       setMessage(e.target.value);
       handleLocalUserTyping();
     },
-    [handleLocalUserTyping]
+    [handleLocalUserTyping],
   );
 
   const replyToUser = replyMessage

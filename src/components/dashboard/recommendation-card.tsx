@@ -11,7 +11,6 @@ import { toast } from "sonner";
 
 export default function RecommendationCard({
   recommendation,
-  userId,
 }: {
   recommendation: RecommendationWithRelations;
   userId: string;
@@ -51,7 +50,7 @@ export default function RecommendationCard({
         return;
       }
       try {
-        await sendFriendRequest(userId, recommendation.recommendedUser.id);
+        await sendFriendRequest(recommendation.recommendedUser.id);
         //TODO Delete Recommendations
       } catch (error) {
         if (error instanceof Error) {

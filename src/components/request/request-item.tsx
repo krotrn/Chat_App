@@ -59,7 +59,7 @@ export default function RequestItem({
           className="border-green-500 text-green-500 hover:bg-green-50 hover:text-green-600 h-9 min-w-[80px]"
           disabled={isPending}
           onClick={() =>
-            onAction(request.id, FriendshipStatus.ACCEPTED, request.status)
+            onAction(request.senderId, FriendshipStatus.FRIENDS, request.status)
           }
         >
           <CheckIcon className="mr-1 h-4 w-4" />

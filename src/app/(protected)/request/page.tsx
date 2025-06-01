@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { RequestsList } from "@/components/request/request-list";
 import { config } from "@/config";
-import { getFriendRequests, getPendingRequests } from "@/actions/userUtils";
+import { getFriendRequests } from "@/actions/userUtils";
 import { auth } from "@/auth";
 import Authorized from "@/components/authorized";
 
@@ -17,7 +17,6 @@ export default async function RequestsPage() {
   }
 
   const requests = await getFriendRequests();
-  const pending = await getPendingRequests(session.user.id);
 
   return (
     <div className="w-full flex items-center justify-center py-10">
@@ -31,11 +30,7 @@ export default async function RequestsPage() {
               Manage your incoming friend requests.
             </p>
           </div>
-          <RequestsList
-            requests={requests}
-            userId={session.user.id}
-            pending={pending.map((p) => p.id)}
-          />
+          <RequestsList requests={requests} />
         </main>
       </Authorized>
     </div>

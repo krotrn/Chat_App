@@ -16,6 +16,7 @@ import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
 import { useDeleteDirectChatMutation } from "@/hooks/queries/useDirectChatMutation";
 import { useDeleteGroupChatMutation } from "@/hooks/queries/useGroupChatMutations";
 import { setCurrentChat } from "@/lib/redux/slices/chat-slice";
+import { useRouter } from "next/navigation";
 
 interface ChatItemProps {
   chat: ChatType;
@@ -30,6 +31,7 @@ export default function ChatItem({ chat }: ChatItemProps) {
   const currentChat = useAppSelector((state) => state.chat.currentChat);
   const isSelected = currentChat?._id === chat._id;
   const token = useAppSelector((state) => state.user.token);
+  const router = useRouter();
 
   const onClick = () => {
     dispatch(setCurrentChat(chat));
@@ -40,6 +42,10 @@ export default function ChatItem({ chat }: ChatItemProps) {
       handleDeleteDirectChat({ chatId: chat._id, forEveryone, token: token! });
     else if (chat.type === "group")
       handleDeleteGroupChat({ chatId: chat._id, token: token! });
+    if (chat._id === currentChat?._id) {
+      dispatch(setCurrentChat(null));
+      router.push(`/chats`);
+    }
   };
 
   let title: string;

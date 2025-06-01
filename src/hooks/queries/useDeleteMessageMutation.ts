@@ -9,6 +9,7 @@ import { MessagesPageData } from "@/types/ChatType";
 
 export function useDeleteMessageMutation() {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: deleteMessage,
     onMutate: async (variable) => {

@@ -6,23 +6,20 @@ import { MessageSquareMore, UserMinus } from "lucide-react";
 import { FormattedFriendType } from "@/types/formattedDataTypes";
 import { friendCardVariant } from "@/animations/friends/friend-card-variant";
 import { ParticipantsType } from "@/types/ChatType";
-import { getUserDataById } from "@/actions/userUtils";
+import { useCreateDirectChatMutation } from "@/hooks/queries/useDirectChatMutation";
+import { useAppSelector } from "@/hooks/useReduxType";
+import { useRemoveFriendMutation } from "@/hooks/queries/useRemoveFriendMutation";
 interface FriendCardProps {
   friend: FormattedFriendType;
-  handleRemoveFriend: (friendId: string) => void;
-  handleGetChat: (participants: ParticipantsType[], name: string) => void;
-  userId: string;
-  isPending: boolean;
 }
 
-export default function FriendCard({
-  friend,
-  handleRemoveFriend,
-  handleGetChat,
-  userId,
-  isPending,
-}: FriendCardProps) {
+export default function FriendCard({ friend }: FriendCardProps) {
+  const { mutate: createDirectChat, isPending } = useCreateDirectChatMutation();
+  const { mutate: removeFriend } = useRemoveFriendMutation();
+  const token = useAppSelector((state) => state.user.token);
+  const user = useAppSelector((state) => state.user.user);
   const handleMessageClick = async () => {
+    if (!token || !user?.id) return;
     const participant: ParticipantsType = {
       avatarUrl: friend.avatarUrl,
       joinedAt: new Date(),
@@ -30,14 +27,6 @@ export default function FriendCard({
       role: "member",
       userId: friend.id,
     };
-
-    const user = await getUserDataById(userId, {
-      avatarUrl: true,
-      name: true,
-      role: true,
-      id: true,
-      username: true,
-    });
     const participant2: ParticipantsType = {
       avatarUrl: user.avatarUrl ?? undefined,
       name: user.name ?? friend.username,
@@ -45,10 +34,11 @@ export default function FriendCard({
       role: "member",
       joinedAt: new Date(),
     };
-    handleGetChat(
-      [participant, participant2],
-      `${user.username} and ${friend.username}`,
-    );
+    createDirectChat({
+      participants: [participant, participant2],
+      name: participant.name,
+      token: token!,
+    });
   };
 
   return (
@@ -86,7 +76,9 @@ export default function FriendCard({
           variant="ghost"
           size="icon"
           disabled={isPending}
-          onClick={() => handleRemoveFriend(friend.id)}
+          onClick={() =>
+            removeFriend({ friendId: friend.id, userId: user?.id })
+          }
         >
           <UserMinus className="h-4 w-4" />
           <span className="sr-only">Remove friend</span>
