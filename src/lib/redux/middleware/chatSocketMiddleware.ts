@@ -5,7 +5,6 @@ import {
 } from "@/lib/redux/chatSocketActions";
 import {
   setConnectionState,
-  addMessage,
   updateMessage,
   removeMessage,
   addChat,
@@ -75,31 +74,63 @@ export const chatSocketMiddleware: Middleware =
           socket.on(
             ChatEventEnum.MESSAGE_RECEIVED_EVENT,
             (message: MessageType) => {
-              store.dispatch(addMessage(message));
+              // Don't dispatch to Redux store to avoid duplication with optimistic updates
+              // store.dispatch(addMessage(message));
               if (queryClient) {
                 queryClient.setQueryData<InfiniteData<MessagesPageData>>(
                   queryKeys.messages.infinite(message.chatId, 20),
                   (old) => {
                     if (!old) return old;
 
-                    const messageExists = old.pages.some((page) =>
+                    // Check if this is a real message we already have
+                    const realMessageExists = old.pages.some((page) =>
                       page.messages.some(
-                        (msg: MessageType) => msg._id === message._id,
-                      ),
+                        (msg: MessageType) => msg._id === message._id
+                      )
                     );
 
-                    if (!messageExists) {
-                      const newPages = [...old.pages];
-                      if (newPages[0]) {
-                        newPages[0] = {
-                          ...newPages[0],
-                          messages: [message, ...newPages[0].messages],
+                    if (realMessageExists) {
+                      // Message already exists, don't add duplicate
+                      return old;
+                    }
+
+                    // Check if we have an optimistic message for this content
+                    let hasOptimisticMessage = false;
+                    const newPages = old.pages.map((page) => ({
+                      ...page,
+                      messages: page.messages.map((msg) => {
+                        // Look for optimistic messages with similar content and timing
+                        if (
+                          msg._id.startsWith("temp-") &&
+                          msg.content === message.content &&
+                          msg.sender.userId === message.sender.userId &&
+                          Math.abs(
+                            new Date(msg.createdAt).getTime() -
+                              new Date(message.createdAt).getTime()
+                          ) < 10000
+                        ) {
+                          hasOptimisticMessage = true;
+                          return message; // Replace optimistic with real message
+                        }
+                        return msg;
+                      }),
+                    }));
+
+                    if (hasOptimisticMessage) {
+                      // We found and replaced an optimistic message
+                      return { ...old, pages: newPages };
+                    } else {
+                      // This is a new message from someone else, add it
+                      const addPages = [...old.pages];
+                      if (addPages[0]) {
+                        addPages[0] = {
+                          ...addPages[0],
+                          messages: [message, ...addPages[0].messages],
                         };
                       }
-                      return { ...old, pages: newPages };
+                      return { ...old, pages: addPages };
                     }
-                    return old;
-                  },
+                  }
                 );
                 queryClient.setQueryData<InfiniteData<{ chats: ChatType[] }>>(
                   queryKeys.chats.infinite(20),
@@ -118,10 +149,10 @@ export const chatSocketMiddleware: Middleware =
                       }),
                     }));
                     return { ...old, pages: newPages };
-                  },
+                  }
                 );
               }
-            },
+            }
           );
           socket.on(
             ChatEventEnum.MESSAGE_REACTION_EVENT,
@@ -138,15 +169,15 @@ export const chatSocketMiddleware: Middleware =
                           return message._id === newMessage._id
                             ? newMessage
                             : message;
-                        },
+                        }
                       );
                       return { ...page, messages: newMessages };
                     });
                     return { ...old, pages: newPages };
-                  },
+                  }
                 );
               }
-            },
+            }
           );
 
           socket.on(
@@ -164,15 +195,15 @@ export const chatSocketMiddleware: Middleware =
                       messages: page.messages.map((msg: MessageType) =>
                         msg._id === data.messageId
                           ? { ...msg, isPinned: true }
-                          : msg,
+                          : msg
                       ),
                     }));
 
                     return { ...old, pages: newPages };
-                  },
+                  }
                 );
               }
-            },
+            }
           );
           socket.on(
             ChatEventEnum.MESSAGE_UNPINNED_EVENT,
@@ -188,16 +219,16 @@ export const chatSocketMiddleware: Middleware =
                       ...page,
                       messages: page.messages.map((msg: MessageType) =>
                         msg._id === data.messageId
-                          ? { ...msg, isPinned: true }
-                          : msg,
+                          ? { ...msg, isPinned: false }
+                          : msg
                       ),
                     }));
 
                     return { ...old, pages: newPages };
-                  },
+                  }
                 );
               }
-            },
+            }
           );
           socket.on(
             ChatEventEnum.MESSAGE_DELETE_EVENT,
@@ -212,12 +243,12 @@ export const chatSocketMiddleware: Middleware =
                     const newPages = old.pages.map((page) => ({
                       ...page,
                       messages: page.messages.filter(
-                        (msg) => msg._id !== data.messageId,
+                        (msg) => msg._id !== data.messageId
                       ),
                     }));
 
                     return { ...old, pages: newPages };
-                  },
+                  }
                 );
                 queryClient.setQueryData<InfiniteData<{ chats: ChatType[] }>>(
                   queryKeys.chats.infinite(20),
@@ -239,10 +270,10 @@ export const chatSocketMiddleware: Middleware =
                       }),
                     }));
                     return { ...old, pages: newPages };
-                  },
+                  }
                 );
               }
-            },
+            }
           );
           socket.on(
             ChatEventEnum.MESSAGE_EDITED_EVENT,
@@ -256,12 +287,12 @@ export const chatSocketMiddleware: Middleware =
 
                     const newPages = old.pages.map((page) => {
                       const newMessages: MessageType[] = page.messages.map(
-                        (msg) => (msg._id === message._id ? message : msg),
+                        (msg) => (msg._id === message._id ? message : msg)
                       );
                       return { ...page, messages: newMessages };
                     });
                     return { ...old, pages: newPages };
-                  },
+                  }
                 );
                 queryClient.setQueryData<InfiniteData<{ chats: ChatType[] }>>(
                   queryKeys.chats.infinite(20),
@@ -283,10 +314,10 @@ export const chatSocketMiddleware: Middleware =
                       }),
                     }));
                     return { ...old, pages: newPages };
-                  },
+                  }
                 );
               }
-            },
+            }
           );
           socket.on(ChatEventEnum.NEW_CHAT_EVENT, (chat: ChatType) => {
             store.dispatch(addChat(chat));

@@ -25,7 +25,7 @@ const ProfileGlance = ({ user }: ProfileGlanceProps) => {
   return (
     <Card className="w-full min-w-fit justify-items-center">
       <CardHeader className="flex flex-row items-center gap-4 pb-2">
-        <Avatar className="h-20 w-20">
+        <Avatar className="h-20 w-20 rounded-full">
           <AvatarImage
             src={user.avatarUrl || "/avatars/default.jpg"}
             alt={user.name || user.username || "User avatar"}

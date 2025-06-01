@@ -24,13 +24,14 @@ import MemberList from "./member-list";
 import { useCreateGroupChatMutation } from "@/hooks/queries/useGroupChatMutations";
 import { useAppSelector } from "@/hooks/useReduxType";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
 export default function CreateGroupDialog() {
   const [open, setOpen] = useState(false);
   const token = useAppSelector((state) => state.user.token);
-  const { mutate, isPending, error } = useCreateGroupChatMutation();
+  const { mutateAsync, isPending, error, isSuccess } =
+    useCreateGroupChatMutation();
 
   const form = useForm<z.infer<typeof groupDetailsSchema>>({
     resolver: zodResolver(groupDetailsSchema),
@@ -42,19 +43,44 @@ export default function CreateGroupDialog() {
     },
   });
 
-  if (error) {
-    toast.error(error.message);
-  }
+  // Handle error display
+  useEffect(() => {
+    if (error) {
+      console.error("Group creation error:", error);
+      toast.error(error.message || "Failed to create group");
+    }
+  }, [error]);
 
-  const onSubmit = (data: z.infer<typeof groupDetailsSchema>) => {
+  // Handle success
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success("Group created successfully!");
+      form.reset();
+      setOpen(false);
+    }
+  }, [isSuccess, form]);
+  const onSubmit = async (data: z.infer<typeof groupDetailsSchema>) => {
+    console.log("onSubmit function called!");
+    console.log("Form data received:", data);
+    console.log("Form validation state:", form.formState);
+    console.log("Form errors:", form.formState.errors);
+
     if (!token) {
       toast.error("Authentication required");
       return;
     }
-    console.log("starting")
 
+    console.log("Token exists:", !!token);
+    console.log("Members selected:", data.members);
+
+    if (data.members.length === 0) {
+      toast.error("Please select at least one member");
+      return;
+    }
+
+    console.log("About to call mutateAsync...");
     try {
-      mutate({
+      await mutateAsync({
         name: data.groupname,
         participants: data.members.map((member) => ({
           userId: member.userId,
@@ -65,16 +91,13 @@ export default function CreateGroupDialog() {
         })),
         token,
       });
-      console.log("executed")
-
-      toast.success("Group created successfully!");
-      form.reset();
-      setOpen(false);
+      console.log("Group creation successful!");
     } catch (error) {
       console.error("Error creating group:", error);
       toast.error("Failed to create group. Please try again.");
     }
   };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -129,10 +152,7 @@ export default function CreateGroupDialog() {
                 <FormItem>
                   <FormLabel>Select Members</FormLabel>
                   <FormControl>
-                    <MemberList
-                      field={field}
-                      disabled={isPending}
-                    />
+                    <MemberList field={field} disabled={isPending} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -146,17 +166,24 @@ export default function CreateGroupDialog() {
                 disabled={isPending}
               >
                 Cancel
-              </Button>
+              </Button>{" "}
               <Button
                 type="submit"
-                disabled={
-                  isPending ||
-                  form.watch("members").length === 0
-                }
+                onClick={() => {
+                  console.log("Create Group button clicked!");
+                  console.log("Form state:", {
+                    isValid: form.formState.isValid,
+                    errors: form.formState.errors,
+                    values: form.getValues(),
+                    isPending,
+                    membersLength: form.watch("members").length,
+                    groupname: form.watch("groupname"),
+                    groupnameTrimmed: form.watch("groupname").trim(),
+                  });
+                }}
+                disabled={isPending}
               >
-                {isPending && (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                )}
+                {isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 Create Group
               </Button>
             </div>

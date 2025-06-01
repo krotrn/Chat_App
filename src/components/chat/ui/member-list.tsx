@@ -47,53 +47,49 @@ export default function MemberList({
       }
     }
   }, [searchQuery, friends]);
-
   const handleMemberToggle = (
     friend: FormattedFriendType,
     checked: boolean
   ) => {
-    if (friends) {
-      setSelectedMembers((prev) => {
-        if (checked) {
-          prev.add(friend.id);
-        } else {
-          prev.delete(friend.id);
-        }
-        return prev;
-      });
+    if (!friends) return;
 
-      const memberData = friends
-        .filter((f) => selectedMembers.has(f.id))
-        .map((friend) => ({
-          userId: friend.id,
-          name: friend.name || friend.username,
-          avatarUrl: friend.avatarUrl,
-          role: "member",
-          joinedAt: new Date(),
-        }));
-
-      field.onChange(memberData);
+    const next = new Set(selectedMembers);
+    if (checked) {
+      next.add(friend.id);
+    } else {
+      next.delete(friend.id);
     }
-  };
 
-  const handleRemoveMember = (memberId: string) => {
-    if (friends) {
-      setSelectedMembers(prev => {
-        prev.delete(memberId)
-        return prev;
-      });
-      const memberData = friends.filter((f) =>
-        selectedMembers.has(f.id)
-      ).map((friend) => ({
-        userId: friend.id,
-        name: friend.name || friend.username,
-        avatarUrl: friend.avatarUrl,
-        role: "member",
+    const memberData = friends
+      .filter((f) => next.has(f.id))
+      .map((f) => ({
+        userId: f.id,
+        name: f.name || f.username,
+        avatarUrl: f.avatarUrl || "",
+        role: "member" as const,
         joinedAt: new Date(),
       }));
 
-      field.onChange(memberData);
-    }
+    field.onChange(memberData);
+
+    setSelectedMembers(next);
+  };
+  const handleRemoveMember = (memberId: string) => {
+    if (!friends) return;
+    const next = new Set(selectedMembers);
+    next.delete(memberId);
+    const memberData = friends
+      .filter((f) => next.has(f.id))
+      .map((f) => ({
+        userId: f.id,
+        name: f.name || f.username,
+        avatarUrl: f.avatarUrl || "",
+        role: "member" as const,
+        joinedAt: new Date(),
+      }));
+
+    field.onChange(memberData);
+    setSelectedMembers(next);
   };
 
   if (isLoading || isFetching) {
@@ -145,7 +141,7 @@ export default function MemberList({
                   </Avatar>
                   <span className="text-xs">
                     {friend.name || friend.username}
-                  </span>{" "}
+                  </span>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -164,7 +160,7 @@ export default function MemberList({
 
       {/* Search Input */}
       <div className="relative">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />{" "}
+        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Search friends to add..."
           className="pl-8"
@@ -180,7 +176,7 @@ export default function MemberList({
           <div className="h-32 flex flex-col items-center justify-center text-center">
             {friends?.length === 0 ? (
               <div>
-                <Users className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />{" "}
+                <Users className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                 <p className="text-sm text-muted-foreground">
                   You don&apos;t have any friends yet
                 </p>
@@ -190,7 +186,7 @@ export default function MemberList({
               </div>
             ) : (
               <div>
-                <Search className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />{" "}
+                <Search className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                 <p className="text-sm text-muted-foreground">
                   No friends match &quot;{searchQuery}&quot;
                 </p>
@@ -207,7 +203,6 @@ export default function MemberList({
                 exit={{ opacity: 0, y: -10 }}
                 className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
               >
-                {" "}
                 <Checkbox
                   id={`friend-${friend.id}`}
                   checked={selectedMembers.has(friend.id)}

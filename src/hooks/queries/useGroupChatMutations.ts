@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   createAGroupChat,
   updateGroupChat,
@@ -7,29 +7,70 @@ import {
   removeParticipantFromGroupChat,
   leaveGroupChat,
 } from "@/services/chat-api";
+import { queryKeys } from "@/lib/config";
 
 export function useCreateGroupChatMutation() {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: createAGroupChat,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.chats.infinite(20) });
+      queryClient.setQueryData(queryKeys.chats.detail(data._id), data);
+    }
   });
 }
 
 export function useUpdateGroupChatMutation() {
-  return useMutation({ mutationFn: updateGroupChat });
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: updateGroupChat,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.chats.infinite(20) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.groupChat.detail(data._id) });
+      queryClient.setQueryData(queryKeys.chats.detail(data._id), data);
+    }
+  });
 }
 
 export function useDeleteGroupChatMutation() {
-  return useMutation({ mutationFn: deleteGroupChat });
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: deleteGroupChat,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.chats.infinite(20) })
+    }
+  });
 }
 
 export function useAddParticipantMutation() {
-  return useMutation({ mutationFn: addNewParticipantInGroupChat });
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: addNewParticipantInGroupChat,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.chats.infinite(20) });
+      queryClient.setQueryData(queryKeys.groupChat.detail(data._id), data);
+    }
+  });
 }
 
 export function useRemoveParticipantMutation() {
-  return useMutation({ mutationFn: removeParticipantFromGroupChat });
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: removeParticipantFromGroupChat,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.chats.infinite(20) });
+      queryClient.setQueryData(queryKeys.groupChat.detail(data._id), data);
+    }
+  });
 }
 
 export function useLeaveGroupChatMutation() {
-  return useMutation({ mutationFn: leaveGroupChat });
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: leaveGroupChat,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.chats.infinite(20) });
+      queryClient.setQueryData(queryKeys.groupChat.detail(data._id), data);
+    }
+  });
 }

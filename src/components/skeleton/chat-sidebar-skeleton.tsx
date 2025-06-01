@@ -6,15 +6,16 @@ import { cn } from "@/lib/utils";
 
 interface ChatSideBarSkeletonProps {
   count?: number;
-  searchParams?: Promise<{ chat: string }>;
+  params?: {
+    chat: string;
+  };
 }
 
-export default async function ChatSideBarSkeleton({
+export default function ChatSideBarSkeleton({
   count = 5,
-  searchParams,
+  params,
 }: ChatSideBarSkeletonProps) {
-  const params = searchParams ? await searchParams : { chat: "" };
-  const currentChatId = params.chat;
+  const currentChatId = params?.chat || "";
 
   return (
     <aside

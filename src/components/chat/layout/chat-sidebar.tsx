@@ -12,6 +12,7 @@ import { useAppSelector } from "@/hooks/useReduxType";
 import { useCallback, useEffect, useState } from "react";
 import { useFetchChatsInfiniteQuery } from "@/hooks/queries/useFetchChatsInfiniteQuery";
 import CreateGroupDialog from "../ui/group-dialog";
+import ChatSideBarSkeleton from "@/components/skeleton/chat-sidebar-skeleton";
 
 interface ChatSidebarProps {
   aiModels?: AIModel[];
@@ -20,7 +21,7 @@ interface ChatSidebarProps {
 export default function ChatSidebar({ aiModels }: ChatSidebarProps) {
   const [searchChatQuery, setSearchQuery] = useState<string>("");
   const { currentChat } = useAppSelector((state) => state.chat);
-  const { data } = useFetchChatsInfiniteQuery();
+  const { data, isLoading } = useFetchChatsInfiniteQuery();
   const [filteredChats, setFilteredChats] = useState<ChatType[]>(
     data?.pages[0].chats || []
   );
@@ -48,6 +49,10 @@ export default function ChatSidebar({ aiModels }: ChatSidebarProps) {
     },
     [data?.pages]
   );
+
+  if (isLoading) {
+    return <ChatSideBarSkeleton  />;
+  }
 
   return (
     <ResizablePanel

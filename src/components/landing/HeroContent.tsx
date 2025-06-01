@@ -11,7 +11,7 @@ const HeroContent = () => {
       initial="hidden"
       animate="visible"
       variants={heroVariants}
-      className="flex flex-col justify-center space-y-4"
+      className="flex flex-col h-screen items-center justify-center space-y-4"
     >
       <div className="space-y-2 flex flex-col items-center justify-center text-center">
         <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
