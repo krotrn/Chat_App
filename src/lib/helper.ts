@@ -14,7 +14,6 @@ export const handleError = (message: string) => ({
 });
 
 export const actionMessages: Record<FriendshipStatus, string> = {
-  ACCEPTED: "Friend request accepted",
   FRIENDS: "You are now friends",
   NONE: "No action taken",
   REJECTED: "Friend request rejected",

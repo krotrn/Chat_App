@@ -63,7 +63,7 @@ export default function FriendSearch({ pending }: FriendSearchProps) {
 
   const handleRecieveRequest = async (id: string) => {
     try {
-      await handleFriendRequest(id, FriendshipStatus.ACCEPTED);
+      await handleFriendRequest(id, FriendshipStatus.FRIENDS);
     } catch (error) {
       toast.error(
         (error as Error).message || "Failed to handle friend request",
