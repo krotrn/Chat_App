@@ -4,7 +4,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { profileSchema } from "@/schemas/profileSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { User } from "next-auth";
 import { useSession } from "next-auth/react";
 import {
   Form,
@@ -21,19 +20,21 @@ import { FormSuccess } from "@/components/auth/Form-Success";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { updateProfile } from "@/actions/userUtils";
+import { useAppSelector } from "@/hooks/useReduxType";
 
-export default function ProfileForm({ user }: { user: User }) {
+export default function ProfileForm() {
   const { update } = useSession();
   const [isPending, startTransition] = useTransition();
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const user = useAppSelector((state) => state.user.user);
 
   const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: user.name || "",
-      bio: user.bio || "",
+      name: user?.name || "",
+      bio: user?.bio || "",
       avatar: undefined,
     },
   });
@@ -76,8 +77,8 @@ export default function ProfileForm({ user }: { user: User }) {
       <div className="flex flex-col justify-center items-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
         <Avatar className="h-36 w-36">
           <AvatarImage
-            src={avatarPreview || user.avatarUrl || ""}
-            alt={form.watch("name") || user.username}
+            src={avatarPreview || user?.avatarUrl || ""}
+            alt={form.watch("name") || user?.username}
           />
           <AvatarFallback>
             {form.watch("name")?.[0]?.toUpperCase() || "U"}

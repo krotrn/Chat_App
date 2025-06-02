@@ -1,26 +1,22 @@
 "use client";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Database } from "lucide-react";
 import { config } from "@/config";
 import Link from "next/link";
+import { useCheckDBQuery } from "@/hooks/queries/useCheckDBQuery";
 
 export function DatabaseOfflinePage() {
-  const router = useRouter();
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { data, isLoading, refetch } = useCheckDBQuery();
+  const handleRefresh = useCallback(() => {
+    refetch();
+  }, [refetch]);
+
   useEffect(() => {
-    setIsRefreshing(false);
-  }, []);
-
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    router.refresh();
-    setTimeout(() => {
-      setIsRefreshing(false);
-    }, 2000);
-  };
-
+    if(!isLoading && data) {
+      window.location.reload();
+    }
+  }, [data, isLoading]);
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-4 text-center">
       <div className="mx-auto flex max-w-[500px] flex-col items-center justify-center space-y-4">
@@ -37,13 +33,13 @@ export function DatabaseOfflinePage() {
         </p>
         <Button
           onClick={handleRefresh}
-          disabled={isRefreshing}
+          disabled={isLoading}
           className="mt-4"
         >
           <RefreshCw
-            className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+            className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
           />
-          {isRefreshing ? "Checking Connection..." : "Try Again"}
+          {isLoading ? "Checking Connection..." : "Try Again"}
         </Button>
         {config.supportEmail && (
           <p className="text-xs text-muted-foreground">

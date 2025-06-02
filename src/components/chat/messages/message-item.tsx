@@ -64,8 +64,6 @@ export default function MessageItem({
 
   const handleEdit = useCallback(() => {
     if (onEdit && editContent.trim() && editContent !== message.content) {
-      console.log(editContent);
-      console.log(message._id, editContent, message.replyToId);
       onEdit({
         chatId: message.chatId,
         messageId: message._id,

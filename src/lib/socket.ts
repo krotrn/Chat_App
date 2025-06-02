@@ -55,12 +55,22 @@ export function setSocket(s: SocketIOClient.Socket | null): void {
 }
 
 export function joinChat(chatId: string): boolean {
+  console.log("hello");
   if (!socket?.connected) {
     console.warn("Socket not connected, cannot join chat");
     return false;
   }
 
   socket.emit(ChatEventEnum.ONLINE_EVENT, chatId);
+  return true;
+}
+
+export function leaveChat(chatId: string): boolean {
+  if (!socket?.connected) {
+    console.warn("Socket not connected, cannot leave chat");
+    return false;
+  }
+  socket.emit(ChatEventEnum.OFFLINE_EVENT, chatId);
   return true;
 }
 

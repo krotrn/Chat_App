@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { pinMessage, unpinMessage } from "@/services/chat-api";
+import { pinMessage, unpinMessage } from "@/services/message";
 
 export function usePinMessageMutation() {
   return useMutation({ mutationFn: pinMessage });

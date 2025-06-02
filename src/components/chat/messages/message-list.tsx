@@ -22,12 +22,13 @@ export default function MessageList({ participants }: MessageListProps) {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useMessagesInfiniteQuery(chatId!, 20);
   const bottom = useRef<HTMLDivElement>(null);
+  const allMessages = useMemo(() => data?.pages ?? [], [data]);
 
   useEffect(() => {
     if (bottom.current) {
       bottom.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [data]);
+  }, []);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const prevScrollRef = useRef<number>(0);
@@ -38,23 +39,22 @@ export default function MessageList({ participants }: MessageListProps) {
     if (!ele) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && hasNextPage && isFetchingNextPage) {
-          prevScrollRef.current = ele.scrollHeight;
+        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
           fetchNextPage();
         }
       },
-      { root: ele, threshold: 0 },
+      { root: ele, threshold: 0 }
     );
     if (topTrigger.current) observer.observe(topTrigger.current);
     return () => observer.disconnect();
   }, [fetchNextPage, isFetchingNextPage, hasNextPage]);
   const messages = useMemo(
-    () => data?.pages.flatMap((page) => page.messages) ?? [],
-    [data],
+    () => allMessages.flatMap((page) => page.messages) ?? [],
+    [allMessages]
   );
   const groupedMessages = useMemo(
     () => groupMessagesByDate(messages),
-    [messages],
+    [messages]
   );
 
   useEffect(() => {
@@ -64,7 +64,7 @@ export default function MessageList({ participants }: MessageListProps) {
       ele.scrollTop += diff;
       prevScrollRef.current = 0;
     }
-  }, [data?.pages.length, isFetchingNextPage]);
+  }, [allMessages.length, isFetchingNextPage]);
 
   useEffect(() => {
     const ele = scrollAreaRef.current;
@@ -72,12 +72,12 @@ export default function MessageList({ participants }: MessageListProps) {
   }, []);
 
   useEffect(() => {
-    if (!chatId || currentUserId) return;
+    if (!chatId || !currentUserId) return;
     const messageIds = messages
       .filter(
         (msg) =>
           msg.sender.userId !== currentUserId &&
-          !msg.readBy.some((r) => r.userId === currentUserId),
+          !msg.readBy.some((r) => r.userId === currentUserId)
       )
       .map((msg) => msg._id);
     if (messageIds.length) {

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { checkConnectionHealth } from "@/services/chat-api";
+import { checkConnectionHealth } from "@/services/api-client";
 
 export function useConnectionHealthQuery() {
   return useQuery({

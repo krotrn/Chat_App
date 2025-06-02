@@ -1,27 +1,20 @@
 "use client";
-import { useEffect, useState } from "react";
 import { ApiOfflinePage } from "@/components/offline/pages/api-offline-page";
-import { useApiStatus } from "@/hooks/use-api-status";
+import { useConnectionHealthQuery } from "@/hooks/queries/useConnectionHealthQuery";
 
 export default function APICheckWrapper({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { isConnected: isApiConnected, isChecking: isApiChecking } =
-    useApiStatus();
+  const { data, isLoading } = useConnectionHealthQuery()
 
-  const [isMounted, setIsMounted] = useState(false);
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted || isApiChecking) {
+  if (isLoading) {
     return <>{children}</>;
   }
 
-  if (!isApiConnected) {
+  if (!data) {
     return <ApiOfflinePage />;
   }
 

@@ -1,27 +1,19 @@
 "use client";
-import { useEffect, useState } from "react";
-import { DatabaseOfflinePage } from "@/components/offline/pages/database-offline-page";
-import { useDatabaseStatus } from "@/hooks/use-database-status";
+import { DatabaseOfflinePage } from "@/components/offline/pages/database-offline-page"
+import { useCheckDBQuery } from "@/hooks/queries/useCheckDBQuery";
 
 export default function DatabaseCheckWrapper({
   children,
 }: {
   children: React.ReactNode;
-}) {
-  const { isConnected: isDatabaseConnected, isChecking: isDatabaseChecking } =
-    useDatabaseStatus();
+  }) {
+  const { data, isLoading } = useCheckDBQuery();
 
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted || isDatabaseChecking) {
+  if (isLoading) {
     return <>{children}</>;
   }
 
-  if (!isDatabaseConnected) {
+  if (!data) {
     return <DatabaseOfflinePage />;
   }
 

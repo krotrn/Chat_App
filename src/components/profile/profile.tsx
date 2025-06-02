@@ -1,5 +1,4 @@
 "use client";
-import { User } from "next-auth";
 import {
   Card,
   CardContent,
@@ -12,7 +11,9 @@ import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileForm from "@/components/profile/profile-form";
 
-export default function ProfileWrapper({ user }: { user: User }) {
+
+export default function ProfileWrapper() {
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -33,7 +34,7 @@ export default function ProfileWrapper({ user }: { user: User }) {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <ProfileForm user={user} />
+              <ProfileForm />
             </CardContent>
           </Card>
         </TabsContent>

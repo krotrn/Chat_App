@@ -60,25 +60,17 @@ export default function CreateGroupDialog() {
     }
   }, [isSuccess, form]);
   const onSubmit = async (data: z.infer<typeof groupDetailsSchema>) => {
-    console.log("onSubmit function called!");
-    console.log("Form data received:", data);
-    console.log("Form validation state:", form.formState);
-    console.log("Form errors:", form.formState.errors);
 
     if (!token) {
       toast.error("Authentication required");
       return;
     }
 
-    console.log("Token exists:", !!token);
-    console.log("Members selected:", data.members);
-
     if (data.members.length === 0) {
       toast.error("Please select at least one member");
       return;
     }
 
-    console.log("About to call mutateAsync...");
     try {
       await mutateAsync({
         name: data.groupname,
@@ -169,18 +161,6 @@ export default function CreateGroupDialog() {
               </Button>{" "}
               <Button
                 type="submit"
-                onClick={() => {
-                  console.log("Create Group button clicked!");
-                  console.log("Form state:", {
-                    isValid: form.formState.isValid,
-                    errors: form.formState.errors,
-                    values: form.getValues(),
-                    isPending,
-                    membersLength: form.watch("members").length,
-                    groupname: form.watch("groupname"),
-                    groupnameTrimmed: form.watch("groupname").trim(),
-                  });
-                }}
                 disabled={isPending}
               >
                 {isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}

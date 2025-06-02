@@ -3,7 +3,7 @@ import {
   useQueryClient,
   InfiniteData,
 } from "@tanstack/react-query";
-import { editMessage } from "@/services/chat-api";
+import { editMessage } from "@/services/message";
 import { queryKeys } from "@/lib/config";
 import { ChatType, MessagesPageData, MessageType } from "@/types/ChatType";
 

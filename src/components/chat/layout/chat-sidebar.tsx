@@ -9,7 +9,7 @@ import { AIModel, ChatType } from "@/types/ChatType";
 import { cn } from "@/lib/utils";
 import { ResizablePanel } from "@/components/ui/resizable";
 import { useAppSelector } from "@/hooks/useReduxType";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useMemo, useRef } from "react";
 import { useFetchChatsInfiniteQuery } from "@/hooks/queries/useFetchChatsInfiniteQuery";
 import CreateGroupDialog from "../ui/group-dialog";
 import ChatSideBarSkeleton from "@/components/skeleton/chat-sidebar-skeleton";
@@ -21,33 +21,70 @@ interface ChatSidebarProps {
 export default function ChatSidebar({ aiModels }: ChatSidebarProps) {
   const [searchChatQuery, setSearchQuery] = useState<string>("");
   const { currentChat } = useAppSelector((state) => state.chat);
-  const { data, isLoading } = useFetchChatsInfiniteQuery();
-  const [filteredChats, setFilteredChats] = useState<ChatType[]>(
-    data?.pages[0].chats || [],
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useFetchChatsInfiniteQuery();
+
+  const allChats = useMemo(
+    () => data?.pages.flatMap((page) => page.chats) ?? [],
+    [data]
   );
+
+  const [filteredChats, setFilteredChats] = useState<ChatType[]>(allChats);
+
+  const bottomTriggerRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    if (data && data.pages[0].chats) {
-      setFilteredChats(data.pages[0].chats);
-    }
-  }, [data]);
+    setFilteredChats(allChats);
+  }, [allChats]);
+
+  useEffect(() => {
+    const trigger = bottomTriggerRef.current;
+    const scrollArea = scrollAreaRef.current;
+
+    if (!trigger || !scrollArea) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      {
+        root: scrollArea,
+        threshold: 0.1,
+        rootMargin: "100px",
+      }
+    );
+
+    observer.observe(trigger);
+    return () => observer.disconnect();
+  }, [
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    data?.pages.length,
+    allChats.length,
+  ]);
+
   const handleChatSearch = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value.toLowerCase();
       setSearchQuery(value);
       if (!value.trim()) {
-        setFilteredChats(data?.pages[0].chats || []);
+        setFilteredChats(allChats);
       } else {
         setFilteredChats(
-          data?.pages[0].chats.filter(
+          allChats.filter(
             (chat) =>
               chat.name.toLowerCase().includes(value) ||
               (chat.lastMessage?.content &&
-                chat.lastMessage.content.toLowerCase().includes(value)),
-          ) || [],
+                chat.lastMessage.content.toLowerCase().includes(value))
+          )
         );
       }
     },
-    [data?.pages],
+    [allChats]
   );
 
   if (isLoading) {
@@ -58,7 +95,7 @@ export default function ChatSidebar({ aiModels }: ChatSidebarProps) {
     <ResizablePanel
       className={cn(
         "flex flex-col h-full w-full border-r",
-        currentChat && "hidden md:flex",
+        currentChat && "hidden md:flex"
       )}
       minSize={20}
       defaultSize={25}
@@ -83,13 +120,23 @@ export default function ChatSidebar({ aiModels }: ChatSidebarProps) {
           </div>
         </div>
         {/* Chat List */}
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1" ref={scrollAreaRef}>
           <div className="px-2">
             <div className="space-y-1">
               {filteredChats.length > 0 ? (
-                filteredChats.map((chat) => (
-                  <ChatItem key={chat._id} chat={chat} />
-                ))
+                <>
+                  {filteredChats.map((chat) => (
+                    <ChatItem key={chat._id} chat={chat} />
+                  ))}
+                  {/* Infinite scroll trigger */}
+                  <div ref={bottomTriggerRef} className="h-1" />
+                  {/* Loading indicator */}
+                  {isFetchingNextPage && (
+                    <div className="py-2 text-center text-sm text-muted-foreground">
+                      Loading more chats...
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="py-4 text-center text-sm text-muted-foreground">
                   No chats found

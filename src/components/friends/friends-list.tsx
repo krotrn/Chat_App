@@ -14,10 +14,11 @@ import FriendCard from "@/components/friends/friend-card";
 import { FormattedFriendType } from "@/types/formattedDataTypes";
 import { useState, useEffect } from "react";
 import { useFetchFriendsQuery } from "@/hooks/queries/useFetchFriendsQuery";
+import FriendsListSkeleton from "../skeleton/friend-list-skeleton";
 
 export default function FriendsList() {
   const [searchQuery, setSearchQuery] = useSearchQuery("fr", "");
-  const { data: friends } = useFetchFriendsQuery();
+  const { data: friends, isFetching } = useFetchFriendsQuery();
   const [filteredFriends, setFilteredFriends] = useState<FormattedFriendType[]>(
     friends || [],
   );
@@ -33,6 +34,10 @@ export default function FriendsList() {
       );
     }
   }, [friends, searchQuery]);
+
+  if (isFetching) {
+    return <FriendsListSkeleton />
+  }
 
   return (
     <Card>

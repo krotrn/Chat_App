@@ -1,4 +1,4 @@
-import { getChatById } from "@/services/chat-api";
+import { getChatById } from "@/services/chat";
 import { useQuery } from "@tanstack/react-query";
 import { useAppSelector } from "@/hooks/useReduxType";
 import { queryKeys } from "@/lib/config";

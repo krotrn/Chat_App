@@ -3,7 +3,7 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { deleteMessage } from "@/services/chat-api";
+import { deleteMessage } from "@/services/message";
 import { queryKeys } from "@/lib/config";
 import { MessagesPageData } from "@/types/ChatType";
 

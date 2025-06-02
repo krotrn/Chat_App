@@ -48,7 +48,7 @@ export interface RecommendationWithRelations {
  */
 export const getRecommendations = async (): Promise<
   RecommendationWithRelations[]
-> => {
+  > => {
   const session = await auth();
   if (!session) throw new Error("User not authenticated");
 
@@ -119,7 +119,7 @@ export const getUserStats = async <T extends keyof StatsProps>(fields: T[]) => {
         acc[key] = true;
         return acc;
       },
-      {} as Partial<Record<keyof StatsProps, boolean>>,
+      {} as Partial<Record<keyof StatsProps, boolean>>
     );
 
     const user = await db.user.findUnique({
@@ -142,7 +142,7 @@ export const getUserStats = async <T extends keyof StatsProps>(fields: T[]) => {
  * Update the profile of the authenticated user.
  */
 export const updateProfile = async (
-  data: z.infer<typeof profileSchema>,
+  data: z.infer<typeof profileSchema>
 ): Promise<ResponseType<null>> => {
   const session = await auth();
   if (!session || !session.user.id)
@@ -152,9 +152,11 @@ export const updateProfile = async (
     const { name, bio, avatar } = data;
     const avatarUrl = avatar ? await uploadAvatar(avatar) : undefined;
 
-    await db.user.update({
-      where: { id: session.user.id },
-      data: { name, bio, avatarUrl },
+    await db.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: session.user.id },
+        data: { name, bio, avatarUrl },
+      });
     });
 
     return handleSuccess(null, "Profile updated successfully.");
@@ -261,7 +263,7 @@ export const getUserDataById = async (id: string) => {
  * Retrieve friends for a specific user ID and map to a formatted structure.
  */
 export const getUserFriends = async (
-  id: string,
+  id: string
 ): Promise<FormattedFriendType[]> => {
   try {
     const userFriends = await db.userFriends.findMany({
@@ -494,8 +496,7 @@ export const sendFriendRequest = async (receiverId: string) => {
     });
     if (areFriends) {
       throw new Error("Users are already friends.");
-    }
-    console.log(senderId, receiverId);
+    };
     const friendRequest = await db.friendRequest.create({
       data: {
         senderId,
@@ -542,7 +543,7 @@ export const getPendingRequests = async (senderId: string) => {
 
 export const handleFriendRequest = async (
   senderId: string,
-  action: FriendshipStatus,
+  action: FriendshipStatus
 ) => {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
@@ -552,7 +553,6 @@ export const handleFriendRequest = async (
     throw new Error("Missing required parameters");
   }
 
-  console.log(senderId, receiverId);
 
   try {
     const result = await db.$transaction(async (tx) => {
@@ -889,7 +889,7 @@ export const blockUser = async (userId: string, blockedUserId: string) => {
 export const createFriendActivity = async (
   userId: string,
   activityType: ActivityType,
-  content: string,
+  content: string
 ) => {
   try {
     const user = await db.user.findUnique({
@@ -921,7 +921,7 @@ export const createFriendActivity = async (
 export const updateRecommendationsAfterFriendAction = async (
   userId: string,
   friendId: string,
-  action: FriendshipStatus,
+  action: FriendshipStatus
 ) => {
   try {
     if (
@@ -973,7 +973,7 @@ export const updateUserConnectionStatus = async (userId: string) => {
  */
 export const getFriendshipStatus = async (
   userId: string,
-  otherUserId: string,
+  otherUserId: string
 ) => {
   try {
     const areFriends = await db.userFriends.findFirst({

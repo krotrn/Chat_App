@@ -6,7 +6,7 @@ import {
   addNewParticipantInGroupChat,
   removeParticipantFromGroupChat,
   leaveGroupChat,
-} from "@/services/chat-api";
+} from "@/services/chat";
 import { queryKeys } from "@/lib/config";
 
 export function useCreateGroupChatMutation() {
