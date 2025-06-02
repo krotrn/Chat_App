@@ -9,6 +9,7 @@ import { ApiError } from "@/lib/api/ApiError";
 import { AccountType, UserRoles } from "@prisma/client";
 import { generateUniqueUsername } from "@/lib/utils/auth.utils";
 import jwt from "jsonwebtoken";
+import { sendVerificationEmail } from "./actions/email";
 
 export default {
   callbacks: {
@@ -27,13 +28,8 @@ export default {
         return true;
       }
       try {
-        const res = await fetch("/api/v1/auth/send-email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        });
-        const result = await res.json();
-        if (!result.success) {
+        const response = await sendVerificationEmail(email);
+        if (!response.success) {
           return false;
         }
       } catch (error) {

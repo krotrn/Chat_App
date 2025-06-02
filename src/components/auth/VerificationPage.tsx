@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FormError } from "@/components/auth/Form-Error";
 import { FormSuccess } from "@/components/auth/Form-Success";
+import { verifyEmailAction } from "@/actions/email";
 
 interface Props {
   encodedEmail: string;
@@ -19,24 +20,26 @@ export default function VerificationPage({
   const [success, setSuccess] = useState("");
 
   useEffect(() => {
-    fetch(`/api/v1/auth/${encodedEmail}/${encodedToken}`, {
-      method: "POST",
-    })
-      .then((data) => data.json())
-      .then((result) => {
-        if (result.success) {
-          setSuccess(result.message);
-          setTimeout(() => router.push("/login"), 2000);
-        } else if (result.reverify) {
-          setError(result.message || "Something went wrong.");
-          setTimeout(
-            () => router.push(`/auth/verify-email/${encodedEmail}`),
-            2000,
-          );
-        } else {
-          setError(result.message || "Something went wrong.");
-        }
+    const verifyEmail = async () => {
+      const response = await verifyEmailAction({
+        email: decodeURIComponent(encodedEmail),
+        encryptedToken: decodeURIComponent(encodedToken),
       });
+      if (!response.success) {
+        setError(response.message);
+      } else {
+        setSuccess(response.message);
+        setTimeout(() => {
+          router.push("/login");
+        }, 2000);
+      }
+    };
+    verifyEmail().catch((err) => {
+      console.error("Verification failed:", err);
+      setError(
+        "An error occurred while verifying your email. Please try again.",
+      );
+    });
   }, [router, encodedEmail, encodedToken]);
 
   return (

@@ -26,7 +26,7 @@ export const authRoutes = [
  *
  * @constant {string[]}
  */
-export const apiAuthPrefix = ["/api/v1/auth", "/api/auth"];
+export const apiAuthPrefix = ["/api/auth"];
 
 /**
  * expose to Backend for authentication for chat related functionality.

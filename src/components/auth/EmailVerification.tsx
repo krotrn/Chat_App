@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { FormError } from "@/components/auth/Form-Error";
 import { FormSuccess } from "@/components/auth/Form-Success";
 import useCountdown from "@/hooks/useCountdown";
+import { sendVerificationEmail } from "@/actions/email";
 
 export default function EmailVerification({
   email,
@@ -19,12 +20,7 @@ export default function EmailVerification({
     setError("");
     startCountdown(30);
     startTransition(async () => {
-      await fetch("/api/v1/auth/verify-email/send-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      })
-        .then((data) => data.json())
+      await sendVerificationEmail(email)
         .then((result) => {
           if (!result.success) {
             setError(result.message);

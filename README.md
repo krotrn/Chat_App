@@ -1,6 +1,6 @@
 # ChatApp
 
-**ChatApp** is a modern, feature-rich real-time communication platform built with Next.js (App Router) as a standalone application. It's designed to connect people through seamless messaging and video calls. Whether you're chatting one-on-one with friends or collaborating in group conversations, ChatApp offers a scalable, intuitive, and responsive experience. It leverages cutting-edge technologies like Auth.js v5 for secure authentication and PostgreSQL (via Prisma) for robust user management. User data, such as profiles and authentication details, is managed through direct interactions with the database, while chat functionalities (messages, etc.) are handled by a dedicated backend service which also uses MongoDB (via Mongoose) for efficient chat storage. The user interface, crafted with [shadcn/ui](https://ui.shadcn.com/) components, ensures a sleek, accessible, and visually appealing design.
+**ChatApp** is a modern, feature-rich real-time communication platform built with Next.js (App Router) as a standalone application. It's designed to connect people through seamless messaging. Whether you're chatting one-on-one with friends or collaborating in group conversations, ChatApp offers a scalable, intuitive, and responsive experience. It leverages cutting-edge technologies like Auth.js v5 for secure authentication and PostgreSQL (via Prisma) for robust user management. User data, such as profiles and authentication details, is managed through direct interactions with the database, while chat functionalities (messages, etc.) are handled by a dedicated backend service which also uses MongoDB (via Mongoose) for efficient chat storage. The user interface, crafted with [shadcn/ui](https://ui.shadcn.com/) components, ensures a sleek, accessible, and visually appealing design.
 
 This project is perfect for developers looking to explore a full-stack application with real-time communication features or for anyone seeking a customizable chat platform to adapt to their needs.
 
@@ -29,9 +29,9 @@ ChatApp is packed with functionality to enhance user experience and provide flex
 
 - **Authentication & Authorization**
 
-  - **Credential Authentication**: Securely log in with an email and password combination
+  - **Credential Authentication**: Securely log in with an email and password combination (to be implemented)
   - **Social Authentication**: Sign in effortlessly using Google or GitHub accounts
-  - **Email Verification**: Powered by [Resend](https://resend.com/), ensuring only verified users gain access
+  - **Email Verification**: Powered by [Resend](https://resend.com/), ensuring only verified users gain access (to be implemented)
   - **JWT Token Management**: Secure token handling with proper expiration and validation
   - **Session Management**: Robust session handling with access token persistence
 
@@ -54,7 +54,6 @@ ChatApp is packed with functionality to enhance user experience and provide flex
 
 - **Smart Data Transformation**
 
-  - **MongoDB Aggregation Pipelines**: Efficiently transform and shape data at the database level
   - **Type-Safe Responses**: Consistent data structures with MessageResponseType and ChatResponseType
   - **Efficient Data Loading**: Optimized queries with pagination and selective field projection
   - **Real-time Data Synchronization**: Immediate updates across all connected clients
@@ -106,19 +105,17 @@ ChatApp is built with a thoughtfully selected set of technologies to ensure perf
 
 - **Backend**:
 
-  - **[Next.js API Routes](https://nextjs.org/docs/api-routes/introduction)**: API endpoints
-  - **[Prisma](https://www.prisma.io/)**: PostgreSQL ORM
-  - **[MongoDB](https://www.mongodb.com/)**: Chat data storage
-  - **[Mongoose](https://mongoosejs.com/)**: MongoDB ODM with typed schema support
-  - **[MongoDB Aggregation Pipeline](https://www.mongodb.com/docs/manual/core/aggregation-pipeline/)**: For efficient data transformations
-  - **[Socket.io](https://socket.io/)**: WebSocket server
+  - **[Next.js Server Action](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations)**: for user management
+  - **[Prisma](https://www.prisma.io/)**: PostgreSQL ORM for user data
+  - **[Separate Node.js Backend](https://github.com/krotrn/ChatApp-backend)**: Dedicated service for chat functionality
+  - **[Socket.io](https://socket.io/)**: WebSocket server (via separate backend)
+  - **[MongoDB](https://www.mongodb.com/)**: Database for chat data (via Mongoose in separate backend)
   - **[Auth.js v5](https://authjs.dev/)**: Authentication
   - **[Resend](https://resend.com/)**: Email service
 
 - **Business Logic & Data Processing**:
 
-  - **Strongly-Typed Models**: Mongoose schemas with TypeScript interfaces
-  - **Aggregation Pipelines**: Transform MongoDB ObjectIds to strings for API responses
+  - **Prisma ORM**: For user data management
   - **Type Conversion Logic**: Consistent field transformations for frontend consumption
   - **Stateless Architecture**: Clean separation of database entities and API responses
   - **Error Resilience**: Retry mechanisms for critical operations
@@ -137,33 +134,35 @@ ChatApp is built with a thoughtfully selected set of technologies to ensure perf
 ChatApp's codebase is organized for clarity and scalability. Here's an overview:
 
 ```
-├── app/                    # Next.js app directory
-│   ├── api/               # API routes
-│   ├── auth/              # Authentication pages
-│   ├── (protected)/      # Protected routes
-│   └── globals.css       # Global styles
+src/
+├── app/                   # Next.js app directory
+│   ├── api/                # API routes
+│   ├── auth/               # Authentication pages
+│   ├── (protected)/        # Protected routes
+│   └── globals.css         # Global styles
 ├── components/            # React components
-│   ├── auth/             # Authentication components
-│   ├── chat/             # Chat-related components
-│   ├── dashboard/        # Dashboard components
-│   ├── friends/          # Friend management components
-│   ├── landing/          # Landing page components
-│   ├── navigation/       # Navigation components
-│   ├── profile/          # User profile components
-│   ├── settings/         # Settings components
-│   ├── skeleton/         # Loading skeleton components
-│   └── ui/               # Reusable UI components
-├── lib/                  # Utility functions and configurations
-│   ├── api/             # API utilities
-│   ├── settings/        # Settings configurations
-│   ├── socket.ts        # Socket.io client setup
-│   └── utils/           # Helper functions
-├── services/            # API service functions
-├── hooks/               # Custom React hooks
-├── types/               # TypeScript type definitions
-│   ├── chat.ts         # Chat-related types
-│   └── message.ts      # Message-related types
-└── public/             # Static assets
+│   ├── auth/               # Authentication components
+│   ├── chat/               # Chat-related components
+│   ├── dashboard/          # Dashboard components
+│   ├── friends/            # Friend management components
+│   ├── landing/            # Landing page components
+│   ├── navigation/         # Navigation components
+│   ├── profile/            # User profile components
+│   ├── settings/           # Settings components
+│   ├── skeleton/           # Loading skeleton components
+│   └── ui/                 # Reusable UI components
+├── lib/                   # Utility functions and configurations
+│   ├── api/                # API utilities
+│   ├── redux/              # Authentication utilities
+│   ├── settings/           # Settings configurations
+│   ├── socket.ts           # Socket.io client setup
+│   └── utils/              # Helper functions
+├── services/              # API service functions
+├── hooks/                 # Custom React hooks
+├── types/                 # TypeScript type definitions
+│   ├── chat.ts             # Chat-related types
+│   └── message.ts          # Message-related types
+└── public/                # Static assets
 ```
 
 This structure separates concerns, making it easier to navigate and maintain the project.
@@ -180,8 +179,7 @@ Before you begin, ensure you have the following installed:
 
 - Node.js 18.x or later
 - PostgreSQL 14.x or later
-- MongoDB 6.x or later
-- npm or yarn package manager
+- npm package manager
 
 ### Installation
 
@@ -217,7 +215,7 @@ Before you begin, ensure you have the following installed:
    RESEND_API_KEY="your-resend-api-key"
 
    # Chat API
-   NEXT_PUBLIC_CHAT_API_URL="http://localhost:8000"
+   NEXT_PUBLIC_CHAT_API_URL="your-chat-api-url"
    ```
 
 4. **Database Setup**
@@ -282,15 +280,6 @@ Consider using a platform like Vercel for Next.js hosting or a custom server wit
 ---
 
 ## API Documentation
-
-The API documentation is available at `/api-docs` when running in development mode. Key endpoints include:
-
-- `POST /api/auth/*` - Authentication endpoints
-- `GET /api/chats` - Fetch user's chats
-- `POST /api/chats` - Create new chat
-- `GET /api/messages/:chatId` - Fetch chat messages
-- `POST /api/messages` - Send new message
-- `GET /api/friends` - Manage friend connections
 
 The backend uses standardized response types for consistency:
 

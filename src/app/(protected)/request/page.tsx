@@ -21,7 +21,7 @@ export default async function RequestsPage() {
   return (
     <div className="w-full flex items-center justify-center py-10">
       <Authorized user={session.user}>
-        <main className="w-full max-w-4xl space-y-6">
+        <main className="w-full max-w-4xl space-y-6 mx-12">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">
               Friend Requests

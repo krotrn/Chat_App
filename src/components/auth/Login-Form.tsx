@@ -18,6 +18,7 @@ import { FormError } from "@/components/auth/Form-Error";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
+import { signInCredential } from "@/actions/signin";
 
 const LoginForm = (): React.ReactNode => {
   const form = useForm<z.infer<typeof signInSchema>>({
@@ -33,25 +34,14 @@ const LoginForm = (): React.ReactNode => {
 
   const onSubmit = (credentials: z.infer<typeof signInSchema>) => {
     setError("");
-    startTransition(() => {
-      fetch("/api/v1/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(credentials),
-      })
-        .then((data) => data.json())
-        .then((result) => {
-          if (result.sendEmail) {
-            router.push(`/auth/verify-email/${result.encodedEmail}`);
-          } else if (result.success) {
-            router.push(DEFAULT_LOGIN_REDIRECT);
-          } else {
-            setError(result.message);
-          }
-        })
-        .catch(() => {
-          setError("An unexpected error occurred");
-        });
+    startTransition(async () => {
+      const response = await signInCredential(credentials);
+      if (!response.success) {
+        setError(response.message);
+        return;
+      } else {
+        router.push(DEFAULT_LOGIN_REDIRECT);
+      }
     });
   };
 

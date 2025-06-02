@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormSuccess } from "@/components/auth/Form-Success";
+import { registerCredential } from "@/actions/register";
 
 const RegisterForm = (): React.ReactNode => {
   const searchParams = useSearchParams();
@@ -44,19 +45,13 @@ const RegisterForm = (): React.ReactNode => {
   const onSubmit = (credentials: z.infer<typeof registerSchema>) => {
     setError("");
     startTransition(() => {
-      fetch("/api/v1/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(credentials),
-      })
-        .then((data) => data.json())
+      registerCredential(credentials)
         .then((result) => {
-          if (result.sendEmail) {
+          if (result.success) {
             setError(result.message);
             router.push(
               `/auth/verify-email/${encodeURIComponent(credentials.email)}`,
             );
-          } else if (result.success) {
             setSuccess(result.message);
           } else {
             setError(result.message);
