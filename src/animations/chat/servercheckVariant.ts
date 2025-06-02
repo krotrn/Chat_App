@@ -1,5 +1,5 @@
 export const serverCheckVariants = {
-    containerVariants:{
+  containerVariants: {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -10,7 +10,7 @@ export const serverCheckVariants = {
     },
   },
 
-  itemVariants : {
+  itemVariants: {
     hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
@@ -19,7 +19,7 @@ export const serverCheckVariants = {
     },
   },
 
-  pulseVariants : {
+  pulseVariants: {
     pulse: {
       scale: [1, 1.1, 1],
       opacity: [0.7, 1, 0.7],
@@ -31,7 +31,7 @@ export const serverCheckVariants = {
     },
   },
 
-  floatingVariants : {
+  floatingVariants: {
     float: {
       y: [-10, 10, -10],
       transition: {
@@ -40,5 +40,5 @@ export const serverCheckVariants = {
         ease: "easeInOut",
       },
     },
-  }
-}
+  },
+};

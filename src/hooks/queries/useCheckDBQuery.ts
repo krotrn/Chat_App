@@ -7,5 +7,5 @@ export const useCheckDBQuery = () => {
     queryKey: ["checkDB"],
     staleTime: 5000,
     refetchInterval: 5000,
-  })
-}
+  });
+};

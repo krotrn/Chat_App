@@ -10,7 +10,7 @@ import { ApiResponse, ChatType } from "@/types/ChatType"; // Adjusted path
 export const fetchChats = async (
   token: string,
   limit?: number,
-  page: number = 1
+  page: number = 1,
 ): Promise<{
   chats: ChatType[];
   totals: number;
@@ -71,7 +71,7 @@ export const getChatById = async ({
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
       return handleApiResponse(response);
     });

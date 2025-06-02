@@ -1,8 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  createOrGetAOneOnOneChat,
-  deleteOneOnOneChat,
-} from "@/services/chat";
+import { createOrGetAOneOnOneChat, deleteOneOnOneChat } from "@/services/chat";
 import { useAppDispatch } from "@/hooks/useReduxType";
 import { setCurrentChat } from "@/lib/redux/slices/chat-slice";
 import { queryKeys } from "@/lib/config";

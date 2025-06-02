@@ -36,7 +36,7 @@ export default function FriendsList() {
   }, [friends, searchQuery]);
 
   if (isFetching) {
-    return <FriendsListSkeleton />
+    return <FriendsListSkeleton />;
   }
 
   return (

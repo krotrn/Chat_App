@@ -18,18 +18,18 @@ export const createAGroupChat = async ({
 }): Promise<ChatType> => {
   try {
     return await withConnectionCheck(async () => {
-    const response = await api.post<ApiResponse<ChatType>>(
-      "/chats/group",
-      {
-        participants,
-        name,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const response = await api.post<ApiResponse<ChatType>>(
+        "/chats/group",
+        {
+          participants,
+          name,
         },
-      },
-    );
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
       return handleApiResponse(response);
     });
   } catch (error) {
@@ -47,10 +47,10 @@ export const getGroupChatDetails = async ({
 }): Promise<ChatType> => {
   try {
     return await withConnectionCheck(async () => {
-    const response = await api.get<ApiResponse<ChatType>>(
-      `/chats/group/${chatId}`,
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
+      const response = await api.get<ApiResponse<ChatType>>(
+        `/chats/group/${chatId}`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
       return handleApiResponse(response);
     });
   } catch (error) {
@@ -72,11 +72,11 @@ export const updateGroupChat = async ({
 }): Promise<ChatType> => {
   try {
     return await withConnectionCheck(async () => {
-    const response = await api.patch<ApiResponse<ChatType>>(
-      `/chats/group/${chatId}`,
-      { name, avatarUrl },
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
+      const response = await api.patch<ApiResponse<ChatType>>(
+        `/chats/group/${chatId}`,
+        { name, avatarUrl },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
       return handleApiResponse(response);
     });
   } catch (error) {
@@ -94,10 +94,10 @@ export const deleteGroupChat = async ({
 }): Promise<null> => {
   try {
     return await withConnectionCheck(async () => {
-    const response = await api.delete<ApiResponse<null>>(
-      `/chats/group/${chatId}`,
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
+      const response = await api.delete<ApiResponse<null>>(
+        `/chats/group/${chatId}`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
       return handleApiResponse(response);
     });
   } catch (error) {
@@ -117,11 +117,11 @@ export const addNewParticipantInGroupChat = async ({
 }): Promise<ChatType> => {
   try {
     return await withConnectionCheck(async () => {
-    const response = await api.post<ApiResponse<ChatType>>(
-      `/chats/group/${chatId}/participant`,
-      { participants },
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
+      const response = await api.post<ApiResponse<ChatType>>(
+        `/chats/group/${chatId}/participant`,
+        { participants },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
       return handleApiResponse(response);
     });
   } catch (error) {
@@ -141,10 +141,10 @@ export const removeParticipantFromGroupChat = async ({
 }): Promise<ChatType> => {
   try {
     return await withConnectionCheck(async () => {
-    const response = await api.delete<ApiResponse<ChatType>>(
-      `/chats/group/${chatId}/participant/${participantId}`,
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
+      const response = await api.delete<ApiResponse<ChatType>>(
+        `/chats/group/${chatId}/participant/${participantId}`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
       return handleApiResponse(response);
     });
   } catch (error) {
@@ -162,10 +162,10 @@ export const leaveGroupChat = async ({
 }): Promise<ChatType> => {
   try {
     return await withConnectionCheck(async () => {
-    const response = await api.delete<ApiResponse<ChatType>>(
-      `/chats/group/${chatId}/leave`,
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
+      const response = await api.delete<ApiResponse<ChatType>>(
+        `/chats/group/${chatId}/leave`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
       return handleApiResponse(response);
     });
   } catch (error) {

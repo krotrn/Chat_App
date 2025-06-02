@@ -7,8 +7,7 @@ export default function APICheckWrapper({
 }: {
   children: React.ReactNode;
 }) {
-  const { data, isLoading } = useConnectionHealthQuery()
-
+  const { data, isLoading } = useConnectionHealthQuery();
 
   if (isLoading) {
     return <>{children}</>;

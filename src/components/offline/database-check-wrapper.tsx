@@ -1,12 +1,12 @@
 "use client";
-import { DatabaseOfflinePage } from "@/components/offline/pages/database-offline-page"
+import { DatabaseOfflinePage } from "@/components/offline/pages/database-offline-page";
 import { useCheckDBQuery } from "@/hooks/queries/useCheckDBQuery";
 
 export default function DatabaseCheckWrapper({
   children,
 }: {
   children: React.ReactNode;
-  }) {
+}) {
   const { data, isLoading } = useCheckDBQuery();
 
   if (isLoading) {

@@ -4,7 +4,7 @@ import {
   handleApiError,
   withConnectionCheck,
 } from "../api-client";
-import { ApiResponse, ChatType, ParticipantsType } from "@/types/ChatType"; 
+import { ApiResponse, ChatType, ParticipantsType } from "@/types/ChatType";
 
 // Create or get a one-on-one chat
 export const createOrGetAOneOnOneChat = async ({
@@ -18,18 +18,18 @@ export const createOrGetAOneOnOneChat = async ({
 }): Promise<ChatType> => {
   try {
     return await withConnectionCheck(async () => {
-    const response = await api.post<ApiResponse<ChatType>>(
-      "/chats",
-      {
-        participants,
-        name,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const response = await api.post<ApiResponse<ChatType>>(
+        "/chats",
+        {
+          participants,
+          name,
         },
-      }
-    );
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
       return handleApiResponse(response);
     });
   } catch (error) {
@@ -49,27 +49,27 @@ export const deleteOneOnOneChat = async ({
 }): Promise<null> => {
   try {
     return await withConnectionCheck(async () => {
-    if (forEveryone) {
-      const response = await api.delete<ApiResponse<null>>(
-        `/chats/chat/${chatId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
+      if (forEveryone) {
+        const response = await api.delete<ApiResponse<null>>(
+          `/chats/chat/${chatId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           },
-        }
-      );
-      return handleApiResponse(response);
-    } else {
-      const response = await api.delete<ApiResponse<null>>(
-        `/chats/${chatId}/me`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
+        );
+        return handleApiResponse(response);
+      } else {
+        const response = await api.delete<ApiResponse<null>>(
+          `/chats/${chatId}/me`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           },
-        }
-      );
-      return handleApiResponse(response);
-    }
+        );
+        return handleApiResponse(response);
+      }
     });
   } catch (error) {
     return handleApiError(error);

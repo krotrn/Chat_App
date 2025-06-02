@@ -58,13 +58,19 @@ export function ApiOfflinePage() {
         animate="visible"
       >
         {/* Animated server icon */}
-        <motion.div className="relative" variants={serverCheckVariants.itemVariants}>
+        <motion.div
+          className="relative"
+          variants={serverCheckVariants.itemVariants}
+        >
           <motion.div
             className="rounded-full bg-gradient-to-br from-primary/20 to-blue-500/20 p-6 relative"
             variants={serverCheckVariants.pulseVariants}
             animate="pulse"
           >
-            <motion.div variants={serverCheckVariants.floatingVariants} animate="float">
+            <motion.div
+              variants={serverCheckVariants.floatingVariants}
+              animate="float"
+            >
               <Server className="h-16 w-16 text-primary" />
             </motion.div>
 
@@ -103,7 +109,10 @@ export function ApiOfflinePage() {
         </motion.div>
 
         {/* Animated title */}
-        <motion.div variants={serverCheckVariants.itemVariants} className="space-y-2">
+        <motion.div
+          variants={serverCheckVariants.itemVariants}
+          className="space-y-2"
+        >
           <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
             Server is Waking Up...
           </h1>
@@ -155,7 +164,10 @@ export function ApiOfflinePage() {
         </motion.div>
 
         {/* Animated progress indicator */}
-        <motion.div className="w-full max-w-xs" variants={serverCheckVariants.itemVariants}>
+        <motion.div
+          className="w-full max-w-xs"
+          variants={serverCheckVariants.itemVariants}
+        >
           <div className="h-2 bg-muted rounded-full overflow-hidden">
             <motion.div
               className="h-full bg-gradient-to-r from-primary to-blue-500 rounded-full"

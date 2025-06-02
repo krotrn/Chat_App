@@ -9,7 +9,7 @@ export function useFetchChatsInfiniteQuery(limit = "20") {
     queryKey: queryKeys.chats.infinite(Number(limit)),
     enabled: !!token,
     initialPageParam: 1,
-    queryFn: ({ pageParam = 1,  }) =>
+    queryFn: ({ pageParam = 1 }) =>
       fetchChats(token!, Number(limit), pageParam),
     getNextPageParam: (lastPage) =>
       lastPage.hasMore ? lastPage.page + 1 : undefined,

@@ -26,7 +26,7 @@ export default function ChatSidebar({ aiModels }: ChatSidebarProps) {
 
   const allChats = useMemo(
     () => data?.pages.flatMap((page) => page.chats) ?? [],
-    [data]
+    [data],
   );
 
   const [filteredChats, setFilteredChats] = useState<ChatType[]>(allChats);
@@ -54,7 +54,7 @@ export default function ChatSidebar({ aiModels }: ChatSidebarProps) {
         root: scrollArea,
         threshold: 0.1,
         rootMargin: "100px",
-      }
+      },
     );
 
     observer.observe(trigger);
@@ -79,12 +79,12 @@ export default function ChatSidebar({ aiModels }: ChatSidebarProps) {
             (chat) =>
               chat.name.toLowerCase().includes(value) ||
               (chat.lastMessage?.content &&
-                chat.lastMessage.content.toLowerCase().includes(value))
-          )
+                chat.lastMessage.content.toLowerCase().includes(value)),
+          ),
         );
       }
     },
-    [allChats]
+    [allChats],
   );
 
   if (isLoading) {
@@ -95,7 +95,7 @@ export default function ChatSidebar({ aiModels }: ChatSidebarProps) {
     <ResizablePanel
       className={cn(
         "flex flex-col h-full w-full border-r",
-        currentChat && "hidden md:flex"
+        currentChat && "hidden md:flex",
       )}
       minSize={20}
       defaultSize={25}

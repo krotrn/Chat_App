@@ -15,7 +15,13 @@ import {
   ChatType,
   MessagesPageData,
 } from "@/types/ChatType";
-import { initSocket, joinChat, getSocket, setSocket, leaveChat } from "@/lib/socket";
+import {
+  initSocket,
+  joinChat,
+  getSocket,
+  setSocket,
+  leaveChat,
+} from "@/lib/socket";
 import { ChatEventEnum } from "@/lib/socket-event";
 import { InfiniteData, QueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/config";
@@ -82,8 +88,8 @@ export const chatSocketMiddleware: Middleware =
 
                       const realMessageExists = old.pages.some((page) =>
                         page.messages.some(
-                          (msg: MessageType) => msg._id === message._id
-                        )
+                          (msg: MessageType) => msg._id === message._id,
+                        ),
                       );
 
                       if (realMessageExists) {
@@ -94,14 +100,13 @@ export const chatSocketMiddleware: Middleware =
                       const newPages = old.pages.map((page) => ({
                         ...page,
                         messages: page.messages.map((msg) => {
-                        
                           if (
                             msg._id.startsWith("temp-") &&
                             msg.content === message.content &&
                             msg.sender.userId === message.sender.userId &&
                             Math.abs(
                               new Date(msg.createdAt).getTime() -
-                              new Date(message.createdAt).getTime()
+                                new Date(message.createdAt).getTime(),
                             ) < 10000
                           ) {
                             hasOptimisticMessage = true;
@@ -123,9 +128,9 @@ export const chatSocketMiddleware: Middleware =
                         }
                         return { ...old, pages: addPages };
                       }
-                    }
+                    },
                   );
-                  queryClient.setQueryData<InfiniteData<{ chats: ChatType[]; }>>(
+                  queryClient.setQueryData<InfiniteData<{ chats: ChatType[] }>>(
                     queryKeys.chats.infinite(20),
                     (old) => {
                       if (!old) return old;
@@ -142,10 +147,10 @@ export const chatSocketMiddleware: Middleware =
                         }),
                       }));
                       return { ...old, pages: newPages };
-                    }
+                    },
                   );
                 }
-              }
+              },
             );
             socket.on(
               ChatEventEnum.MESSAGE_REACTION_EVENT,
@@ -161,20 +166,20 @@ export const chatSocketMiddleware: Middleware =
                             return message._id === newMessage._id
                               ? newMessage
                               : message;
-                          }
+                          },
                         );
                         return { ...page, messages: newMessages };
                       });
                       return { ...old, pages: newPages };
-                    }
+                    },
                   );
                 }
-              }
+              },
             );
 
             socket.on(
               ChatEventEnum.MESSAGE_PINNED_EVENT,
-              (data: { chatId: string; messageId: string; }) => {
+              (data: { chatId: string; messageId: string }) => {
                 if (queryClient) {
                   queryClient.setQueryData<InfiniteData<MessagesPageData>>(
                     queryKeys.messages.infinite(data.chatId, 20),
@@ -186,19 +191,19 @@ export const chatSocketMiddleware: Middleware =
                         messages: page.messages.map((msg: MessageType) =>
                           msg._id === data.messageId
                             ? { ...msg, isPinned: true }
-                            : msg
+                            : msg,
                         ),
                       }));
 
                       return { ...old, pages: newPages };
-                    }
+                    },
                   );
                 }
-              }
+              },
             );
             socket.on(
               ChatEventEnum.MESSAGE_UNPINNED_EVENT,
-              (data: { chatId: string; messageId: string; }) => {
+              (data: { chatId: string; messageId: string }) => {
                 if (queryClient) {
                   queryClient.setQueryData<InfiniteData<MessagesPageData>>(
                     queryKeys.messages.infinite(data.chatId, 20),
@@ -210,19 +215,19 @@ export const chatSocketMiddleware: Middleware =
                         messages: page.messages.map((msg: MessageType) =>
                           msg._id === data.messageId
                             ? { ...msg, isPinned: false }
-                            : msg
+                            : msg,
                         ),
                       }));
 
                       return { ...old, pages: newPages };
-                    }
+                    },
                   );
                 }
-              }
+              },
             );
             socket.on(
               ChatEventEnum.MESSAGE_DELETE_EVENT,
-              (data: { chatId: string; messageId: string; }) => {
+              (data: { chatId: string; messageId: string }) => {
                 if (queryClient) {
                   queryClient.setQueryData<InfiniteData<MessagesPageData>>(
                     queryKeys.messages.infinite(data.chatId, 20),
@@ -232,14 +237,14 @@ export const chatSocketMiddleware: Middleware =
                       const newPages = old.pages.map((page) => ({
                         ...page,
                         messages: page.messages.filter(
-                          (msg) => msg._id !== data.messageId
+                          (msg) => msg._id !== data.messageId,
                         ),
                       }));
 
                       return { ...old, pages: newPages };
-                    }
+                    },
                   );
-                  queryClient.setQueryData<InfiniteData<{ chats: ChatType[]; }>>(
+                  queryClient.setQueryData<InfiniteData<{ chats: ChatType[] }>>(
                     queryKeys.chats.infinite(20),
                     (old) => {
                       if (!old) return old;
@@ -259,10 +264,10 @@ export const chatSocketMiddleware: Middleware =
                         }),
                       }));
                       return { ...old, pages: newPages };
-                    }
+                    },
                   );
                 }
-              }
+              },
             );
             socket.on(
               ChatEventEnum.MESSAGE_EDITED_EVENT,
@@ -275,14 +280,14 @@ export const chatSocketMiddleware: Middleware =
 
                       const newPages = old.pages.map((page) => {
                         const newMessages: MessageType[] = page.messages.map(
-                          (msg) => (msg._id === message._id ? message : msg)
+                          (msg) => (msg._id === message._id ? message : msg),
                         );
                         return { ...page, messages: newMessages };
                       });
                       return { ...old, pages: newPages };
-                    }
+                    },
                   );
-                  queryClient.setQueryData<InfiniteData<{ chats: ChatType[]; }>>(
+                  queryClient.setQueryData<InfiniteData<{ chats: ChatType[] }>>(
                     queryKeys.chats.infinite(20),
                     (old) => {
                       if (!old) return old;
@@ -302,15 +307,18 @@ export const chatSocketMiddleware: Middleware =
                         }),
                       }));
                       return { ...old, pages: newPages };
-                    }
+                    },
                   );
                 }
-              }
+              },
             );
             socket.on(ChatEventEnum.NEW_CHAT_EVENT, (chat: ChatType) => {
               if (queryClient) {
-                queryClient.setQueryData(queryKeys.chats.detail(chat._id), chat);
-                queryClient.setQueryData<InfiniteData<{ chats: ChatType[]; }>>(
+                queryClient.setQueryData(
+                  queryKeys.chats.detail(chat._id),
+                  chat,
+                );
+                queryClient.setQueryData<InfiniteData<{ chats: ChatType[] }>>(
                   queryKeys.chats.infinite(20),
                   (old) => {
                     if (!old) return old;
@@ -319,25 +327,28 @@ export const chatSocketMiddleware: Middleware =
                       chats: [chat, ...page.chats],
                     }));
                     return { ...old, pages: newPages };
-                  }
+                  },
                 );
               }
             });
             socket.on(ChatEventEnum.CHAT_UPDATED_EVENT, (chat: ChatType) => {
               if (queryClient) {
-                queryClient.setQueryData(queryKeys.chats.detail(chat._id), chat);
-                queryClient.setQueryData<InfiniteData<{ chats: ChatType[]; }>>(
+                queryClient.setQueryData(
+                  queryKeys.chats.detail(chat._id),
+                  chat,
+                );
+                queryClient.setQueryData<InfiniteData<{ chats: ChatType[] }>>(
                   queryKeys.chats.infinite(20),
                   (old) => {
                     if (!old) return old;
                     const newPages = old.pages.map((page) => ({
                       ...page,
                       chats: page.chats.map((c) =>
-                        c._id === chat._id ? chat : c
+                        c._id === chat._id ? chat : c,
                       ),
                     }));
                     return { ...old, pages: newPages };
-                  }
+                  },
                 );
               }
             });
@@ -346,7 +357,7 @@ export const chatSocketMiddleware: Middleware =
                 queryClient.removeQueries({
                   queryKey: queryKeys.chats.detail(chat._id),
                 });
-                queryClient.setQueryData<InfiniteData<{ chats: ChatType[]; }>>(
+                queryClient.setQueryData<InfiniteData<{ chats: ChatType[] }>>(
                   queryKeys.chats.infinite(20),
                   (old) => {
                     if (!old) return old;
@@ -355,7 +366,7 @@ export const chatSocketMiddleware: Middleware =
                       chats: page.chats.filter((c) => c._id !== chat._id),
                     }));
                     return { ...old, pages: newPages };
-                  }
+                  },
                 );
               }
             });
@@ -366,13 +377,12 @@ export const chatSocketMiddleware: Middleware =
               store.dispatch(setConnectionState(ConnectionState.DISCONNECTED));
             });
           } else {
-                        store.dispatch(clearChatState());
+            store.dispatch(clearChatState());
             store.dispatch(setCurrentChat(chat));
             store.dispatch(setConnectionState(ConnectionState.CONNECTING));
             joinChat(chat._id);
 
             store.dispatch(setConnectionState(ConnectionState.CONNECTED));
-
           }
           break;
         }

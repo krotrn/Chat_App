@@ -60,20 +60,20 @@ api.interceptors.response.use(
     if (!error.response) {
       console.log("Network error:", error.message);
       return Promise.reject(
-        "No response received from server. Please check your connection."
+        "No response received from server. Please check your connection.",
       );
     } else if (error.response) {
       console.error(
         "Error response:",
         error.response.status,
-        error.response.data
+        error.response.data,
       );
       return Promise.reject(error.response.data);
     } else {
       console.error("Error message:", error.message);
       return Promise.reject(error);
     }
-  }
+  },
 );
 
 export const isConnectionHealthy = (): boolean => {
@@ -109,7 +109,7 @@ export const ensureConnection = async (): Promise<boolean> => {
 };
 
 export const withConnectionCheck = async <T>(
-  apiCall: () => Promise<T>
+  apiCall: () => Promise<T>,
 ): Promise<T> => {
   const isConnected = await ensureConnection();
   if (!isConnected) {

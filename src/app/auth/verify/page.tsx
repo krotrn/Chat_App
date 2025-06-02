@@ -1,8 +1,8 @@
 import { CardWrapper } from "@/components/auth/card-wrapper";
 import VerificationPage from "@/components/auth/VerificationPage";
 
-export default async function Page({ 
-  searchParams 
+export default async function Page({
+  searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {

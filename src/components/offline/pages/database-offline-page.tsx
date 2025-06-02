@@ -13,7 +13,7 @@ export function DatabaseOfflinePage() {
   }, [refetch]);
 
   useEffect(() => {
-    if(!isLoading && data) {
+    if (!isLoading && data) {
       window.location.reload();
     }
   }, [data, isLoading]);
@@ -31,11 +31,7 @@ export function DatabaseOfflinePage() {
           due to maintenance or a temporary issue. Please try again in a few
           moments.
         </p>
-        <Button
-          onClick={handleRefresh}
-          disabled={isLoading}
-          className="mt-4"
-        >
+        <Button onClick={handleRefresh} disabled={isLoading} className="mt-4">
           <RefreshCw
             className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
           />

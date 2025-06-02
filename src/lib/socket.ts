@@ -72,25 +72,35 @@ export function leaveChat(chatId: string): boolean {
   return true;
 }
 
-export function onTyping(callback: (data: { userId: string; chatId:string}) => void): () => void {
-  socket?.on(ChatEventEnum.TYPING_EVENT, (data: { userId: string; chatId:string}) => {
-    callback(data);
-  });
+export function onTyping(
+  callback: (data: { userId: string; chatId: string }) => void,
+): () => void {
+  socket?.on(
+    ChatEventEnum.TYPING_EVENT,
+    (data: { userId: string; chatId: string }) => {
+      callback(data);
+    },
+  );
   return () => {
     socket?.off(ChatEventEnum.TYPING_EVENT, callback);
   };
 }
 
-export function onStopTyping(callback: (data: { userId: string; chatId:string}) => void): () => void {
-  socket?.on(ChatEventEnum.STOP_TYPING_EVENT, (data: { userId: string; chatId:string}) => {
-    callback(data);
-  });
+export function onStopTyping(
+  callback: (data: { userId: string; chatId: string }) => void,
+): () => void {
+  socket?.on(
+    ChatEventEnum.STOP_TYPING_EVENT,
+    (data: { userId: string; chatId: string }) => {
+      callback(data);
+    },
+  );
   return () => {
     socket?.off(ChatEventEnum.STOP_TYPING_EVENT, callback);
   };
 }
 
-export function emitTyping(data: { userId: string; chatId:string}): boolean {
+export function emitTyping(data: { userId: string; chatId: string }): boolean {
   if (socket?.connected) {
     socket.emit(ChatEventEnum.TYPING_EVENT, data);
     return true;
@@ -98,7 +108,10 @@ export function emitTyping(data: { userId: string; chatId:string}): boolean {
   return false;
 }
 
-export function emitStopTyping(data: { userId: string; chatId:string}): boolean {
+export function emitStopTyping(data: {
+  userId: string;
+  chatId: string;
+}): boolean {
   if (socket?.connected) {
     socket.emit(ChatEventEnum.STOP_TYPING_EVENT, data);
     return true;

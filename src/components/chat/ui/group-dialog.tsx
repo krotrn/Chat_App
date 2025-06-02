@@ -60,7 +60,6 @@ export default function CreateGroupDialog() {
     }
   }, [isSuccess, form]);
   const onSubmit = async (data: z.infer<typeof groupDetailsSchema>) => {
-
     if (!token) {
       toast.error("Authentication required");
       return;
@@ -159,10 +158,7 @@ export default function CreateGroupDialog() {
               >
                 Cancel
               </Button>{" "}
-              <Button
-                type="submit"
-                disabled={isPending}
-              >
+              <Button type="submit" disabled={isPending}>
                 {isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 Create Group
               </Button>

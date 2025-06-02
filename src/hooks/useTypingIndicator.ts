@@ -26,7 +26,7 @@ export default function useTypingIndicator({
 
   const clearTypingUser = useCallback((userId: string) => {
     setTypingUserIds((prevUserIds) =>
-      prevUserIds.filter((id) => id !== userId)
+      prevUserIds.filter((id) => id !== userId),
     );
   }, []);
 
@@ -49,7 +49,7 @@ export default function useTypingIndicator({
         clearTypingUser(data.userId);
       }, 3000);
     },
-    [chatId, currentUserId, clearTypingUser]
+    [chatId, currentUserId, clearTypingUser],
   );
 
   const handleStopTypingEvent: TypingCallback = useCallback(
@@ -63,7 +63,7 @@ export default function useTypingIndicator({
 
       clearTypingUser(data.userId);
     },
-    [chatId, currentUserId, clearTypingUser]
+    [chatId, currentUserId, clearTypingUser],
   );
 
   const handleLocalUserTyping = useCallback(() => {

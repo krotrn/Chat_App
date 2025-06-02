@@ -12,7 +12,7 @@ export default async function ProfilePage() {
           </p>
         </div>
         <SessionProvider>
-          <ProfileWrapper/>
+          <ProfileWrapper />
         </SessionProvider>
       </div>
     </div>

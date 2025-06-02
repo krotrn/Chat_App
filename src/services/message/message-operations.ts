@@ -1,5 +1,10 @@
-import { api, handleApiResponse, handleApiError, withConnectionCheck } from '../api-client';
-import { ApiResponse, ChatType, MessageType } from '@/types/ChatType';
+import {
+  api,
+  handleApiResponse,
+  handleApiError,
+  withConnectionCheck,
+} from "../api-client";
+import { ApiResponse, ChatType, MessageType } from "@/types/ChatType";
 
 // Pin a message in a chat
 export const pinMessage = async ({
@@ -13,10 +18,10 @@ export const pinMessage = async ({
 }): Promise<ChatType> => {
   try {
     return await withConnectionCheck(async () => {
-    const response = await api.post<ApiResponse<ChatType>>(
-      `/chats/${chatId}/pin/${messageId}`,
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
+      const response = await api.post<ApiResponse<ChatType>>(
+        `/chats/${chatId}/pin/${messageId}`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
       return handleApiResponse(response);
     });
   } catch (error) {
@@ -36,10 +41,10 @@ export const unpinMessage = async ({
 }): Promise<ChatType> => {
   try {
     return await withConnectionCheck(async () => {
-    const response = await api.delete<ApiResponse<ChatType>>(
-      `/chats/${chatId}/pin/${messageId}`,
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
+      const response = await api.delete<ApiResponse<ChatType>>(
+        `/chats/${chatId}/pin/${messageId}`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
       return handleApiResponse(response);
     });
   } catch (error) {
@@ -70,10 +75,10 @@ export const getAllMessages = async ({
   hasMore: boolean;
 }> => {
   const params = new URLSearchParams();
-  if (page !== undefined) params.append('page', page.toString());
-  if (limit !== undefined) params.append('limit', limit.toString());
-  if (before !== undefined) params.append('before', before);
-  if (after !== undefined) params.append('after', after);
+  if (page !== undefined) params.append("page", page.toString());
+  if (limit !== undefined) params.append("limit", limit.toString());
+  if (before !== undefined) params.append("before", before);
+  if (after !== undefined) params.append("after", after);
 
   const queryString = params.toString();
   const url = queryString
@@ -82,21 +87,21 @@ export const getAllMessages = async ({
 
   try {
     return await withConnectionCheck(async () => {
-    const response = await api.get<
-      ApiResponse<{
-        messages: MessageType[];
-        pagination: {
-          total: number;
-          page: number;
-          limit: number;
-          hasMore: boolean;
-        };
-      }>
-    >(url, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+      const response = await api.get<
+        ApiResponse<{
+          messages: MessageType[];
+          pagination: {
+            total: number;
+            page: number;
+            limit: number;
+            hasMore: boolean;
+          };
+        }>
+      >(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const result = handleApiResponse(response);
       return {
         messages: result.messages,
@@ -127,32 +132,32 @@ export const sendMessage = async ({
   tempId?: string;
 }) => {
   const formData = new FormData();
-  formData.append('content', content);
+  formData.append("content", content);
   if (replyToId) {
-    formData.append('replyToId', replyToId);
+    formData.append("replyToId", replyToId);
   }
   if (tempId) {
-    formData.append('tempId', tempId);
+    formData.append("tempId", tempId);
   }
   if (attachments && attachments.length > 0) {
     attachments.forEach((file) => {
-      formData.append('attachments', file);
+      formData.append("attachments", file);
     });
   }
 
   try {
     return await withConnectionCheck(async () => {
-    const response = await api.post<ApiResponse<MessageType>>(
-      `/messages/${chatId}`,
-      formData,
-      {
-        withCredentials: true,
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
+      const response = await api.post<ApiResponse<MessageType>>(
+        `/messages/${chatId}`,
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
         },
-      },
-    );
+      );
       return handleApiResponse(response);
     });
   } catch (error) {
@@ -174,18 +179,18 @@ export const deleteMessage = async ({
   try {
     return await withConnectionCheck(async () => {
       if (forEveryone) {
-            const response = await api.delete<ApiResponse<MessageType>>(
-              `/messages/${chatId}/${messageId}`,
-              { headers: { Authorization: `Bearer ${token}` } },
-            );
-            return handleApiResponse(response);
-          } else {
-            const response = await api.delete<ApiResponse<MessageType>>(
-              `/messages/${chatId}/${messageId}/me`,
-              { headers: { Authorization: `Bearer ${token}` } },
-            );
-            return handleApiResponse(response);
-          }
+        const response = await api.delete<ApiResponse<MessageType>>(
+          `/messages/${chatId}/${messageId}`,
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+        return handleApiResponse(response);
+      } else {
+        const response = await api.delete<ApiResponse<MessageType>>(
+          `/messages/${chatId}/${messageId}/me`,
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+        return handleApiResponse(response);
+      }
     });
   } catch (error) {
     return handleApiError(error);
@@ -205,12 +210,12 @@ export const updateReaction = async ({
 }): Promise<MessageType> => {
   try {
     return await withConnectionCheck(async () => {
-    const response = await api.patch<ApiResponse<MessageType>>(
-      `/messages/${chatId}/${messageId}/reaction`,
-      { emoji },
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
-    return handleApiResponse(response);
+      const response = await api.patch<ApiResponse<MessageType>>(
+        `/messages/${chatId}/${messageId}/reaction`,
+        { emoji },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      return handleApiResponse(response);
     });
   } catch (error) {
     return handleApiError(error);
@@ -233,11 +238,11 @@ export const editMessage = async ({
 }) => {
   try {
     return await withConnectionCheck(async () => {
-    const response = await api.patch<ApiResponse<MessageType>>(
-      `/messages/${chatId}/${messageId}/edit`,
-      { content, replyToId },
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
+      const response = await api.patch<ApiResponse<MessageType>>(
+        `/messages/${chatId}/${messageId}/edit`,
+        { content, replyToId },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
       return handleApiResponse(response);
     });
   } catch (error) {
@@ -257,11 +262,11 @@ export const markMessagesAsRead = async ({
 }) => {
   try {
     return await withConnectionCheck(async () => {
-    const response = await api.post<ApiResponse<MessageType[]>>(
-      `/messages/${chatId}/read`,
-      { messageIds },
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
+      const response = await api.post<ApiResponse<MessageType[]>>(
+        `/messages/${chatId}/read`,
+        { messageIds },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
       return handleApiResponse(response);
     });
   } catch (error) {
