@@ -6,7 +6,7 @@ import {
   onStopTyping,
 } from "@/lib/socket";
 
-type TypingCallback = (chatId: string) => void;
+type TypingCallback = (data: { userId: string; chatId: string }) => void;
 
 interface UseTypingIndicatorProps {
   chatId: string | null;
@@ -26,62 +26,52 @@ export default function useTypingIndicator({
 
   const clearTypingUser = useCallback((userId: string) => {
     setTypingUserIds((prevUserIds) =>
-      prevUserIds.filter((id) => id !== userId),
+      prevUserIds.filter((id) => id !== userId)
     );
   }, []);
 
   const handleTypingEvent: TypingCallback = useCallback(
-    (userChatId: string) => {
-      const parts = userChatId.split(":");
-      if (parts.length !== 2) return;
-
-      const [userId, eventChatId] = parts;
-
-      if (userId === currentUserId || eventChatId !== chatId) return;
+    (data: { userId: string; chatId: string }) => {
+      if (data.userId === currentUserId || data.chatId !== chatId) return;
 
       setTypingUserIds((prevUserIds) => {
-        if (!prevUserIds.includes(userId)) {
-          return [...prevUserIds, userId];
+        if (!prevUserIds.includes(data.userId)) {
+          return [...prevUserIds, data.userId];
         }
         return prevUserIds;
       });
 
-      if (typingTimeoutsRef.current[userId]) {
-        clearTimeout(typingTimeoutsRef.current[userId]);
+      if (typingTimeoutsRef.current[data.userId]) {
+        clearTimeout(typingTimeoutsRef.current[data.userId]);
       }
 
-      typingTimeoutsRef.current[userId] = setTimeout(() => {
-        clearTypingUser(userId);
+      typingTimeoutsRef.current[data.userId] = setTimeout(() => {
+        clearTypingUser(data.userId);
       }, 3000);
     },
-    [chatId, currentUserId, clearTypingUser],
+    [chatId, currentUserId, clearTypingUser]
   );
 
   const handleStopTypingEvent: TypingCallback = useCallback(
-    (userChatId: string) => {
-      const parts = userChatId.split(":");
-      if (parts.length !== 2) return;
+    (data: { userId: string; chatId: string }) => {
+      if (data.userId === currentUserId || data.chatId !== chatId) return;
 
-      const [userId, eventChatId] = parts;
-
-      if (userId === currentUserId || eventChatId !== chatId) return;
-
-      if (typingTimeoutsRef.current[userId]) {
-        clearTimeout(typingTimeoutsRef.current[userId]);
-        delete typingTimeoutsRef.current[userId];
+      if (typingTimeoutsRef.current[data.userId]) {
+        clearTimeout(typingTimeoutsRef.current[data.userId]);
+        delete typingTimeoutsRef.current[data.userId];
       }
 
-      clearTypingUser(userId);
+      clearTypingUser(data.userId);
     },
-    [chatId, currentUserId, clearTypingUser],
+    [chatId, currentUserId, clearTypingUser]
   );
 
   const handleLocalUserTyping = useCallback(() => {
     const now = Date.now();
 
-    if (now - lastTypingEventRef.current > 2000) {
+    if (now - lastTypingEventRef.current > 2000 && chatId) {
       lastTypingEventRef.current = now;
-      emitTyping(`${currentUserId}:${chatId}`);
+      emitTyping({ chatId, userId: currentUserId });
     }
 
     if (typingDelayRef.current) {
@@ -92,7 +82,7 @@ export default function useTypingIndicator({
 
     typingDelayRef.current = setTimeout(() => {
       setIsTyping(false);
-      emitStopTyping(`${currentUserId}:${chatId}`);
+      if (chatId) emitStopTyping({ chatId, userId: currentUserId });
     }, 3000);
   }, [chatId, currentUserId]);
 
@@ -112,8 +102,8 @@ export default function useTypingIndicator({
         clearTimeout(typingDelayRef.current);
       }
 
-      if (isTyping) {
-        emitStopTyping(`${currentUserId}:${chatId}`);
+      if (isTyping && chatId) {
+        emitStopTyping({ chatId, userId: currentUserId });
       }
     };
   }, [
@@ -122,6 +112,7 @@ export default function useTypingIndicator({
     handleTypingEvent,
     handleStopTypingEvent,
     isTyping,
+    handleLocalUserTyping,
   ]);
 
   return {

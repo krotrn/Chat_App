@@ -28,7 +28,7 @@ export default function MessageList({ participants }: MessageListProps) {
     if (bottom.current) {
       bottom.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, []);
+  }, [allMessages]);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const prevScrollRef = useRef<number>(0);

@@ -55,9 +55,7 @@ export function setSocket(s: SocketIOClient.Socket | null): void {
 }
 
 export function joinChat(chatId: string): boolean {
-  console.log("hello");
   if (!socket?.connected) {
-    console.warn("Socket not connected, cannot join chat");
     return false;
   }
 
@@ -74,27 +72,35 @@ export function leaveChat(chatId: string): boolean {
   return true;
 }
 
-export function onTyping(callback: (chatId: string) => void): () => void {
-  socket?.on(ChatEventEnum.TYPING_EVENT, callback);
-  return () => socket?.off(ChatEventEnum.TYPING_EVENT, callback);
+export function onTyping(callback: (data: { userId: string; chatId:string}) => void): () => void {
+  socket?.on(ChatEventEnum.TYPING_EVENT, (data: { userId: string; chatId:string}) => {
+    callback(data);
+  });
+  return () => {
+    socket?.off(ChatEventEnum.TYPING_EVENT, callback);
+  };
 }
 
-export function onStopTyping(callback: (chatId: string) => void): () => void {
-  socket?.on(ChatEventEnum.STOP_TYPING_EVENT, callback);
-  return () => socket?.off(ChatEventEnum.STOP_TYPING_EVENT, callback);
+export function onStopTyping(callback: (data: { userId: string; chatId:string}) => void): () => void {
+  socket?.on(ChatEventEnum.STOP_TYPING_EVENT, (data: { userId: string; chatId:string}) => {
+    callback(data);
+  });
+  return () => {
+    socket?.off(ChatEventEnum.STOP_TYPING_EVENT, callback);
+  };
 }
 
-export function emitTyping(chatId: string): boolean {
+export function emitTyping(data: { userId: string; chatId:string}): boolean {
   if (socket?.connected) {
-    socket.emit(ChatEventEnum.TYPING_EVENT, chatId);
+    socket.emit(ChatEventEnum.TYPING_EVENT, data);
     return true;
   }
   return false;
 }
 
-export function emitStopTyping(chatId: string): boolean {
+export function emitStopTyping(data: { userId: string; chatId:string}): boolean {
   if (socket?.connected) {
-    socket.emit(ChatEventEnum.STOP_TYPING_EVENT, chatId);
+    socket.emit(ChatEventEnum.STOP_TYPING_EVENT, data);
     return true;
   }
   return false;
