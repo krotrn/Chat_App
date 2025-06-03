@@ -17,8 +17,8 @@ import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
 import useTypingIndicator from "@/hooks/useTypingIndicator";
 import { setCurrentChat } from "@/lib/redux/slices/chat-slice";
-import { CONNECT_SOCKET } from "@/lib/redux/chatSocketActions";
 import { useFetchChatsInfiniteQuery } from "@/hooks/queries/useFetchChatsInfiniteQuery";
+import { JOIN_CHAT_ROOM, LEAVE_CHAT_ROOM } from "@/lib/redux/chatSocketActions";
 
 export default function ChatMain() {
   const router = useRouter();
@@ -35,22 +35,23 @@ export default function ChatMain() {
   const { data } = useFetchChatsInfiniteQuery();
   const dispatch = useAppDispatch();
   const currentUserId = useAppSelector((state) => state.user.user?.id);
-  const token = useAppSelector((state) => state.user.token);
   useEffect(() => {
-    if (!currentChat) {
-      dispatch(setCurrentChat(null));
-    } else {
-      router.push(`/chats?chat=${currentChat._id}`);
-      dispatch(setCurrentChat(currentChat));
+    if (currentChat?._id) {
       dispatch({
-        type: CONNECT_SOCKET,
-        payload: {
-          chat: currentChat,
-          token: token!,
-        },
+        type: JOIN_CHAT_ROOM,
+        payload: { chatId: currentChat._id },
       });
+      router.push(`/chats?chat=${currentChat._id}`);
     }
-  }, [currentChat, dispatch, router, token]);
+    return () => {
+      if(currentChat?._id) {
+        dispatch({
+          type: LEAVE_CHAT_ROOM,
+          payload: { chatId: currentChat._id },
+        });
+      }
+    }
+  }, [currentChat?._id, dispatch, router]);
   const chat = data?.pages[0].chats.find(
     (chat) => chat._id === currentChat?._id,
   );

@@ -1,9 +1,14 @@
-import { ChatType } from "@/types/ChatType";
 
-export const CONNECT_SOCKET = "chat/connectSocket";
-export const DISCONNECT_SOCKET = "chat/disconnectSocket";
-export interface ConnectSocketPayload {
-  chat: ChatType;
-  userId: string;
+export const JOIN_CHAT_ROOM = "chat/joinChatRoom";
+export const LEAVE_CHAT_ROOM = "chat/leaveChatRoom";
+
+export const INITIALIZE_SOCKET = "chat/initializeSocket";
+export const TERMINATE_SOCKET = "chat/terminateSocket";
+
+export interface JoinChatPayload {
+  chatId: string;
+}
+
+export interface InitializeSocketPayload {
   token: string;
 }

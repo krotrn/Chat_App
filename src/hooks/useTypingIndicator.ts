@@ -26,7 +26,7 @@ export default function useTypingIndicator({
 
   const clearTypingUser = useCallback((userId: string) => {
     setTypingUserIds((prevUserIds) =>
-      prevUserIds.filter((id) => id !== userId),
+      prevUserIds.filter((id) => id !== userId)
     );
   }, []);
 
@@ -49,7 +49,7 @@ export default function useTypingIndicator({
         clearTypingUser(data.userId);
       }, 3000);
     },
-    [chatId, currentUserId, clearTypingUser],
+    [chatId, currentUserId, clearTypingUser]
   );
 
   const handleStopTypingEvent: TypingCallback = useCallback(
@@ -63,7 +63,7 @@ export default function useTypingIndicator({
 
       clearTypingUser(data.userId);
     },
-    [chatId, currentUserId, clearTypingUser],
+    [chatId, currentUserId, clearTypingUser]
   );
 
   const handleLocalUserTyping = useCallback(() => {
@@ -90,30 +90,27 @@ export default function useTypingIndicator({
     const clearTypingListener = onTyping(handleTypingEvent);
     const clearStopTypingListener = onStopTyping(handleStopTypingEvent);
 
-    const typingTimeouts = typingTimeoutsRef.current;
-
     return () => {
       clearTypingListener();
       clearStopTypingListener();
+    };
+  }, [handleTypingEvent, handleStopTypingEvent]);
+  useEffect(() => {
+    const currentTimeouts = typingTimeoutsRef.current;
+    const currentTypingDelay = typingDelayRef.current;
 
-      Object.values(typingTimeouts).forEach(clearTimeout);
+    return () => {
+      Object.values(currentTimeouts).forEach(clearTimeout);
 
-      if (typingDelayRef.current) {
-        clearTimeout(typingDelayRef.current);
+      if (currentTypingDelay) {
+        clearTimeout(currentTypingDelay);
       }
 
       if (isTyping && chatId) {
         emitStopTyping({ chatId, userId: currentUserId });
       }
     };
-  }, [
-    chatId,
-    currentUserId,
-    handleTypingEvent,
-    handleStopTypingEvent,
-    isTyping,
-    handleLocalUserTyping,
-  ]);
+  }, [isTyping, chatId, currentUserId]);
 
   return {
     typingUserIds,

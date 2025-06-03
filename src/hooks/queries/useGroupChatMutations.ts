@@ -8,11 +8,18 @@ import {
   leaveGroupChat,
 } from "@/services/chat";
 import { queryKeys } from "@/lib/config";
+import { ParticipantsType } from "@/types/ChatType";
 
 export function useCreateGroupChatMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: createAGroupChat,
+    mutationFn:({ participants, name, token, }: {
+    name: string;
+    participants: ParticipantsType[];
+    token: string;
+    }) => {
+      return createAGroupChat({ participants, name, token });
+    },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.chats.infinite(20) });
       queryClient.setQueryData(queryKeys.chats.detail(data._id), data);

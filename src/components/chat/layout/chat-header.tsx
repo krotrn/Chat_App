@@ -5,6 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import HeaderActions from "@/components/chat/ui/header-action";
 import { ChatType } from "@/types/ChatType";
 import { User } from "next-auth";
+import { useAppSelector } from "@/hooks/useReduxType";
+import { useMemo } from "react";
 
 interface ChatHeaderProps {
   chat: ChatType;
@@ -22,7 +24,8 @@ export default function ChatHeader({
   currentUser,
 }: ChatHeaderProps) {
   const isAdmin = chat.admin === currentUser?.id;
-  const isOnline = chat.participants.some((p) => p.userId !== currentUser?.id);
+  const onlineUsers = useAppSelector((state) => state.chat.onlineUsers);
+  const isOnline = useMemo(() => onlineUsers.some((p) => p !== currentUser?.id), [onlineUsers, currentUser]);
 
   let title: string;
   let avatar: string | undefined;

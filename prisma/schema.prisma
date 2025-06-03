@@ -48,7 +48,7 @@ model User {
   username                String      @unique @db.VarChar(20)
   avatarUrl               String?     @db.Text
   name                    String?
-  email                   String      @unique @db.Text
+  email                   String      @unique @db.VarChar(255)
   bio                     String?
   role                    UserRoles   @default(USER)
   emailVerified           DateTime?
@@ -76,12 +76,11 @@ model User {
   recentActivities        Activity[]
   recommendations         Recommendations[]
   receivedRecommendations Recommendations[] @relation("ReceivedRecommendations")
+  groupMember             Group[]           @relation("GroupMembers")
+  groupAdmin              Group[]           @relation("GroupAdmin")
 
-  @@unique([username, email])
-  @@unique([emailVerificationToken])
-  @@index([updatedAt])
-  @@index([isOnline])
   @@index([role])
+  @@index([isOnline])
   @@index([emailVerified])
   @@index([lastLogin])
   @@index([status])
@@ -124,6 +123,8 @@ model FriendRequest {
   receiver User @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
 
   @@unique([senderId, receiverId])
+  @@index([receiverId, status])
+  @@index([senderId, status])
 }
 
 model UserFriends {
@@ -156,17 +157,23 @@ model Recommendations {
   recommendedGroup Group? @relation(onDelete: Cascade, fields: [recommendedGroupId], references: [id])
 
   @@index([userId])
+  @@index([userId, type])
   @@index([recommendedUserId])
   @@index([recommendedGroupId])
 }
 
 model Group {
   id              String            @id @default(cuid())
-  backendId       String
+  backendId       String            @unique
   name            String
   avatarUrl       String?
   description     String?
+  adminId         String
+  admin           User              @relation("GroupAdmin", fields: [adminId], references: [id], onDelete: Cascade)
+  members         User[]            @relation("GroupMembers")
   recommendations Recommendations[]
+
+  @@index([adminId])
 }
 
 model Activity {
@@ -179,4 +186,6 @@ model Activity {
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @default(now()) @updatedAt
   user          User         @relation(onDelete: Cascade, fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
 }

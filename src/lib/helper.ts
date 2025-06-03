@@ -13,10 +13,10 @@ export const handleError = (message: string) => ({
   message,
 });
 
-export const actionMessages: Record<FriendshipStatus, string> = {
+export const actionMessages: Record<FriendshipStatus, string> = Object.freeze({
   FRIENDS: "You are now friends",
   NONE: "No action taken",
   REJECTED: "Friend request rejected",
   BLOCKED: "User blocked",
   PENDING: "Friend request pending",
-};
+});

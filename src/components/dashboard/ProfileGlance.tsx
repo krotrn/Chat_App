@@ -23,7 +23,7 @@ const ProfileGlance = ({ user }: ProfileGlanceProps) => {
       .toUpperCase() || user.username[0].toUpperCase();
 
   return (
-    <Card className="w-full min-w-fit justify-items-center">
+    <Card className="min-w-fit flex flex-col items-center">
       <CardHeader className="flex flex-row items-center gap-4 pb-2">
         <Avatar className="h-20 w-20 rounded-full">
           <AvatarImage

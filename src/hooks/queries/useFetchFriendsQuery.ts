@@ -5,7 +5,6 @@ import { useAppSelector } from "../useReduxType";
 
 export const useFetchFriendsQuery = () => {
   const userId = useAppSelector((state) => state.user.user?.id);
-  console.log(userId);
   return useQuery({
     enabled: !!userId,
     queryKey: queryKeys.friends.lists(),

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { DatabaseOfflinePage } from "@/components/offline/pages/database-offline-page";
+import OfflinePage from "@/components/offline/pages/offline-page";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 
 export default function OnlineCheckWrapper({
@@ -21,7 +21,7 @@ export default function OnlineCheckWrapper({
   }
 
   if (!isOnline) {
-    return <DatabaseOfflinePage />;
+    return <OfflinePage />;
   }
 
   return <>{children}</>;
