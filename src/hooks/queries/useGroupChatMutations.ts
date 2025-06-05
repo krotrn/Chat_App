@@ -1,25 +1,17 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  createAGroupChat,
   updateGroupChat,
-  deleteGroupChat,
   addNewParticipantInGroupChat,
   removeParticipantFromGroupChat,
   leaveGroupChat,
 } from "@/services/chat";
 import { queryKeys } from "@/lib/config";
-import { ParticipantsType } from "@/types/ChatType";
+import { createGroup, deleteGroup } from "@/actions/userUtils";
 
 export function useCreateGroupChatMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn:({ participants, name, token, }: {
-    name: string;
-    participants: ParticipantsType[];
-    token: string;
-    }) => {
-      return createAGroupChat({ participants, name, token });
-    },
+    mutationFn:createGroup,
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.chats.infinite(20) });
       queryClient.setQueryData(queryKeys.chats.detail(data._id), data);
@@ -44,7 +36,7 @@ export function useUpdateGroupChatMutation() {
 export function useDeleteGroupChatMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: deleteGroupChat,
+    mutationFn: deleteGroup,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.chats.infinite(20) });
     },

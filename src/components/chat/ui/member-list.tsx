@@ -228,9 +228,7 @@ export default function MemberList({
                     @{friend.username}
                   </p>
                 </div>
-                {friend.isOnline && (
-                  <div className="h-2 w-2 bg-green-500 rounded-full" />
-                )}
+
               </motion.div>
             ))}
           </AnimatePresence>

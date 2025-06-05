@@ -1,6 +1,5 @@
 "use client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MessageSquare, User, UserPlus } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Activity, ActivityType } from "@prisma/client";
@@ -64,22 +63,9 @@ export function RecentActivity({ activities }: RecentActivityProps) {
                   defaultValue={activity.id}
                   className="md:basis-1/2 lg:basis-1/2 flex items-center space-x-4 p-4"
                 >
-                  {activity.userId ? (
-                    <Avatar>
-                      <AvatarImage
-                        className="h-10 w-10"
-                        src={activity.userAvatarUrl || ""}
-                        alt={activity.userName || "User"}
-                      />
-                      <AvatarFallback>
-                        {activity.userName?.[0].toUpperCase() ?? "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                  ) : (
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      {getActivityIcon(activity.type)}
-                    </div>
-                  )}
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    {getActivityIcon(activity.type)}
+                  </div>
                   <div className="flex-1">
                     <p className="text-sm">{activity.content}</p>
                     <p className="text-xs text-muted-foreground">

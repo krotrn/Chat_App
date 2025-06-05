@@ -36,11 +36,24 @@ enum ActivityType {
   FRIENDREJECTED
   NEWFRIEND
   BLOCKED
+  GROUPCREATED
+  GROUPJOINED
+  GROUPLEFT
+  GROUPDELETED
+  GROUPMEMBERADDED
+  GROUPMEMBERREMOVED
+  GROUPMEMBERROLECHANGED
 }
 
 enum RecommendationType {
   FRIENDREQUEST
   GROUP
+}
+
+enum GroupMemberRole {
+  ADMIN
+  MEMBER
+  MODERATOR
 }
 
 model User {
@@ -61,7 +74,6 @@ model User {
   createdAt               DateTime    @default(now())
   updatedAt               DateTime    @default(now()) @updatedAt
   lastLogin               DateTime?
-  isOnline                Boolean     @default(false)
   status                  String?     @db.VarChar(100)
   passwordHistory         String[]    @default([])
   loginAttempts           Int         @default(0)
@@ -76,11 +88,11 @@ model User {
   recentActivities        Activity[]
   recommendations         Recommendations[]
   receivedRecommendations Recommendations[] @relation("ReceivedRecommendations")
-  groupMember             Group[]           @relation("GroupMembers")
-  groupAdmin              Group[]           @relation("GroupAdmin")
+
+  createdGroups    Group[]       @relation("GroupCreator")
+  groupMemberships GroupMember[]
 
   @@index([role])
-  @@index([isOnline])
   @@index([emailVerified])
   @@index([lastLogin])
   @@index([status])
@@ -146,15 +158,17 @@ model Recommendations {
   id                 String             @id @default(cuid())
   userId             String
   type               RecommendationType
-  recommendedUserId  String?  
-  recommendedGroupId String?  
+  recommendedUserId  String?
+  recommendedGroupId String?
   title              String?
   description        String?
   avatarUrl          String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @default(now()) @updatedAt
 
-  user             User   @relation(onDelete: Cascade, fields: [userId], references: [id])
-  recommendedUser  User?  @relation("ReceivedRecommendations", onDelete: Cascade, fields: [recommendedUserId], references: [id])
-  recommendedGroup Group? @relation(onDelete: Cascade, fields: [recommendedGroupId], references: [id])
+  user             User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recommendedUser  User?  @relation("ReceivedRecommendations", fields: [recommendedUserId], references: [id], onDelete: Cascade)
+  recommendedGroup Group? @relation(fields: [recommendedGroupId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([userId, type])
@@ -162,30 +176,52 @@ model Recommendations {
   @@index([recommendedGroupId])
 }
 
+model GroupMember {
+  id        String          @id @default(cuid())
+  groupId   String
+  userId    String
+  role      GroupMemberRole @default(MEMBER)
+  joinedAt  DateTime        @default(now())
+  updatedAt DateTime        @default(now()) @updatedAt
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+  @@index([groupId, role])
+}
+
 model Group {
-  id              String            @id @default(cuid())
-  backendId       String            @unique
-  name            String
-  avatarUrl       String?
-  description     String?
-  adminId         String
-  admin           User              @relation("GroupAdmin", fields: [adminId], references: [id], onDelete: Cascade)
-  members         User[]            @relation("GroupMembers")
+  id          String   @id @default(cuid())
+  backendId   String   @unique
+  name        String
+  avatarUrl   String?
+  description String?
+  creatorId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  creator User          @relation("GroupCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  members GroupMember[]
+
   recommendations Recommendations[]
 
-  @@index([adminId])
+  @@index([creatorId])
 }
 
 model Activity {
-  id            String       @id @default(cuid())
-  userId        String
-  userAvatarUrl String
-  userName      String?
-  type          ActivityType
-  content       String
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @default(now()) @updatedAt
-  user          User         @relation(onDelete: Cascade, fields: [userId], references: [id])
+  id        String       @id @default(cuid())
+  userId    String
+  type      ActivityType
+  content   String
+  metadata  Json?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @default(now()) @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
+  @@index([type, createdAt])
 }

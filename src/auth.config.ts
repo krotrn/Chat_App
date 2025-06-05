@@ -51,7 +51,7 @@ export default {
             role: user.role,
           },
           process.env.JWT_SECRET!,
-          { expiresIn: "30d" } as jwt.SignOptions,
+          { expiresIn: "30d" } as jwt.SignOptions
         );
 
         return {
@@ -77,7 +77,7 @@ export default {
         session.user = {
           ...session.user,
           id: token.id as string,
-          name: token.name,
+          name: token.name as string,
           avatarUrl: (token.avatarUrl as string) || null,
           email: token.email as string,
           username: token.username as string,
@@ -96,13 +96,15 @@ export default {
       profile: async (profile: GitHubProfile) => {
         return {
           id: profile.id.toString(),
+          name: profile.name || profile.login,
           avatarUrl: profile.avatar_url,
-          name: profile.name,
-          username: await generateUniqueUsername(profile.login),
-          email: profile.email,
-          emailVerified: new Date(),
+          username: profile.login,
           role: UserRoles.USER,
           loginType: AccountType.GITHUB,
+          emailVerified: profile.email ? new Date() : null,
+          bio: profile.bio || undefined,
+          email: profile.email,
+          image: profile.avatar_url,
         };
       },
     }),

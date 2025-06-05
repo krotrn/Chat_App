@@ -4,6 +4,8 @@ import { auth } from "@/auth";
 import { handleError, handleSuccess } from "@/lib/helper";
 import { db } from "@/prisma";
 import { profileSchema } from "@/schemas/profileSchema";
+import { createAGroupChat, deleteGroupChat } from "@/services/chat";
+import { ParticipantsType } from "@/types/ChatType";
 import {
   FriendRequestType,
   FormattedFriendType,
@@ -13,6 +15,7 @@ import {
 import {
   ActivityType,
   FriendshipStatus,
+  GroupMemberRole,
   RecommendationType,
 } from "@prisma/client";
 import { z } from "zod";
@@ -109,28 +112,29 @@ export const getActivities = async () => {
 /**
  * Fetch user statistics based on the selected fields.
  */
-export const getUserStats = async <T extends keyof StatsProps>(fields: T[]) => {
+export const getUserStats = async (): Promise<StatsProps> => {
   const session = await auth();
   if (!session) throw new Error("Unauthorized");
 
   try {
-    const select: Partial<Record<keyof StatsProps, boolean>> = fields.reduce(
-      (acc, key) => {
-        acc[key] = true;
-        return acc;
-      },
-      {} as Partial<Record<keyof StatsProps, boolean>>,
-    );
-
-    const user = await db.user.findUnique({
+    const user = await db.user.findFirst({
       where: { id: session.user.id },
       select: {
-        friends: true,
-        ...select,
+        _count: {
+          select: {
+            createdGroups: true,
+            groupMemberships: true,
+            friendOf: true,
+          },
+        },
       },
     });
     if (!user) throw new Error("User not found");
-    return user;
+    return {
+      totalFriends: user._count.friendOf || 0,
+      totalGroups:
+        user._count.createdGroups + user._count.groupMemberships || 0,
+    };
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : "Unknown error";
     console.error("Error fetching user stats:", errorMsg);
@@ -142,7 +146,7 @@ export const getUserStats = async <T extends keyof StatsProps>(fields: T[]) => {
  * Update the profile of the authenticated user.
  */
 export const updateProfile = async (
-  data: z.infer<typeof profileSchema>,
+  data: z.infer<typeof profileSchema>
 ): Promise<ResponseType<null>> => {
   const session = await auth();
   if (!session || !session.user.id)
@@ -263,7 +267,7 @@ export const getUserDataById = async (id: string) => {
  * Retrieve friends for a specific user ID and map to a formatted structure.
  */
 export const getUserFriends = async (
-  id: string,
+  id: string
 ): Promise<FormattedFriendType[]> => {
   try {
     const userFriends = await db.userFriends.findMany({
@@ -273,11 +277,10 @@ export const getUserFriends = async (
           select: {
             id: true,
             username: true,
-            email:true,
+            email: true,
             name: true,
             avatarUrl: true,
             bio: true,
-            isOnline: true,
           },
         },
       },
@@ -287,10 +290,9 @@ export const getUserFriends = async (
       id: userFriend.friend.id,
       username: userFriend.friend.username,
       name: userFriend.friend.name ?? undefined,
-      email:userFriend.friend.email,
+      email: userFriend.friend.email,
       avatarUrl: userFriend.friend.avatarUrl ?? undefined,
       bio: userFriend.friend.bio ?? undefined,
-      isOnline: userFriend.friend.isOnline,
     }));
   } catch (error) {
     const errorMsg =
@@ -306,7 +308,9 @@ export const getUserFriends = async (
 
 export const searchPeople = async ({
   contains,
-}: {contains:string}): Promise<SearchUserType[]> => {
+}: {
+  contains: string;
+}): Promise<SearchUserType[]> => {
   const session = await auth();
   if (!session) throw new Error("Unauthorized");
   if (!contains || contains.trim().length < 2) {
@@ -536,7 +540,7 @@ export const getPendingRequests = async (senderId: string) => {
 
 export const handleFriendRequest = async (
   senderId: string,
-  action: FriendshipStatus,
+  action: FriendshipStatus
 ) => {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
@@ -621,8 +625,6 @@ export const handleFriendRequest = async (
           data: [
             {
               userId: existingRequest.receiverId,
-              userAvatarUrl: receiver.avatarUrl || "",
-              userName: receiver.name || receiver.username,
               type: ActivityType.NEWFRIEND,
               content: `You accepted a friend request from ${sender.name || sender.username}.`,
               createdAt: now,
@@ -630,8 +632,6 @@ export const handleFriendRequest = async (
             },
             {
               userId: existingRequest.senderId,
-              userAvatarUrl: sender.avatarUrl || "",
-              userName: sender.name || sender.username,
               type: ActivityType.NEWFRIEND,
               content: `${receiver.name || receiver.username} accepted your friend request.`,
               createdAt: now,
@@ -662,8 +662,6 @@ export const handleFriendRequest = async (
           tx.activity.create({
             data: {
               userId: existingRequest.senderId,
-              userAvatarUrl: sender.avatarUrl || "",
-              userName: sender.name || sender.username,
               type: ActivityType.FRIENDREQUEST,
               content: `${receiver.name || receiver.username} rejected your friend request.`,
               createdAt: new Date(),
@@ -701,8 +699,6 @@ export const handleFriendRequest = async (
         await tx.activity.create({
           data: {
             userId: existingRequest.senderId,
-            userAvatarUrl: sender.avatarUrl || "",
-            userName: sender.name || sender.username,
             type: ActivityType.BLOCKED,
             content: `${receiver.name || receiver.username} blocked you.`,
             createdAt: new Date(),
@@ -801,8 +797,6 @@ export const removeFriend = async (userId: string, friendId: string) => {
       await tx.activity.create({
         data: {
           userId,
-          userAvatarUrl: user.avatarUrl || "",
-          userName: user.name || user.username,
           type: ActivityType.FRIENDREQUEST,
           content: `You removed ${friend.name || friend.username} from your friends.`,
           createdAt: new Date(),
@@ -881,7 +875,7 @@ export const blockUser = async (userId: string, blockedUserId: string) => {
 export const createFriendActivity = async (
   userId: string,
   activityType: ActivityType,
-  content: string,
+  content: string
 ) => {
   try {
     const user = await db.user.findUnique({
@@ -894,8 +888,6 @@ export const createFriendActivity = async (
     await db.activity.create({
       data: {
         userId,
-        userAvatarUrl: user.avatarUrl || "",
-        userName: user.name || user.username,
         type: activityType,
         content,
         createdAt: new Date(),
@@ -913,7 +905,7 @@ export const createFriendActivity = async (
 export const updateRecommendationsAfterFriendAction = async (
   userId: string,
   friendId: string,
-  action: FriendshipStatus,
+  action: FriendshipStatus
 ) => {
   try {
     if (
@@ -952,7 +944,6 @@ export const updateUserConnectionStatus = async (userId: string) => {
       where: { id: userId },
       data: {
         lastLogin: new Date(),
-        isOnline: true,
       },
     });
   } catch (error) {
@@ -965,7 +956,7 @@ export const updateUserConnectionStatus = async (userId: string) => {
  */
 export const getFriendshipStatus = async (
   userId: string,
-  otherUserId: string,
+  otherUserId: string
 ) => {
   try {
     const areFriends = await db.userFriends.findFirst({
@@ -993,5 +984,119 @@ export const getFriendshipStatus = async (
         : "Error retrieving friendship status.";
     console.error("Error in getFriendshipStatus:", errorMsg);
     throw new Error(errorMsg);
+  }
+};
+
+export const createGroup = async ({
+  participants,
+  name,
+  description = "",
+  avatarUrl = "",
+  token,
+}: {
+  name: string;
+  participants: ParticipantsType[];
+  description?: string;
+  avatarUrl?: string;
+  token: string;
+}) => {
+  try {
+    const response = await db.$transaction(async (tx) => {
+      const response = await createAGroupChat({
+        participants,
+        name,
+        token,
+      });
+
+      const existingGroup = await tx.group.findUnique({
+        where: { backendId: response._id },
+      });
+
+      if (existingGroup) {
+        throw new Error("Group with this backendId already exists.");
+      }
+
+      const newGroup = await tx.group.create({
+        data: {
+          name,
+          backendId: response._id,
+          description,
+          avatarUrl,
+          creatorId: response.admin,
+        },
+      });
+
+      await tx.groupMember.create({
+        data: {
+          groupId: newGroup.id,
+          userId: response.admin,
+          role: GroupMemberRole.ADMIN,
+        },
+      });
+
+      for (const p of participants) {
+        await tx.groupMember.create({
+          data: {
+            groupId: newGroup.id,
+            userId: p.userId,
+            role: GroupMemberRole.MEMBER,
+          },
+        });
+      }
+
+      await tx.activity.create({
+        data: {
+          userId: response.admin,
+          type: ActivityType.GROUPCREATED,
+          content: `Group "${name}" created successfully.`,
+        },
+      });
+
+      return response;
+    });
+    return response;
+  } catch (error) {
+    console.error("Error creating group:", error);
+    throw new Error("Failed to create group");
+  }
+};
+
+export const deleteGroup = async ({
+  chatId,
+  token,
+}: {
+  chatId: string;
+  token: string;
+}) => {
+  try {
+    const response = await db.$transaction(async (tx) => {
+      const group = await tx.group.findUnique({
+        where: { backendId: chatId },
+      });
+
+      if (!group) throw new Error("Group not found.");
+
+      await deleteGroupChat({
+        chatId: group.backendId,
+        token,
+      });
+
+      await tx.group.delete({
+        where: { backendId: chatId },
+      });
+
+      await tx.activity.create({
+        data: {
+          userId: group.creatorId,
+          type: ActivityType.GROUPDELETED,
+          content: `Group "${group.name}" deleted successfully.`,
+        },
+      });
+      return null;
+    });
+    return response;
+  } catch (error) {
+    console.error("Error deleting group:", error);
+    throw new Error("Failed to delete group");
   }
 };

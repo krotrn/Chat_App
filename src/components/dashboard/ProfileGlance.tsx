@@ -3,18 +3,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Edit, MessageSquareMoreIcon } from "lucide-react";
 import Link from "next/link";
+import { ProfileGlanceSkeleton } from "../skeleton/profile-glance-skeletons";
+import { getUserDataById } from "@/actions/userUtils";
+import { auth } from "@/auth";
 
-interface ProfileGlanceProps {
-  user: {
-    name: string | null;
-    username: string;
-    avatarUrl: string | null;
-    email: string;
-    bio: string | null;
-  };
-}
-
-const ProfileGlance = ({ user }: ProfileGlanceProps) => {
+const ProfileGlance = async () => {
+  const session = await auth();
+  if (!session || !session.user.id) {
+    return <ProfileGlanceSkeleton />;
+  }
+  const user = await getUserDataById(session.user.id);
   const initials =
     user.name
       ?.split(" ")
