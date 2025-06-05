@@ -46,7 +46,7 @@ export default function FriendsList() {
         <CardDescription>View and manage your connections</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="relative flex-1">
+        <div className="relative flex-1 mb-4">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"

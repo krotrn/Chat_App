@@ -273,6 +273,7 @@ export const getUserFriends = async (
           select: {
             id: true,
             username: true,
+            email:true,
             name: true,
             avatarUrl: true,
             bio: true,
@@ -286,6 +287,7 @@ export const getUserFriends = async (
       id: userFriend.friend.id,
       username: userFriend.friend.username,
       name: userFriend.friend.name ?? undefined,
+      email:userFriend.friend.email,
       avatarUrl: userFriend.friend.avatarUrl ?? undefined,
       bio: userFriend.friend.bio ?? undefined,
       isOnline: userFriend.friend.isOnline,
@@ -302,13 +304,9 @@ export const getUserFriends = async (
  * Retrieve users based on a search query while excluding the authenticated user.
  */
 
-export interface SearchPeopleOptions {
-  contains: string;
-}
-
 export const searchPeople = async ({
   contains,
-}: SearchPeopleOptions): Promise<SearchUserType[]> => {
+}: {contains:string}): Promise<SearchUserType[]> => {
   const session = await auth();
   if (!session) throw new Error("Unauthorized");
   if (!contains || contains.trim().length < 2) {
@@ -389,14 +387,12 @@ export const searchPeople = async ({
       },
       sentRequests: {
         where: {
-          senderId: session.user.id,
           status: FriendshipStatus.PENDING,
         },
         select: { id: true },
       },
       receivedRequests: {
         where: {
-          receiverId: session.user.id,
           status: FriendshipStatus.PENDING,
         },
         select: { id: true },
@@ -417,11 +413,9 @@ export const searchPeople = async ({
     ],
   });
 
-  // For each returned user, compute mutual friends count and normalize flags
   const results: SearchUserType[] = [];
 
   for (const user of users) {
-    // Count mutual friends: intersection of myFriendIds and this user's friends
     const mutualCount = await db.userFriends.count({
       where: {
         userId: user.id,
@@ -431,8 +425,8 @@ export const searchPeople = async ({
 
     const isFriend = user.friends.length > 0 || user.friendOf.length > 0;
 
-    const hasSentRequest = user.sentRequests.length > 0;
-    const hasIncomingRequest = user.receivedRequests.length > 0;
+    const hasSentRequest = user.receivedRequests.length > 0;
+    const hasIncomingRequest = user.sentRequests.length > 0;
 
     results.push({
       id: user.id,
@@ -446,7 +440,6 @@ export const searchPeople = async ({
       hasIncomingRequest,
     });
   }
-
   return results;
 };
 

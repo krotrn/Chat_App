@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { MessageSquareMore, UserMinus } from "lucide-react";
 import { FormattedFriendType } from "@/types/formattedDataTypes";
 import { friendCardVariant } from "@/animations/friends/friend-card-variant";
-import { ParticipantsType } from "@/types/ChatType";
+import { ConnectionState, ParticipantsType } from "@/types/ChatType";
 import { useCreateDirectChatMutation } from "@/hooks/queries/useDirectChatMutation";
 import { useAppSelector } from "@/hooks/useReduxType";
 import { useRemoveFriendMutation } from "@/hooks/queries/useRemoveFriendMutation";
@@ -18,6 +18,8 @@ export default function FriendCard({ friend }: FriendCardProps) {
   const { mutate: removeFriend } = useRemoveFriendMutation();
   const token = useAppSelector((state) => state.user.token);
   const user = useAppSelector((state) => state.user.user);
+  const connectionState = useAppSelector((state) => state.chat.connectionState);
+  const isConnected = connectionState === ConnectionState.CONNECTED;
   const handleMessageClick = async () => {
     if (!token || !user?.id) return;
     const participant: ParticipantsType = {
@@ -59,14 +61,17 @@ export default function FriendCard({ friend }: FriendCardProps) {
           </AvatarFallback>
         </Avatar>
         <div>
-          <p className="font-medium">{friend.username}</p>
+          <p className="font-medium">{friend.name || friend.username}</p>
+          {friend.email && (
+            <p className="text-xs text-muted-foreground">{friend.email}</p>
+          )}
         </div>
       </div>
       <div className="flex space-x-2">
         <Button
           variant="ghost"
           size="icon"
-          disabled={isPending}
+          disabled={isPending || !isConnected}
           onClick={handleMessageClick}
         >
           <MessageSquareMore className="h-4 w-4" />

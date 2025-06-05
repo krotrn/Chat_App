@@ -10,6 +10,7 @@ export interface FriendRequestType extends FriendRequest {
 export interface FormattedFriendType {
   id: string;
   name?: string;
+  email: string;
   username: string;
   avatarUrl?: string;
   bio?: string;

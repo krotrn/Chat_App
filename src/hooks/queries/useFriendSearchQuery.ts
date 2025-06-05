@@ -3,6 +3,8 @@ import { useMutation } from "@tanstack/react-query";
 
 export const useFriendSearchQuery = () => {
   return useMutation({
-    mutationFn: searchPeople,
+    mutationFn: ({ contains }: { contains: string }) => {
+      return searchPeople({ contains });
+    },
   });
 };

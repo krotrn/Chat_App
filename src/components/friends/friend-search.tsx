@@ -15,21 +15,18 @@ import { Button } from "@/components/ui/button";
 import { AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SearchUserType } from "@/types/formattedDataTypes";
-import { handleFriendRequest, sendFriendRequest } from "@/actions/userUtils";
+import { handleFriendRequest } from "@/actions/userUtils";
 import { toast } from "sonner";
 import { useFriendSearchQuery } from "@/hooks/queries/useFriendSearchQuery";
 import { FriendshipStatus } from "@prisma/client";
+import { useSendRequestMutation } from "@/hooks/queries/useSendRequestMutation";
 
-interface FriendSearchProps {
-  userId: string;
-  pending: string[];
-}
-
-export default function FriendSearch({ pending }: FriendSearchProps) {
+export default function FriendSearch() {
   const [searchQuery, setSearchQuery] = useSearchQuery("nfr", "");
   const [searchResults, setSearchResult] = useState<SearchUserType[]>([]);
-  const [pendingRequests, setPendingRequests] = useState<string[]>(pending);
-  const { mutate, isPending } = useFriendSearchQuery();
+  const { mutate, isPending, isSuccess } = useFriendSearchQuery();
+  const { mutate: sendFriendRequest, isPending: isSendingRequest } = useSendRequestMutation();
+  const [sentRequest, setSentRequest] = useState<string[]>([]);
   useEffect(() => {
     if (!searchQuery) {
       setSearchResult([]);
@@ -53,8 +50,8 @@ export default function FriendSearch({ pending }: FriendSearchProps) {
   };
   const handleSendRequest = async (id: string) => {
     try {
-      await sendFriendRequest(id);
-      setPendingRequests((prev) => [...prev, id]);
+      sendFriendRequest(id);
+      setSentRequest((prev) => [...prev, id]);
       toast.success("Friend request sent");
     } catch (error) {
       toast.error((error as Error).message || "Failed to send friend request");
@@ -73,7 +70,7 @@ export default function FriendSearch({ pending }: FriendSearchProps) {
 
   const handleClickButton = (user: SearchUserType) => {
     if (user.isFriend) return;
-    else if (pendingRequests.includes(user.id) || user.hasSentRequest) return;
+    else if (user.hasSentRequest) return;
     else if (user.hasIncomingRequest) {
       handleRecieveRequest(user.id);
       return;
@@ -83,7 +80,7 @@ export default function FriendSearch({ pending }: FriendSearchProps) {
   const buttonContent = (user: SearchUserType) => {
     if (user.isFriend) {
       return "Already Friend";
-    } else if (pendingRequests.includes(user.id) || user.hasSentRequest) {
+    } else if (user.hasSentRequest || sentRequest.includes(user.id)) {
       return "Request Sent";
     } else if (user.hasIncomingRequest) {
       return "Accept Request";
@@ -166,7 +163,7 @@ export default function FriendSearch({ pending }: FriendSearchProps) {
                       variant="outline"
                       size="sm"
                       disabled={
-                        pendingRequests.includes(user.id) || user.isFriend
+                        user.isFriend || user.hasIncomingRequest || user.hasSentRequest || sentRequest.includes(user.id) || isSendingRequest
                       }
                       onClick={() => handleClickButton(user)}
                       className="self-end sm:self-auto mt-2 sm:mt-0"
@@ -176,7 +173,7 @@ export default function FriendSearch({ pending }: FriendSearchProps) {
                   </motion.div>
                 ))
               : searchQuery &&
-                !isPending && (
+                isSuccess && (
                   <div className="flex h-32 flex-col items-center justify-center rounded-md border border-dashed p-8 text-center">
                     <p className="text-sm text-muted-foreground">
                       No users found matching {`"${searchQuery}"`}
