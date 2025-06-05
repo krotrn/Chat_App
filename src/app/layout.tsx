@@ -3,6 +3,8 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
+import { ScrollProgress } from "@/components/magicui/scroll-progress";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -33,6 +35,7 @@ export default function RootLayout({
           {children}
           <Toaster position="top-right" richColors closeButton />
         </ThemeProvider>
+        <ScrollProgress />
       </body>
     </html>
   );

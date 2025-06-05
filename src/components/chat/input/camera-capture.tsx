@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface CameraCaptureProps {
   onCapture: (file: File) => void;
@@ -46,7 +46,16 @@ export default function CameraCapture({
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
   };
+
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, []);
 
   const capturePhoto = () => {
     if (videoRef.current && canvasRef.current) {
@@ -65,8 +74,10 @@ export default function CameraCapture({
             const file = new File([blob], `camera-capture-${Date.now()}.jpg`, {
               type: "image/jpeg",
             });
-            onCapture(file);
+
+            stopCamera();
             setIsOpen(false);
+            onCapture(file);
           }
         }, "image/jpeg");
       }
@@ -83,8 +94,8 @@ export default function CameraCapture({
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={handleOpenChange}>
-      <SheetTrigger asChild>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
         <Button
           variant="ghost"
           size="icon"
@@ -94,11 +105,11 @@ export default function CameraCapture({
           <Camera className="h-5 w-5" />
           <span className="sr-only">Take photo</span>
         </Button>
-      </SheetTrigger>
-      <SheetContent>
-        <SheetHeader>
-          <SheetTitle>Take a Photo</SheetTitle>
-        </SheetHeader>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Take a Photo</DialogTitle>
+        </DialogHeader>
         <div className="grid gap-4">
           <div className="relative rounded overflow-hidden">
             <video ref={videoRef} autoPlay playsInline className="w-full" />
@@ -106,7 +117,7 @@ export default function CameraCapture({
           </div>
           <Button onClick={capturePhoto}>Capture</Button>
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

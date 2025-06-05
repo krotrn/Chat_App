@@ -60,7 +60,9 @@ export default function ChatMain() {
     currentUserId: currentUserId!,
   });
 
-  const toggleDetails = useCallback(() => setShowDetails((prev) => !prev), []);
+  const toggleDetails = useCallback(() => {
+    setShowDetails((prev) => !prev);
+  }, []);
   const handleBack = useCallback(() => {
     setShowDetails(false);
     dispatch(setCurrentChat(null));
@@ -128,7 +130,13 @@ export default function ChatMain() {
 
             <MessageInput participants={chat.participants} />
           </div>
-          {showDetails && <ChatDetails onClose={toggleDetails} />}
+          {showDetails && (
+            <ChatDetails
+              isAdmin={chat.admin === currentUserId}
+              chat={chat}
+              onClose={toggleDetails}
+            />
+          )}
         </div>
       </motion.div>
     </ResizablePanel>

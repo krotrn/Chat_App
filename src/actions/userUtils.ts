@@ -133,8 +133,7 @@ export const getUserStats = async (): Promise<StatsProps> => {
     if (!user) throw new Error("User not found");
     return {
       totalFriends: user._count.friendOf || 0,
-      totalGroups:
-        user._count.createdGroups + user._count.groupMemberships || 0,
+      totalGroups: user._count.groupMemberships || 0,
     };
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : "Unknown error";

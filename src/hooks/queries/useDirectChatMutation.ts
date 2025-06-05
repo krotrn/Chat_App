@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createOrGetAOneOnOneChat, deleteOneOnOneChat } from "@/services/chat";
-import { useAppDispatch } from "@/hooks/useReduxType";
+import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
 import { setCurrentChat } from "@/lib/redux/slices/chat-slice";
 import { queryKeys } from "@/lib/config";
 import { useRouter } from "next/navigation";
@@ -22,8 +22,15 @@ export function useCreateDirectChatMutation() {
 export function useDeleteDirectChatMutation() {
   const dispatch = useAppDispatch();
   const queryClient = useQueryClient();
+  const token = useAppSelector((state) => state.user.token);
   return useMutation({
-    mutationFn: deleteOneOnOneChat,
+    mutationFn: ({
+      chatId,
+      forEveryone,
+    }: {
+      chatId: string;
+      forEveryone: boolean;
+    }) => deleteOneOnOneChat({ chatId, token: token!, forEveryone }),
     onSuccess: (data, variables) => {
       dispatch(setCurrentChat(null));
       queryClient.removeQueries({

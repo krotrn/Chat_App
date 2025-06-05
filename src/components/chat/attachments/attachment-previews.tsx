@@ -10,12 +10,7 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { AttachmentResponse } from "@/types/ChatType";
@@ -27,6 +22,13 @@ import {
   FileVideo,
 } from "lucide-react";
 import { FaFilePdf } from "react-icons/fa";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface AttachmentPreviewProps {
   file: File | AttachmentResponse;
@@ -63,61 +65,56 @@ export default function AttachmentPreview({
 
   return (
     <>
-      <div
-        className={cn(
-          "group relative flex items-center gap-2 rounded-md border p-2 hover:bg-muted/50",
-          className,
-        )}
-      >
-        <div className="flex h-10 w-10 items-center justify-center rounded bg-muted">
-          {getIcon()}
-        </div>
-        <div className="flex-1 overflow-hidden">
-          <p className="truncate text-sm font-medium">{name}</p>
-          {isFile && (
-            <p className="text-xs text-muted-foreground">
-              {(file as File).size > 1024 * 1024
-                ? `${((file as File).size / (1024 * 1024)).toFixed(2)} MB`
-                : `${((file as File).size / 1024).toFixed(2)} KB`}
-            </p>
-          )}
-        </div>
-        {onRemove && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 opacity-0 group-hover:opacity-100"
-            onClick={(e) => {
-              e.stopPropagation();
-              onRemove();
-            }}
-            aria-label={`Remove ${name}`}
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogTrigger asChild>
+          <div
+            className={cn(
+              "group relative flex items-center gap-2 rounded-md border p-2 hover:bg-muted/50",
+              className,
+            )}
+            onClick={handleClick}
           >
-            <X className="h-4 w-4" />
-          </Button>
-        )}
-        <button
-          className="absolute inset-0"
-          onClick={handleClick}
-          type="button"
-          aria-label={`Preview ${name}`}
-        />
-      </div>
-      <Sheet open={previewOpen} onOpenChange={setPreviewOpen}>
-        <SheetContent className="max-w-3xl">
-          <SheetHeader>
-            <SheetTitle>{name}</SheetTitle>
-          </SheetHeader>
+            <div className="flex h-10 w-10 items-center justify-center rounded bg-muted">
+              {getIcon()}
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <p className="truncate text-sm font-medium">{name}</p>
+              <p className="text-xs text-muted-foreground">
+                {(file as File).size > 1024 * 1024
+                  ? `${((file as File).size / (1024 * 1024)).toFixed(2)} MB`
+                  : `${((file as File).size / 1024).toFixed(2)} KB`}
+              </p>
+            </div>
+            {onRemove && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 opacity-0 group-hover:opacity-100"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRemove();
+                }}
+                aria-label={`Remove ${file.name}`}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </DialogTrigger>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>{file.name}</DialogTitle>
+          </DialogHeader>
           <div className="relative aspect-video w-full overflow-hidden rounded-lg">
             <Image
               src={url || "/placeholder.svg"}
-              alt={name}
+              alt={file.name}
               fill
               className="object-contain"
             />
           </div>
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

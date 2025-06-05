@@ -7,6 +7,7 @@ import {
 } from "@/services/chat";
 import { queryKeys } from "@/lib/config";
 import { createGroup, deleteGroup } from "@/actions/userUtils";
+import { useAppSelector } from "../useReduxType";
 
 export function useCreateGroupChatMutation() {
   const queryClient = useQueryClient();
@@ -35,8 +36,10 @@ export function useUpdateGroupChatMutation() {
 
 export function useDeleteGroupChatMutation() {
   const queryClient = useQueryClient();
+  const token = useAppSelector((state) => state.user.token);
   return useMutation({
-    mutationFn: deleteGroup,
+    mutationFn: ({ chatId }: { chatId: string }) =>
+      deleteGroup({ chatId, token: token! }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.chats.infinite(20) });
     },

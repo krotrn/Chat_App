@@ -6,26 +6,44 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { ChatType, ParticipantsType } from "@/types/ChatType";
+import { useDeleteDirectChatMutation } from "@/hooks/queries/useDirectChatMutation";
+import { useDeleteGroupChatMutation } from "@/hooks/queries/useGroupChatMutations";
+import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
+import { useRouter } from "next/navigation";
+import { setCurrentChat } from "@/lib/redux/slices/chat-slice";
 
 interface ChatDetailsProps {
   onClose: () => void;
-  isLoading?: boolean;
-  chat?: ChatType;
+  isAdmin: boolean;
+  chat: ChatType;
   currentUserId?: string;
-  onDeleteChat?: (chatId: string, forEveryone: boolean) => Promise<void>;
 }
 
 export default function ChatDetails({
   onClose,
-  isLoading = false,
+  isAdmin,
   chat,
-  currentUserId,
-  onDeleteChat,
 }: ChatDetailsProps) {
-  if (isLoading || !chat) return null;
+  const { mutate: handleDeleteDirectChat } = useDeleteDirectChatMutation();
+  const { mutate: handleDeleteGroupChat } = useDeleteGroupChatMutation();
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const currentChat = useAppSelector((state) => state.chat.currentChat);
 
-  const isAdmin = chat.admin === currentUserId;
+  if (!chat) return null;
   const isGroupChat = chat.type === "group";
+
+  const onDelete = (forEveryone: boolean) => {
+    if (chat.type === "direct") {
+      handleDeleteDirectChat({ chatId: chat._id, forEveryone });
+    } else if (chat.type === "group") {
+      handleDeleteGroupChat({ chatId: chat._id });
+    }
+    if (chat._id === currentChat?._id) {
+      dispatch(setCurrentChat(null));
+      router.push(`/chats`);
+    }
+  };
 
   return (
     <motion.div
@@ -96,7 +114,7 @@ export default function ChatDetails({
                         {participant.name || "User"}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {participant.role === "admin" ? "Admin" : "Member"}
+                        {participant.userId === chat.admin ? "Admin" : "Member"}
                       </p>
                     </div>
                   </div>
@@ -138,22 +156,40 @@ export default function ChatDetails({
           <Separator className="my-4" />
 
           {/* Danger Zone */}
-          <div>
-            <h3 className="flex items-center text-sm font-medium text-destructive mb-3">
-              Danger Zone
-            </h3>
 
+          <h3 className="flex items-center text-sm font-medium text-destructive mb-3">
+            Danger Zone
+          </h3>
+
+          {isGroupChat ? (
             <Button
               variant="destructive"
-              className="w-full"
-              onClick={() =>
-                chat && onDeleteChat && onDeleteChat(chat._id, isAdmin)
-              }
+              className="w-full hover:bg-red-600 hover:transform hover:scale-105 transition-transform"
+              onClick={() => chat && onDelete(isAdmin)}
             >
               <Trash2 className="h-4 w-4 mr-2" />
               {isAdmin ? "Delete for everyone" : "Leave chat"}
             </Button>
-          </div>
+          ) : (
+            <>
+              <Button
+                variant="destructive"
+                className="w-full mb-2 hover:bg-red-600 hover:transform hover:scale-105 transition-transform"
+                onClick={() => onDelete(false)}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Chat for me
+              </Button>
+              <Button
+                variant="destructive"
+                className="w-full mt-2 hover:bg-red-600 hover:transform hover:scale-105 transition-transform"
+                onClick={() => onDelete(true)}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Chat for everyone
+              </Button>
+            </>
+          )}
         </div>
       </ScrollArea>
     </motion.div>

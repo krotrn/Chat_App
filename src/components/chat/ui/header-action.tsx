@@ -22,7 +22,6 @@ export default function HeaderActions({
 }: HeaderActionsProps) {
   const { mutate: onDeleteChat } = useDeleteDirectChatMutation();
   const chatId = useAppSelector((state) => state.chat.currentChat?._id);
-  const token = useAppSelector((state) => state.user.token);
   if (!chatId) {
     return null;
   }
@@ -51,9 +50,7 @@ export default function HeaderActions({
           {isAdmin && (
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"
-              onClick={() =>
-                onDeleteChat({ chatId, forEveryone: true, token: token! })
-              }
+              onClick={() => onDeleteChat({ chatId, forEveryone: true })}
             >
               <Trash2 className="mr-2 h-4 w-4" />
               Delete chat
@@ -62,9 +59,7 @@ export default function HeaderActions({
           {!isAdmin && (
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"
-              onClick={() =>
-                onDeleteChat({ chatId, forEveryone: false, token: token! })
-              }
+              onClick={() => onDeleteChat({ chatId, forEveryone: false })}
             >
               <Trash2 className="mr-2 h-4 w-4" />
               Leave chat

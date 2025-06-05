@@ -1,5 +1,5 @@
 "use client";
-import { ArrowLeft, Users } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import HeaderActions from "@/components/chat/ui/header-action";
@@ -7,6 +7,7 @@ import { ChatType } from "@/types/ChatType";
 import { User } from "next-auth";
 import { useAppSelector } from "@/hooks/useReduxType";
 import { useMemo } from "react";
+import { AnimatedTooltip } from "@/components/ui/animate-tootip";
 
 interface ChatHeaderProps {
   chat: ChatType;
@@ -21,13 +22,13 @@ export default function ChatHeader({
   userId,
   onToggleDetails,
   onBack,
-  currentUser,
 }: ChatHeaderProps) {
-  const isAdmin = chat.admin === currentUser?.id;
+  const user = useAppSelector((state) => state.user.user);
+  const isAdmin = chat.admin === user?.id;
   const onlineUsers = useAppSelector((state) => state.chat.onlineUsers);
   const isOnline = useMemo(
-    () => onlineUsers.some((p) => p !== currentUser?.id),
-    [onlineUsers, currentUser],
+    () => onlineUsers.some((p) => p !== user?.id),
+    [onlineUsers, user?.id],
   );
 
   let title: string;
@@ -66,9 +67,8 @@ export default function ChatHeader({
           <div className="flex items-center">
             <h2 className="text-base font-semibold">{title}</h2>
             {chat.type === "group" && (
-              <div className="ml-2 flex items-center text-xs text-muted-foreground">
-                <Users className="h-3 w-3 mr-1" />
-                {chat.participants.length}
+              <div className="flex ml-4 flex-row items-center justify-center w-full">
+                <AnimatedTooltip items={chat.participants} />
               </div>
             )}
           </div>
