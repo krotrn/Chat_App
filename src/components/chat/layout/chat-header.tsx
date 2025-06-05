@@ -25,7 +25,10 @@ export default function ChatHeader({
 }: ChatHeaderProps) {
   const isAdmin = chat.admin === currentUser?.id;
   const onlineUsers = useAppSelector((state) => state.chat.onlineUsers);
-  const isOnline = useMemo(() => onlineUsers.some((p) => p !== currentUser?.id), [onlineUsers, currentUser]);
+  const isOnline = useMemo(
+    () => onlineUsers.some((p) => p !== currentUser?.id),
+    [onlineUsers, currentUser],
+  );
 
   let title: string;
   let avatar: string | undefined;

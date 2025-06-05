@@ -5,6 +5,7 @@ import { handleError, handleSuccess } from "@/lib/helper";
 import { db } from "@/prisma";
 import { profileSchema } from "@/schemas/profileSchema";
 import { createAGroupChat, deleteGroupChat } from "@/services/chat";
+import { updateUserWebhook } from "@/services/webhook/user";
 import { ParticipantsType } from "@/types/ChatType";
 import {
   FriendRequestType,
@@ -146,24 +147,55 @@ export const getUserStats = async (): Promise<StatsProps> => {
  * Update the profile of the authenticated user.
  */
 export const updateProfile = async (
-  data: z.infer<typeof profileSchema>
-): Promise<ResponseType<null>> => {
+  data: z.infer<typeof profileSchema>,
+): Promise<
+  ResponseType<{
+    id: string;
+    name: string;
+    bio: string;
+    avatarUrl: string;
+    status: string;
+  }>
+> => {
   const session = await auth();
   if (!session || !session.user.id)
     return handleError("User not authenticated.");
 
   try {
-    const { name, bio, avatar } = data;
-    const avatarUrl = avatar ? await uploadAvatar(avatar) : undefined;
+    const { name, bio, avatar, status } = data;
+    const avatarUrl = avatar
+      ? await uploadAvatar(avatar)
+      : session.user.avatarUrl;
 
-    await db.$transaction(async (tx) => {
-      await tx.user.update({
+    const user = await db.$transaction(async (tx) => {
+      const user = await tx.user.update({
         where: { id: session.user.id },
-        data: { name, bio, avatarUrl },
+        data: { name, bio, avatarUrl, status },
+        select: {
+          id: true,
+          name: true,
+          bio: true,
+          avatarUrl: true,
+          status: true,
+        },
       });
+      await updateUserWebhook(session.accessToken, {
+        name: name,
+        avatarUrl,
+      });
+      return user;
     });
 
-    return handleSuccess(null, "Profile updated successfully.");
+    return handleSuccess(
+      {
+        id: user.id,
+        name: user.name || session.user.name || "No Name",
+        bio: user.bio || session.user.bio || "No Bio",
+        avatarUrl: user.avatarUrl || session.user.avatarUrl || "No Avatar",
+        status: user.status || "No Status",
+      },
+      "Profile updated successfully.",
+    );
   } catch (error) {
     const errorMsg =
       error instanceof Error ? error.message : "Error updating profile";
@@ -267,7 +299,7 @@ export const getUserDataById = async (id: string) => {
  * Retrieve friends for a specific user ID and map to a formatted structure.
  */
 export const getUserFriends = async (
-  id: string
+  id: string,
 ): Promise<FormattedFriendType[]> => {
   try {
     const userFriends = await db.userFriends.findMany({
@@ -540,7 +572,7 @@ export const getPendingRequests = async (senderId: string) => {
 
 export const handleFriendRequest = async (
   senderId: string,
-  action: FriendshipStatus
+  action: FriendshipStatus,
 ) => {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
@@ -875,7 +907,7 @@ export const blockUser = async (userId: string, blockedUserId: string) => {
 export const createFriendActivity = async (
   userId: string,
   activityType: ActivityType,
-  content: string
+  content: string,
 ) => {
   try {
     const user = await db.user.findUnique({
@@ -905,7 +937,7 @@ export const createFriendActivity = async (
 export const updateRecommendationsAfterFriendAction = async (
   userId: string,
   friendId: string,
-  action: FriendshipStatus
+  action: FriendshipStatus,
 ) => {
   try {
     if (
@@ -936,9 +968,9 @@ export const updateRecommendationsAfterFriendAction = async (
 };
 
 /**
- * Update the user's connection status.
+ * Update the user's last login timestamp.
  */
-export const updateUserConnectionStatus = async (userId: string) => {
+export const updateUserLastLogin = async (userId: string) => {
   try {
     await db.user.update({
       where: { id: userId },
@@ -956,7 +988,7 @@ export const updateUserConnectionStatus = async (userId: string) => {
  */
 export const getFriendshipStatus = async (
   userId: string,
-  otherUserId: string
+  otherUserId: string,
 ) => {
   try {
     const areFriends = await db.userFriends.findFirst({

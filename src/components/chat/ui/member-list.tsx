@@ -228,7 +228,6 @@ export default function MemberList({
                     @{friend.username}
                   </p>
                 </div>
-
               </motion.div>
             ))}
           </AnimatePresence>

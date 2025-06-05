@@ -11,7 +11,7 @@ import { createGroup, deleteGroup } from "@/actions/userUtils";
 export function useCreateGroupChatMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn:createGroup,
+    mutationFn: createGroup,
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.chats.infinite(20) });
       queryClient.setQueryData(queryKeys.chats.detail(data._id), data);

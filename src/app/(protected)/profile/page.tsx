@@ -1,5 +1,4 @@
 import ProfileWrapper from "@/components/profile/profile";
-import { SessionProvider } from "next-auth/react";
 
 export default async function ProfilePage() {
   return (
@@ -11,9 +10,7 @@ export default async function ProfilePage() {
             Manage your account settings and profile information.
           </p>
         </div>
-        <SessionProvider>
-          <ProfileWrapper />
-        </SessionProvider>
+        <ProfileWrapper />
       </div>
     </div>
   );

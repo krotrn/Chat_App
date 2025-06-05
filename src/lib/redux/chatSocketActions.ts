@@ -1,4 +1,3 @@
-
 export const JOIN_CHAT_ROOM = "chat/joinChatRoom";
 export const LEAVE_CHAT_ROOM = "chat/leaveChatRoom";
 

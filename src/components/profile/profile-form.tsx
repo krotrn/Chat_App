@@ -4,7 +4,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { profileSchema } from "@/schemas/profileSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSession } from "next-auth/react";
 import {
   Form,
   FormControl,
@@ -14,20 +13,21 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useTransition } from "react";
 import { FormError } from "@/components/auth/Form-Error";
 import { FormSuccess } from "@/components/auth/Form-Success";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { updateProfile } from "@/actions/userUtils";
 import { useAppSelector } from "@/hooks/useReduxType";
+import { useProfileUpdateMutation } from "@/hooks/queries/useProfileUpdateMutation";
 
 export default function ProfileForm() {
-  const { update } = useSession();
-  const [isPending, startTransition] = useTransition();
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const {
+    mutate: updateProfileMutation,
+    error,
+    isPending,
+    isSuccess,
+  } = useProfileUpdateMutation();
   const user = useAppSelector((state) => state.user.user);
 
   const form = useForm<z.infer<typeof profileSchema>>({
@@ -52,24 +52,7 @@ export default function ProfileForm() {
   }, [avatarFile]);
 
   const onSubmit = (data: z.infer<typeof profileSchema>) => {
-    setError("");
-    setSuccess("");
-    startTransition(async () => {
-      try {
-        const response = await updateProfile(data);
-        if (response.success) {
-          setSuccess(response.message);
-          await update();
-        } else if (response.error) {
-          setError(response.message);
-        } else {
-          setError("Something went wrong.");
-        }
-      } catch (error) {
-        console.log("Error updating profile:", (error as Error).message);
-        setError("Failed to update profile");
-      }
-    });
+    updateProfileMutation(data);
   };
 
   return (
@@ -143,8 +126,28 @@ export default function ProfileForm() {
               </FormItem>
             )}
           />
-          <FormError message={error} />
-          <FormSuccess message={success} />
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Status</FormLabel>
+                <FormControl>
+                  <Input
+                    type="text"
+                    {...field}
+                    placeholder="Tell about yourself."
+                    disabled={isPending}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormError message={error?.message} />
+          <FormSuccess
+            message={isSuccess ? "Profile updated successfully!" : ""}
+          />
           <Button type="submit" className="w-full" disabled={isPending}>
             Submit
           </Button>

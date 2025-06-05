@@ -41,10 +41,5 @@ export default function SocketLayout({
     };
   }, [dispatch, token]);
 
-
-  return (
-    <>
-      {children}
-    </>
-  );
+  return <>{children}</>;
 }

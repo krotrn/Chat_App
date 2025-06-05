@@ -44,13 +44,13 @@ export default function ChatMain() {
       router.push(`/chats?chat=${currentChat._id}`);
     }
     return () => {
-      if(currentChat?._id) {
+      if (currentChat?._id) {
         dispatch({
           type: LEAVE_CHAT_ROOM,
           payload: { chatId: currentChat._id },
         });
       }
-    }
+    };
   }, [currentChat?._id, dispatch, router]);
   const chat = data?.pages[0].chats.find(
     (chat) => chat._id === currentChat?._id,

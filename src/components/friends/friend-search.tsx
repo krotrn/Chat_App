@@ -25,7 +25,8 @@ export default function FriendSearch() {
   const [searchQuery, setSearchQuery] = useSearchQuery("nfr", "");
   const [searchResults, setSearchResult] = useState<SearchUserType[]>([]);
   const { mutate, isPending, isSuccess } = useFriendSearchQuery();
-  const { mutate: sendFriendRequest, isPending: isSendingRequest } = useSendRequestMutation();
+  const { mutate: sendFriendRequest, isPending: isSendingRequest } =
+    useSendRequestMutation();
   const [sentRequest, setSentRequest] = useState<string[]>([]);
   useEffect(() => {
     if (!searchQuery) {
@@ -163,7 +164,11 @@ export default function FriendSearch() {
                       variant="outline"
                       size="sm"
                       disabled={
-                        user.isFriend || user.hasIncomingRequest || user.hasSentRequest || sentRequest.includes(user.id) || isSendingRequest
+                        user.isFriend ||
+                        user.hasIncomingRequest ||
+                        user.hasSentRequest ||
+                        sentRequest.includes(user.id) ||
+                        isSendingRequest
                       }
                       onClick={() => handleClickButton(user)}
                       className="self-end sm:self-auto mt-2 sm:mt-0"

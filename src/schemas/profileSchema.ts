@@ -20,4 +20,5 @@ export const profileSchema = z.object({
       message: "File size should not exceed 2MB",
     })
     .optional(),
+  status: z.string().optional(),
 });

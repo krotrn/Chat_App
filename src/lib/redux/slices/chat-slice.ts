@@ -41,7 +41,7 @@ const chatSlice = createSlice({
       if (!state.onlineUsers.includes(userId)) {
         state.onlineUsers.push(userId);
       }
-    }
+    },
   },
 });
 
