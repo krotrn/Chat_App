@@ -1,6 +1,6 @@
 "use client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MessageSquare, User, UserPlus } from "lucide-react";
+import { Info, MessageSquare, User, UserPlus } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Activity, ActivityType } from "@prisma/client";
 import { format } from "date-fns";
@@ -18,14 +18,14 @@ interface RecentActivityProps {
 export function RecentActivity({ activities }: RecentActivityProps) {
   const getActivityIcon = (type: ActivityType) => {
     switch (type) {
-      case "MESSAGE":
+      case ActivityType.MESSAGE:
         return <MessageSquare className="h-4 w-4" />;
-      case "FRIENDREQUEST":
+      case ActivityType.FRIENDREQUEST:
         return <UserPlus className="h-4 w-4" />;
-      case "NEWFRIEND":
+      case ActivityType.NEWFRIEND:
         return <User className="h-4 w-4" />;
       default:
-        return null;
+        return <Info className="h-4 w-4" />;
     }
   };
 
@@ -63,9 +63,7 @@ export function RecentActivity({ activities }: RecentActivityProps) {
                   defaultValue={activity.id}
                   className="md:basis-1/2 lg:basis-1/2 flex items-center space-x-4 p-4"
                 >
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    {getActivityIcon(activity.type)}
-                  </div>
+                  {getActivityIcon(activity.type)}
                   <div className="flex-1">
                     <p className="text-sm">{activity.content}</p>
                     <p className="text-xs text-muted-foreground">

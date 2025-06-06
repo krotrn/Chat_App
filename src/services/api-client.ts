@@ -47,7 +47,6 @@ export const handleApiError = (error: unknown): never => {
     console.log("Error message:", error.message);
     throw error;
   }
-
   throw new Error("An unknown error occurred");
 };
 

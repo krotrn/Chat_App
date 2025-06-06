@@ -26,9 +26,9 @@ export enum ConnectionState {
 export interface AttachmentResponse {
   name: string;
   url: string;
-  localPath: string;
-  type: string;
-  status: StatusEnum;
+  size: string;
+  type: "image" | "video" | "raw" | "auto";
+  public_id: string;
 }
 
 export interface ParticipantsType {
@@ -131,4 +131,25 @@ export interface ApiResponse<T> {
 
 export interface MessagesPageData {
   messages: MessageType[];
+}
+
+export interface CloudinaryUploadResponse {
+  asset_id: string;
+  public_id: string;
+  version: number;
+  version_id: string;
+  signature: string;
+  width: number;
+  height: number;
+  format: string;
+  resource_type: "image" | "video" | "raw";
+  created_at: string;
+  tags: string[];
+  bytes: number;
+  type: string;
+  etag: string;
+  placeholder: boolean;
+  url: string;
+  secure_url: string;
+  status: "pending" | "completed" | "failed";
 }

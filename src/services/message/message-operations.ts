@@ -4,7 +4,12 @@ import {
   handleApiError,
   withConnectionCheck,
 } from "../api-client";
-import { ApiResponse, ChatType, MessageType } from "@/types/ChatType";
+import {
+  ApiResponse,
+  AttachmentResponse,
+  ChatType,
+  MessageType,
+} from "@/types/ChatType";
 
 // Pin a message in a chat
 export const pinMessage = async ({
@@ -122,38 +127,25 @@ export const sendMessage = async ({
   token,
   attachments,
   replyToId,
-  tempId,
 }: {
   chatId: string;
   content: string;
   token: string;
-  attachments?: File[];
+  attachments?: AttachmentResponse[];
   replyToId?: string;
-  tempId?: string;
 }) => {
-  const formData = new FormData();
-  formData.append("content", content);
-  if (replyToId) {
-    formData.append("replyToId", replyToId);
-  }
-  if (tempId) {
-    formData.append("tempId", tempId);
-  }
-  if (attachments && attachments.length > 0) {
-    attachments.forEach((file) => {
-      formData.append("attachments", file);
-    });
-  }
-
   try {
     return await withConnectionCheck(async () => {
       const response = await api.post<ApiResponse<MessageType>>(
         `/messages/${chatId}`,
-        formData,
+        {
+          content,
+          replyToId,
+          attachments,
+        },
         {
           withCredentials: true,
           headers: {
-            "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${token}`,
           },
         },

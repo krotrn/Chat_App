@@ -18,8 +18,16 @@ import {
   FriendshipStatus,
   GroupMemberRole,
   RecommendationType,
+  UserRoles,
 } from "@prisma/client";
 import { z } from "zod";
+import { v2 as cloudinary } from "cloudinary";
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || "",
+  api_key: process.env.CLOUDINARY_API_KEY || "",
+  api_secret: process.env.CLOUDINARY_API_SECRET || "",
+  sync: true,
+});
 
 interface ResponseType<T> {
   success: boolean;
@@ -150,10 +158,13 @@ export const updateProfile = async (
 ): Promise<
   ResponseType<{
     id: string;
-    name: string;
-    bio: string;
-    avatarUrl: string;
-    status: string;
+    name: string | null;
+    username: string;
+    bio: string | null;
+    role: UserRoles;
+    avatarUrl: string | null;
+    status: string | null;
+    email: string;
   }>
 > => {
   const session = await auth();
@@ -161,9 +172,9 @@ export const updateProfile = async (
     return handleError("User not authenticated.");
 
   try {
-    const { name, bio, avatar, status } = data;
+    const { name, bio, avatar, status, username } = data;
     const avatarUrl = avatar
-      ? await uploadAvatar(avatar)
+      ? await uploadAvatar(avatar, username)
       : session.user.avatarUrl;
 
     const user = await db.$transaction(async (tx) => {
@@ -172,10 +183,13 @@ export const updateProfile = async (
         data: { name, bio, avatarUrl, status },
         select: {
           id: true,
+          username: true,
           name: true,
+          role: true,
           bio: true,
           avatarUrl: true,
           status: true,
+          email: true,
         },
       });
       await updateUserWebhook(session.accessToken, {
@@ -184,14 +198,16 @@ export const updateProfile = async (
       });
       return user;
     });
-
     return handleSuccess(
       {
         id: user.id,
-        name: user.name || session.user.name || "No Name",
-        bio: user.bio || session.user.bio || "No Bio",
-        avatarUrl: user.avatarUrl || session.user.avatarUrl || "No Avatar",
-        status: user.status || "No Status",
+        name: user.name,
+        username: user.username,
+        bio: user.bio,
+        avatarUrl: user.avatarUrl,
+        status: user.status,
+        role: user.role,
+        email: user.email,
       },
       "Profile updated successfully.",
     );
@@ -206,10 +222,77 @@ export const updateProfile = async (
 /**
  * Upload user avatar and return the URL.
  */
-async function uploadAvatar(avatar: File): Promise<string> {
-  // TODO: Implement actual upload logic.
-  void avatar;
-  return "https://example.com/avatar.jpg";
+
+export async function uploadAvatar(
+  avatar: File,
+  username: string,
+): Promise<string> {
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+  const preset = process.env.CLOUDINARY_AVATAR_UPLOAD_PRESET;
+
+  if (!cloudName || !preset) {
+    throw new Error(
+      "Missing Cloudinary configuration in environment variables.",
+    );
+  }
+
+  if (!avatar || avatar.size === 0) {
+    throw new Error("Invalid avatar file.");
+  }
+
+  try {
+    const arrayBuffer = await avatar.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const response = await cloudinary.uploader.upload(
+      `data:${avatar.type};base64,${buffer.toString("base64")}`,
+      {
+        upload_preset: preset,
+        public_id: `${preset.split("/").pop()}/${username}`,
+      },
+    );
+
+    if (response.status !== 200) {
+      throw new Error("Failed to upload image to Cloudinary");
+    }
+    return response.data.secure_url;
+  } catch (error) {
+    console.error("Error uploading avatar:", error);
+    throw new Error("Failed to upload avatar image");
+  }
+}
+
+export async function deleteFileFromCloudinary(
+  files: {
+    publicId: string;
+    resourceType: "image" | "video" | "raw" | "auto";
+  }[],
+): Promise<{ result: string[] }> {
+  if (
+    !process.env.CLOUDINARY_CLOUD_NAME ||
+    !process.env.CLOUDINARY_API_KEY ||
+    !process.env.CLOUDINARY_API_SECRET
+  ) {
+    throw new Error("Cloudinary environment variables are not set.");
+  }
+
+  if (!files || files.length === 0) {
+    throw new Error("files is required for deleting Cloudinary assets.");
+  }
+
+  try {
+    const deletePromises = files.map(({ publicId, resourceType }) =>
+      cloudinary.uploader.destroy(publicId, {
+        resource_type: resourceType,
+      }),
+    );
+    const results = await Promise.all(deletePromises);
+    return { result: results.map((res) => res.result) };
+  } catch (error) {
+    console.error("Cloudinary deletion error:", error);
+    throw new Error(
+      (error as Error).message || "Failed to delete asset from Cloudinary.",
+    );
+  }
 }
 
 /**
@@ -268,14 +351,16 @@ export const getFriendRequests = async (): Promise<FriendRequestType[]> => {
 /**
  * Retrieve user data by ID with specific selected fields.
  */
-export const getUserDataById = async (id: string) => {
+export const getUserDataByUsername = async (username: string) => {
   try {
     const user = await db.user.findUnique({
-      where: { id },
+      where: { username },
       select: {
         id: true,
         email: true,
         name: true,
+        role: true,
+        status: true,
         username: true,
         avatarUrl: true,
         bio: true,
@@ -283,13 +368,13 @@ export const getUserDataById = async (id: string) => {
     });
 
     if (!user) {
-      console.warn(`User with ID ${id} not found.`);
+      console.warn(`User with username ${username} not found.`);
       throw new Error("User not found");
     }
     return user;
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : "Unknown error";
-    console.error("Error fetching user data by ID:", errorMsg);
+    console.error("Error fetching user data by username:", errorMsg);
     throw new Error(errorMsg);
   }
 };

@@ -24,7 +24,7 @@ export default function ProfileWrapper() {
         </TabsList>
 
         <TabsContent value="general">
-          <Card>
+          <Card className="w-full px-4">
             <CardHeader>
               <CardTitle>General Information</CardTitle>
               <CardDescription>

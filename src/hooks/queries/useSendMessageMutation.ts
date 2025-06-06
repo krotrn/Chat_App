@@ -3,7 +3,6 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { sendMessage } from "@/services/message";
 import {
   ChatType,
   MessagesPageData,
@@ -12,20 +11,34 @@ import {
 } from "@/types/ChatType";
 import { queryKeys } from "@/lib/config";
 import { useAppSelector } from "@/hooks/useReduxType";
+import { sendMessageAction } from "@/actions/chat";
 
 export function useSendMessageMutation() {
   const queryClient = useQueryClient();
   const sender = useAppSelector((state) => state.user.user!);
   return useMutation({
-    mutationFn: sendMessage,
+    mutationFn: sendMessageAction,
     onMutate: async (variable) => {
-      const { chatId, content, replyToId } = variable;
+      const { chatId, content, replyToId, attachments = [] } = variable;
       await queryClient.cancelQueries({
         queryKey: queryKeys.messages.infinite(chatId, 20),
       });
       const previousMessages = queryClient.getQueryData(
         queryKeys.messages.infinite(chatId, 20),
       );
+
+      const placeholderAttachments = attachments.map((file) => ({
+        name: file.name,
+        url: "",
+        size: Math.round(file.size / 1024).toString(),
+        type: file.type.startsWith("image/")
+          ? ("image" as const)
+          : file.type.startsWith("video/")
+            ? ("video" as const)
+            : ("raw" as const),
+        public_id: "",
+      }));
+
       const optimisticMessage: MessageType = {
         _id: `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         chatId,
@@ -40,7 +53,7 @@ export function useSendMessageMutation() {
           name: sender.name || sender.username,
         },
         receivers: [],
-        attachments: [],
+        attachments: placeholderAttachments,
         status: StatusEnum.SENDING,
         isPinned: false,
         edited: {
@@ -100,14 +113,11 @@ export function useSendMessageMutation() {
         queryKeys.messages.infinite(variables.chatId, 20),
         (old) => {
           if (!old || !context?.optimisticMessage) return old;
-
-          // Check if the real message already exists (WebSocket might have already handled it)
           const realMessageExists = old.pages.some((page) =>
             page.messages.some((msg) => msg._id === data._id),
           );
 
           if (realMessageExists) {
-            // WebSocket already handled this message, remove the optimistic one if it still exists
             const newPages = old.pages.map((page) => ({
               ...page,
               messages: page.messages.filter(
@@ -117,7 +127,6 @@ export function useSendMessageMutation() {
             return { ...old, pages: newPages };
           }
 
-          // Replace optimistic message with real message
           const newPages = old.pages.map((page) => ({
             ...page,
             messages: page.messages.map((msg) =>
@@ -148,12 +157,6 @@ export function useSendMessageMutation() {
           return { ...old, pages: newPages };
         },
       );
-
-      // No need to invalidate since we're updating optimistically
-      // queryClient.invalidateQueries({
-      //   queryKey: queryKeys.messages.infinite(variables.chatId, 20),
-      //   refetchType: "active",
-      // });
     },
   });
 }

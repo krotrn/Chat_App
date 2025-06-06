@@ -8,6 +8,7 @@ import { User } from "next-auth";
 import { useAppSelector } from "@/hooks/useReduxType";
 import { useMemo } from "react";
 import { AnimatedTooltip } from "@/components/ui/animate-tootip";
+import { useGetUserByUsernameQuery } from "@/hooks/queries/useGetUserByUsernameQuery";
 
 interface ChatHeaderProps {
   chat: ChatType;
@@ -23,7 +24,8 @@ export default function ChatHeader({
   onToggleDetails,
   onBack,
 }: ChatHeaderProps) {
-  const user = useAppSelector((state) => state.user.user);
+  const username = useAppSelector((state) => state.user.user?.username);
+  const user = useGetUserByUsernameQuery(username).data;
   const isAdmin = chat.admin === user?.id;
   const onlineUsers = useAppSelector((state) => state.chat.onlineUsers);
   const isOnline = useMemo(

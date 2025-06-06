@@ -9,32 +9,14 @@ import { ApiError } from "@/lib/api/ApiError";
 import { AccountType, UserRoles } from "@prisma/client";
 import { generateUniqueUsername } from "@/lib/utils/auth.utils";
 import jwt from "jsonwebtoken";
-import { sendVerificationEmail } from "./actions/email";
 
 export default {
   callbacks: {
-    async signIn({ user: { id }, account }) {
+    async signIn({ user, account }) {
       if (account?.provider !== "credentials") return true;
-      if (!id) return false;
-      const existingUser = await db.user.findUnique({
-        where: { id },
-        select: { email: true, emailVerified: true },
-      });
-      if (!existingUser) {
-        return false;
-      }
-      const { email, emailVerified } = existingUser;
-      if (emailVerified) {
+      if (!user) return false;
+      if (user) {
         return true;
-      }
-      try {
-        const response = await sendVerificationEmail(email);
-        if (!response.success) {
-          return false;
-        }
-      } catch (error) {
-        console.error("Error sending email verification:", error);
-        return false;
       }
 
       return false;
@@ -70,7 +52,10 @@ export default {
       if (Date.now() < (token.exp as number) * 1000) {
         return token;
       }
-      return { ...token, exp: Math.floor(Date.now() / 1000) + 3600 };
+      return {
+        ...token,
+        exp: Math.floor(Date.now() / 1000) + 3600 * 24 * 30,
+      };
     },
     async session({ session, token }) {
       if (token && session.user) {
@@ -105,6 +90,7 @@ export default {
           bio: profile.bio || undefined,
           email: profile.email,
           image: profile.avatar_url,
+          status: profile.bio || "",
         };
       },
     }),
@@ -121,6 +107,8 @@ export default {
           emailVerified: profile.email_verified || null,
           role: UserRoles.USER,
           loginType: AccountType.GOOGLE,
+          bio: profile.bio || undefined,
+          status: profile.bio || "",
         };
       },
     }),
@@ -140,22 +128,19 @@ export default {
             });
           }
           const { identifier, password } = parsed.data;
+          console.log(identifier, password);
 
           const user = await db.user.findFirst({
             where: {
               OR: [{ email: identifier }, { username: identifier }],
-              loginType: AccountType.EMAIL,
             },
           });
+          console.log("User found in authorize function:", user);
 
           if (!user || !user.password) return null;
 
           const passwordValid = await bcrypt.compare(password, user.password);
           if (!passwordValid) return null;
-
-          if (!user.emailVerified && user.loginType === AccountType.EMAIL) {
-            return null;
-          }
 
           return {
             id: user.id,
@@ -165,6 +150,7 @@ export default {
             role: user.role,
             emailVerified: user.emailVerified,
             bio: user.bio ?? undefined,
+            status: user.status ?? "",
           };
         } catch (error) {
           console.error("Error in credentials authorization:", error);

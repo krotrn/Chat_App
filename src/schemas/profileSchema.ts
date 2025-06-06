@@ -1,3 +1,4 @@
+import { UserRoles } from "@prisma/client";
 import { z } from "zod";
 
 export const profileSchema = z.object({
@@ -21,4 +22,7 @@ export const profileSchema = z.object({
     })
     .optional(),
   status: z.string().optional(),
+  username: z.string(),
+  role: z.enum([UserRoles.USER, UserRoles.ADMIN]),
+  email: z.string().email("Invalid email format"),
 });

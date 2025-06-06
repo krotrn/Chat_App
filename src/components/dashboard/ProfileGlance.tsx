@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Edit, MessageSquareMoreIcon } from "lucide-react";
 import Link from "next/link";
 import { ProfileGlanceSkeleton } from "../skeleton/profile-glance-skeletons";
-import { getUserDataById } from "@/actions/userUtils";
+import { getUserDataByUsername } from "@/actions/userUtils";
 import { auth } from "@/auth";
 
 const ProfileGlance = async () => {
@@ -12,7 +12,7 @@ const ProfileGlance = async () => {
   if (!session || !session.user.id) {
     return <ProfileGlanceSkeleton />;
   }
-  const user = await getUserDataById(session.user.id);
+  const user = await getUserDataByUsername(session.user.username);
   const initials =
     user.name
       ?.split(" ")

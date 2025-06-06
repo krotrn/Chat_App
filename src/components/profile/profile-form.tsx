@@ -17,8 +17,10 @@ import { FormError } from "@/components/auth/Form-Error";
 import { FormSuccess } from "@/components/auth/Form-Success";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useAppSelector } from "@/hooks/useReduxType";
 import { useProfileUpdateMutation } from "@/hooks/queries/useProfileUpdateMutation";
+import { useGetUserByUsernameQuery } from "@/hooks/queries/useGetUserByUsernameQuery";
+import ProfileUpdateSkeleton from "../skeleton/profile-update-skeleton";
+import { useAppSelector } from "@/hooks/useReduxType";
 
 export default function ProfileForm() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -28,16 +30,40 @@ export default function ProfileForm() {
     isPending,
     isSuccess,
   } = useProfileUpdateMutation();
-  const user = useAppSelector((state) => state.user.user);
+  const username = useAppSelector((state) => state.user.user?.username);
+
+  const {
+    data: userData,
+    isLoading,
+    error: userError,
+  } = useGetUserByUsernameQuery(username);
 
   const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: user?.name || "",
-      bio: user?.bio || "",
+      email: "",
+      status: "",
+      username: "",
+      name: "",
+      bio: "",
       avatar: undefined,
+      role: undefined,
     },
   });
+
+  useEffect(() => {
+    if (userData && username) {
+      form.reset({
+        email: userData.email || "",
+        status: userData.status || "",
+        username: userData.username || "",
+        name: userData.name || "",
+        bio: userData.bio || "",
+        avatar: undefined,
+        role: userData.role,
+      });
+    }
+  }, [userData, form, username]);
 
   const avatarFile = form.watch("avatar");
 
@@ -55,16 +81,26 @@ export default function ProfileForm() {
     updateProfileMutation(data);
   };
 
+  if (isLoading) {
+    return <ProfileUpdateSkeleton />;
+  }
+
+  if (userError) {
+    return <div>Error loading user data: {userError.message}</div>;
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col justify-center items-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
         <Avatar className="h-36 w-36">
           <AvatarImage
-            src={avatarPreview || user?.avatarUrl || ""}
-            alt={form.watch("name") || user?.username}
+            src={avatarPreview || userData?.avatarUrl || ""}
+            alt={form.watch("name") || userData?.username}
           />
           <AvatarFallback>
-            {form.watch("name")?.[0]?.toUpperCase() || "U"}
+            {form.watch("name")?.[0]?.toUpperCase() ||
+              userData?.username?.[0]?.toUpperCase() ||
+              "U"}
           </AvatarFallback>
         </Avatar>
       </div>
@@ -85,6 +121,37 @@ export default function ProfileForm() {
                     }
                     disabled={isPending}
                   />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="username"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Username</FormLabel>
+                <FormControl>
+                  <Input
+                    type="text"
+                    {...field}
+                    placeholder="Username"
+                    readOnly
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input type="email" {...field} placeholder="Email" readOnly />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -136,7 +203,7 @@ export default function ProfileForm() {
                   <Input
                     type="text"
                     {...field}
-                    placeholder="Tell about yourself."
+                    placeholder="Your current status"
                     disabled={isPending}
                   />
                 </FormControl>
