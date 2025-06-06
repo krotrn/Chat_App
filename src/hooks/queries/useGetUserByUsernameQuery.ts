@@ -1,4 +1,4 @@
-import { getUserDataByUsername } from "@/actions/userUtils";
+import { getUserDataByUsername } from "@/actions/user";
 import { queryKeys } from "@/lib/config";
 import { useQuery } from "@tanstack/react-query";
 

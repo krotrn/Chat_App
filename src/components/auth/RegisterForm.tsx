@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormSuccess } from "@/components/auth/Form-Success";
-import { registerCredential } from "@/actions/register";
+import { registerCredential } from "@/actions/auth";
 
 const RegisterForm = (): React.ReactNode => {
   const searchParams = useSearchParams();

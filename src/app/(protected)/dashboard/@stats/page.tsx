@@ -1,4 +1,4 @@
-import { getUserStats } from "@/actions/userUtils";
+import { getUserStats } from "@/actions/user";
 import { UserStats } from "@/components/dashboard/user-stats";
 
 export default async function StatsPage() {

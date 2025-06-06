@@ -1,4 +1,4 @@
-import { searchPeople } from "@/actions/userUtils";
+import { searchPeople } from "@/actions/user";
 import { useMutation } from "@tanstack/react-query";
 
 export const useFriendSearchQuery = () => {

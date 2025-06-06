@@ -6,7 +6,7 @@ import {
   leaveGroupChat,
 } from "@/services/chat";
 import { queryKeys } from "@/lib/config";
-import { createGroup, deleteGroup } from "@/actions/userUtils";
+import { createGroup, deleteGroup } from "@/actions/user";
 import { useAppSelector } from "../useReduxType";
 
 export function useCreateGroupChatMutation() {

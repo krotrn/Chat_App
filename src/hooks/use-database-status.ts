@@ -1,5 +1,5 @@
 "use client";
-import { checkDB } from "@/actions/checks";
+import { checkDB } from "@/actions/system";
 import { useState, useEffect } from "react";
 
 export function useDatabaseStatus() {

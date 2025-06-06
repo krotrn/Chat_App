@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { RequestsList } from "@/components/request/request-list";
 import { config } from "@/config";
-import { getFriendRequests } from "@/actions/userUtils";
+import { getFriendRequests } from "@/actions/user";
 import { auth } from "@/auth";
 import Authorized from "@/components/authorized";
 

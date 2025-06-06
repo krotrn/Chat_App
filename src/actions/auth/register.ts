@@ -3,7 +3,9 @@
 import { hashPassword } from "@/lib/utils/auth.utils";
 import { db } from "@/prisma";
 import { registerSchema } from "@/schemas/registerSchema";
-import { AccountType, Prisma, UserRoles } from "@prisma/client";
+import { AccountType, UserRoles } from "@prisma/client";
+import { createAuthResponse } from "../../types/response-types";
+import { handleActionError, sanitizeInput } from "../../lib/utils/utils";
 
 export const registerCredential = async (credentials: {
   email: string;
@@ -14,13 +16,20 @@ export const registerCredential = async (credentials: {
   success: boolean;
   message: string;
 }> => {
-  const parsedData = registerSchema.safeParse(credentials);
-  if (!parsedData.success) {
-    return { success: false, message: parsedData.error.errors[0].message };
-  }
-  const { email, username, password } = parsedData.data;
-
   try {
+    const sanitizedCredentials = {
+      ...credentials,
+      email: sanitizeInput(credentials.email).toLowerCase(),
+      username: sanitizeInput(credentials.username).toLowerCase(),
+    };
+
+    const parsedData = registerSchema.safeParse(sanitizedCredentials);
+    if (!parsedData.success) {
+      return createAuthResponse(false, parsedData.error.errors[0].message);
+    }
+
+    const { email, username, password } = parsedData.data;
+
     const [existingEmail, existingUsername] = await Promise.all([
       db.user.findFirst({
         where: { AND: [{ email }, { emailVerified: { not: null } }] },
@@ -31,16 +40,15 @@ export const registerCredential = async (credentials: {
         select: { username: true },
       }),
     ]);
+
     if (existingEmail) {
-      return {
-        success: false,
-        message: `${existingEmail.email} already in use`,
-      };
-    } else if (existingUsername) {
-      return {
-        success: false,
-        message: `${existingUsername.username} already in use`,
-      };
+      return createAuthResponse(false, `${existingEmail.email} already in use`);
+    }
+    if (existingUsername) {
+      return createAuthResponse(
+        false,
+        `${existingUsername.username} already in use`
+      );
     }
 
     const newUser = await db.$transaction(async (tx) => {
@@ -53,12 +61,12 @@ export const registerCredential = async (credentials: {
         },
       });
 
-      const userAvailable = await tx.user.count({
+      const conflictCount = await tx.user.count({
         where: { OR: [{ email }, { username }] },
       });
 
-      if (userAvailable) {
-        throw new Error("Registration conflict");
+      if (conflictCount > 0) {
+        throw new Error("Registration conflict after cleanup");
       }
 
       return await tx.user.create({
@@ -70,34 +78,20 @@ export const registerCredential = async (credentials: {
           loginType: AccountType.EMAIL,
           emailVerified: null,
         },
-        select: { email: true },
+        select: { email: true, username: true, id: true },
       });
     });
+
     if (!newUser) {
-      return {
-        success: false,
-        message: "error creating user",
-      };
+      return createAuthResponse(false, "Failed to create user account");
     }
-    return {
-      success: true,
-      message: "Registration successful! Please verify your email.",
-    };
+
+    return createAuthResponse(
+      true,
+      "Registration successful! Please verify your email."
+    );
   } catch (error) {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2002"
-    ) {
-      const targetField = (error.meta?.target as string[])?.[0] ?? "field";
-      return {
-        success: false,
-        message: `Registration conflict: ${targetField} already in use.`,
-      };
-    }
-    console.error("Registration error:", error);
-    return {
-      success: false,
-      message: "Error creating user. Please try again later.",
-    };
+    const errorMessage = handleActionError(error, "Registration failed");
+    return createAuthResponse(false, errorMessage);
   }
 };

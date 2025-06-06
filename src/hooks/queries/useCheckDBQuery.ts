@@ -1,4 +1,4 @@
-import { checkDB } from "@/actions/checks";
+import { checkDB } from "@/actions/system";
 import { useQuery } from "@tanstack/react-query";
 
 export const useCheckDBQuery = () => {

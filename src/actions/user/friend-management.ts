@@ -1,303 +1,18 @@
 "use server";
 
 import { auth } from "@/auth";
-import { handleError, handleSuccess } from "@/lib/helper";
 import { db } from "@/prisma";
-import { profileSchema } from "@/schemas/profileSchema";
-import { createAGroupChat, deleteGroupChat } from "@/services/chat";
-import { updateUserWebhook } from "@/services/webhook/user";
-import { ParticipantsType } from "@/types/ChatType";
 import {
   FriendRequestType,
   FormattedFriendType,
-  StatsProps,
   SearchUserType,
 } from "@/types/formattedDataTypes";
 import {
   ActivityType,
   FriendshipStatus,
-  GroupMemberRole,
   RecommendationType,
-  UserRoles,
 } from "@prisma/client";
-import { z } from "zod";
-import { v2 as cloudinary } from "cloudinary";
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || "",
-  api_key: process.env.CLOUDINARY_API_KEY || "",
-  api_secret: process.env.CLOUDINARY_API_SECRET || "",
-  sync: true,
-});
 
-interface ResponseType<T> {
-  success: boolean;
-  error: boolean;
-  data?: T;
-  message: string;
-}
-
-export interface RecommendationWithRelations {
-  id: string;
-  type: RecommendationType;
-  recommendedUser: {
-    id: string;
-    username: string;
-    name: string | null;
-    avatarUrl: string | null;
-    bio: string | null;
-  } | null;
-  recommendedGroup: {
-    id: string;
-    backendId: string;
-    name: string;
-    avatarUrl: string | null;
-    description: string | null;
-  } | null;
-}
-
-/**
- * Retrieve recommendations for the current authenticated user.
- */
-export const getRecommendations = async (): Promise<
-  RecommendationWithRelations[]
-> => {
-  const session = await auth();
-  if (!session) throw new Error("User not authenticated");
-
-  try {
-    const recommendations = await db.recommendations.findMany({
-      where: { userId: session.user.id },
-      select: {
-        id: true,
-        type: true,
-        recommendedUser: {
-          select: {
-            id: true,
-            name: true,
-            avatarUrl: true,
-            username: true,
-            bio: true,
-          },
-        },
-        recommendedGroup: {
-          select: {
-            id: true,
-            backendId: true,
-            name: true,
-            avatarUrl: true,
-            description: true,
-          },
-        },
-      },
-    });
-    return recommendations;
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : "Unknown error";
-    console.error("Error fetching recommendations:", errorMsg);
-    throw new Error(errorMsg);
-  }
-};
-
-/**
- * Get recent activities for the authenticated user.
- */
-export const getActivities = async () => {
-  const session = await auth();
-  if (!session) throw new Error("Unauthorized");
-
-  try {
-    const activities = await db.activity.findMany({
-      where: { userId: session.user.id },
-      orderBy: { createdAt: "desc" },
-    });
-    return activities;
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : "Unknown error";
-    console.error("Error fetching activities:", errorMsg);
-    throw new Error(errorMsg);
-  }
-};
-
-/**
- * Fetch user statistics based on the selected fields.
- */
-export const getUserStats = async (): Promise<StatsProps> => {
-  const session = await auth();
-  if (!session) throw new Error("Unauthorized");
-
-  try {
-    const user = await db.user.findFirst({
-      where: { id: session.user.id },
-      select: {
-        _count: {
-          select: {
-            createdGroups: true,
-            groupMemberships: true,
-            friendOf: true,
-          },
-        },
-      },
-    });
-    if (!user) throw new Error("User not found");
-    return {
-      totalFriends: user._count.friendOf || 0,
-      totalGroups: user._count.groupMemberships || 0,
-    };
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : "Unknown error";
-    console.error("Error fetching user stats:", errorMsg);
-    throw new Error(errorMsg);
-  }
-};
-
-/**
- * Update the profile of the authenticated user.
- */
-export const updateProfile = async (
-  data: z.infer<typeof profileSchema>,
-): Promise<
-  ResponseType<{
-    id: string;
-    name: string | null;
-    username: string;
-    bio: string | null;
-    role: UserRoles;
-    avatarUrl: string | null;
-    status: string | null;
-    email: string;
-  }>
-> => {
-  const session = await auth();
-  if (!session || !session.user.id)
-    return handleError("User not authenticated.");
-
-  try {
-    const { name, bio, avatar, status, username } = data;
-    const avatarUrl = avatar
-      ? await uploadAvatar(avatar, username)
-      : session.user.avatarUrl;
-
-    const user = await db.$transaction(async (tx) => {
-      const user = await tx.user.update({
-        where: { id: session.user.id },
-        data: { name, bio, avatarUrl, status },
-        select: {
-          id: true,
-          username: true,
-          name: true,
-          role: true,
-          bio: true,
-          avatarUrl: true,
-          status: true,
-          email: true,
-        },
-      });
-      await updateUserWebhook(session.accessToken, {
-        name: name,
-        avatarUrl,
-      });
-      return user;
-    });
-    return handleSuccess(
-      {
-        id: user.id,
-        name: user.name,
-        username: user.username,
-        bio: user.bio,
-        avatarUrl: user.avatarUrl,
-        status: user.status,
-        role: user.role,
-        email: user.email,
-      },
-      "Profile updated successfully.",
-    );
-  } catch (error) {
-    const errorMsg =
-      error instanceof Error ? error.message : "Error updating profile";
-    console.error("Error updating profile:", errorMsg);
-    return handleError("An error occurred while updating the profile.");
-  }
-};
-
-/**
- * Upload user avatar and return the URL.
- */
-
-export async function uploadAvatar(
-  avatar: File,
-  username: string,
-): Promise<string> {
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-  const preset = process.env.CLOUDINARY_AVATAR_UPLOAD_PRESET;
-
-  if (!cloudName || !preset) {
-    throw new Error(
-      "Missing Cloudinary configuration in environment variables.",
-    );
-  }
-
-  if (!avatar || avatar.size === 0) {
-    throw new Error("Invalid avatar file.");
-  }
-
-  try {
-    const arrayBuffer = await avatar.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const response = await cloudinary.uploader.upload(
-      `data:${avatar.type};base64,${buffer.toString("base64")}`,
-      {
-        upload_preset: preset,
-        public_id: `${preset.split("/").pop()}/${username}`,
-      },
-    );
-
-    if (response.status !== 200) {
-      throw new Error("Failed to upload image to Cloudinary");
-    }
-    return response.data.secure_url;
-  } catch (error) {
-    console.error("Error uploading avatar:", error);
-    throw new Error("Failed to upload avatar image");
-  }
-}
-
-export async function deleteFileFromCloudinary(
-  files: {
-    publicId: string;
-    resourceType: "image" | "video" | "raw" | "auto";
-  }[],
-): Promise<{ result: string[] }> {
-  if (
-    !process.env.CLOUDINARY_CLOUD_NAME ||
-    !process.env.CLOUDINARY_API_KEY ||
-    !process.env.CLOUDINARY_API_SECRET
-  ) {
-    throw new Error("Cloudinary environment variables are not set.");
-  }
-
-  if (!files || files.length === 0) {
-    throw new Error("files is required for deleting Cloudinary assets.");
-  }
-
-  try {
-    const deletePromises = files.map(({ publicId, resourceType }) =>
-      cloudinary.uploader.destroy(publicId, {
-        resource_type: resourceType,
-      }),
-    );
-    const results = await Promise.all(deletePromises);
-    return { result: results.map((res) => res.result) };
-  } catch (error) {
-    console.error("Cloudinary deletion error:", error);
-    throw new Error(
-      (error as Error).message || "Failed to delete asset from Cloudinary.",
-    );
-  }
-}
-
-/**
- * Retrieve pending friend requests for the authenticated user.
- */
 export const getFriendRequests = async (): Promise<FriendRequestType[]> => {
   const session = await auth();
   if (!session || !session.user.id) throw new Error("Unauthorized");
@@ -348,40 +63,6 @@ export const getFriendRequests = async (): Promise<FriendRequestType[]> => {
   }
 };
 
-/**
- * Retrieve user data by ID with specific selected fields.
- */
-export const getUserDataByUsername = async (username: string) => {
-  try {
-    const user = await db.user.findUnique({
-      where: { username },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        status: true,
-        username: true,
-        avatarUrl: true,
-        bio: true,
-      },
-    });
-
-    if (!user) {
-      console.warn(`User with username ${username} not found.`);
-      throw new Error("User not found");
-    }
-    return user;
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : "Unknown error";
-    console.error("Error fetching user data by username:", errorMsg);
-    throw new Error(errorMsg);
-  }
-};
-
-/**
- * Retrieve friends for a specific user ID and map to a formatted structure.
- */
 export const getUserFriends = async (
   id: string,
 ): Promise<FormattedFriendType[]> => {
@@ -417,10 +98,6 @@ export const getUserFriends = async (
     throw new Error(errorMsg);
   }
 };
-
-/**
- * Retrieve users based on a search query while excluding the authenticated user.
- */
 
 export const searchPeople = async ({
   contains,
@@ -544,7 +221,6 @@ export const searchPeople = async ({
     });
 
     const isFriend = user.friends.length > 0 || user.friendOf.length > 0;
-
     const hasSentRequest = user.receivedRequests.length > 0;
     const hasIncomingRequest = user.sentRequests.length > 0;
 
@@ -563,15 +239,13 @@ export const searchPeople = async ({
   return results;
 };
 
-/**
- * Send a friend request with limitations on the number of recent requests.
- */
 export const sendFriendRequest = async (receiverId: string) => {
   const session = await auth();
   if (!session?.user.id) {
     throw new Error("Unauthorized");
   }
   const senderId = session.user.id;
+
   try {
     const recentRequestsCount = await db.friendRequest.count({
       where: {
@@ -592,6 +266,7 @@ export const sendFriendRequest = async (receiverId: string) => {
         receiverId,
       },
     });
+
     if (existingRequest) {
       if (existingRequest.status === FriendshipStatus.BLOCKED) {
         throw new Error("Cannot send friend request.");
@@ -607,15 +282,18 @@ export const sendFriendRequest = async (receiverId: string) => {
         ],
       },
     });
+
     if (areFriends) {
       throw new Error("Users are already friends.");
     }
+
     const friendRequest = await db.friendRequest.create({
       data: {
         senderId,
         receiverId,
       },
     });
+
     return friendRequest;
   } catch (error) {
     const errorMsg =
@@ -625,9 +303,6 @@ export const sendFriendRequest = async (receiverId: string) => {
   }
 };
 
-/**
- * Retrieve pending friend requests sent by a specific user.
- */
 export const getPendingRequests = async (senderId: string) => {
   try {
     const pendingRequests = await db.friendRequest.findMany({
@@ -647,12 +322,6 @@ export const getPendingRequests = async (senderId: string) => {
     throw new Error(errorMsg);
   }
 };
-
-/**
- * Handle a friend request by updating the request status and performing follow-up actions.
- *
- * Note: The 'status' parameter has been removed as it was redundant.
- */
 
 export const handleFriendRequest = async (
   senderId: string,
@@ -681,6 +350,7 @@ export const handleFriendRequest = async (
           status: true,
         },
       });
+
       if (!existingRequest) {
         throw new Error("Friend request not found or already handled");
       }
@@ -735,7 +405,6 @@ export const handleFriendRequest = async (
           },
         });
 
-        // 5c. Log NEWFRIEND activities for both parties
         const now = new Date();
         await tx.activity.createMany({
           data: [
@@ -756,7 +425,6 @@ export const handleFriendRequest = async (
           ],
         });
 
-        // 5d. Remove any “friend request” recommendations between these users
         await tx.recommendations.deleteMany({
           where: {
             type: RecommendationType.FRIENDREQUEST,
@@ -773,7 +441,6 @@ export const handleFriendRequest = async (
           },
         });
       } else if (action === FriendshipStatus.REJECTED) {
-        // Log a FRIENDREQUEST activity indicating rejection
         await Promise.all([
           tx.activity.create({
             data: {
@@ -795,7 +462,6 @@ export const handleFriendRequest = async (
           }),
         ]);
       } else if (action === FriendshipStatus.BLOCKED) {
-        // 5e. Delete any existing UserFriends entries in both directions
         await tx.userFriends.deleteMany({
           where: {
             OR: [
@@ -811,7 +477,6 @@ export const handleFriendRequest = async (
           },
         });
 
-        // 5f. Log a BLOCKED activity for the sender
         await tx.activity.create({
           data: {
             userId: existingRequest.senderId,
@@ -823,7 +488,6 @@ export const handleFriendRequest = async (
         });
       }
 
-      // Step 6: Return a concise summary
       return {
         success: true as const,
         actionTaken: action,
@@ -847,19 +511,12 @@ export const handleFriendRequest = async (
   }
 };
 
-/**
- * Remove friendship between two users using a transaction.
- */
-/**
- * Remove friendship between two users using a transaction.
- */
 export const removeFriend = async (userId: string, friendId: string) => {
   const session = await auth();
   if (!session) throw new Error("Unauthorized");
 
   try {
     const result = await db.$transaction(async (tx) => {
-      // 1. Make sure a friendship actually exists.
       const friendship = await tx.userFriends.findFirst({
         where: {
           OR: [
@@ -873,7 +530,6 @@ export const removeFriend = async (userId: string, friendId: string) => {
         return { success: false, message: "Friendship not found." };
       }
 
-      // 2. Delete both directions of the userFriends entries.
       await tx.userFriends.deleteMany({
         where: {
           OR: [
@@ -883,7 +539,6 @@ export const removeFriend = async (userId: string, friendId: string) => {
         },
       });
 
-      // 3. Also delete any pending (or old) friendRequest records between these two.
       await tx.friendRequest.deleteMany({
         where: {
           OR: [
@@ -893,7 +548,6 @@ export const removeFriend = async (userId: string, friendId: string) => {
         },
       });
 
-      // 4. Fetch user info to log a removal activity.
       const [user, friend] = await Promise.all([
         tx.user.findUnique({
           where: { id: userId },
@@ -909,7 +563,6 @@ export const removeFriend = async (userId: string, friendId: string) => {
         throw new Error("User or friend not found.");
       }
 
-      // 5. Log an activity saying “You removed X from your friends.”
       await tx.activity.create({
         data: {
           userId,
@@ -932,9 +585,6 @@ export const removeFriend = async (userId: string, friendId: string) => {
   }
 };
 
-/**
- * Block a user by updating (or creating) a friend request record and deleting any existing friendship.
- */
 export const blockUser = async (userId: string, blockedUserId: string) => {
   const session = await auth();
   if (!session) throw new Error("Unauthorized");
@@ -965,7 +615,6 @@ export const blockUser = async (userId: string, blockedUserId: string) => {
         });
       }
 
-      // Remove any existing friendship between the users.
       await tx.userFriends.deleteMany({
         where: {
           OR: [
@@ -985,91 +634,6 @@ export const blockUser = async (userId: string, blockedUserId: string) => {
   }
 };
 
-/**
- * Create an activity record for friend-related actions.
- */
-export const createFriendActivity = async (
-  userId: string,
-  activityType: ActivityType,
-  content: string,
-) => {
-  try {
-    const user = await db.user.findUnique({
-      where: { id: userId },
-      select: { name: true, username: true, avatarUrl: true },
-    });
-
-    if (!user) throw new Error("User not found.");
-
-    await db.activity.create({
-      data: {
-        userId,
-        type: activityType,
-        content,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    });
-  } catch (error) {
-    console.error("Error creating activity:", error);
-  }
-};
-
-/**
- * Update recommendations after a friend action.
- */
-export const updateRecommendationsAfterFriendAction = async (
-  userId: string,
-  friendId: string,
-  action: FriendshipStatus,
-) => {
-  try {
-    if (
-      action === FriendshipStatus.FRIENDS ||
-      action === FriendshipStatus.BLOCKED
-    ) {
-      await db.recommendations.deleteMany({
-        where: {
-          OR: [
-            { userId, recommendedUserId: friendId },
-            { userId: friendId, recommendedUserId: userId },
-          ],
-          type: RecommendationType.FRIENDREQUEST,
-        },
-      });
-    } else if (action === FriendshipStatus.REJECTED) {
-      await db.recommendations.deleteMany({
-        where: {
-          userId,
-          recommendedUserId: friendId,
-          type: RecommendationType.FRIENDREQUEST,
-        },
-      });
-    }
-  } catch (error) {
-    console.error("Error updating recommendations:", error);
-  }
-};
-
-/**
- * Update the user's last login timestamp.
- */
-export const updateUserLastLogin = async (userId: string) => {
-  try {
-    await db.user.update({
-      where: { id: userId },
-      data: {
-        lastLogin: new Date(),
-      },
-    });
-  } catch (error) {
-    console.error("Error updating user connection status:", error);
-  }
-};
-
-/**
- * Retrieve the friendship status between two users.
- */
 export const getFriendshipStatus = async (
   userId: string,
   otherUserId: string,
@@ -1100,119 +664,5 @@ export const getFriendshipStatus = async (
         : "Error retrieving friendship status.";
     console.error("Error in getFriendshipStatus:", errorMsg);
     throw new Error(errorMsg);
-  }
-};
-
-export const createGroup = async ({
-  participants,
-  name,
-  description = "",
-  avatarUrl = "",
-  token,
-}: {
-  name: string;
-  participants: ParticipantsType[];
-  description?: string;
-  avatarUrl?: string;
-  token: string;
-}) => {
-  try {
-    const response = await db.$transaction(async (tx) => {
-      const response = await createAGroupChat({
-        participants,
-        name,
-        token,
-      });
-
-      const existingGroup = await tx.group.findUnique({
-        where: { backendId: response._id },
-      });
-
-      if (existingGroup) {
-        throw new Error("Group with this backendId already exists.");
-      }
-
-      const newGroup = await tx.group.create({
-        data: {
-          name,
-          backendId: response._id,
-          description,
-          avatarUrl,
-          creatorId: response.admin,
-        },
-      });
-
-      await tx.groupMember.create({
-        data: {
-          groupId: newGroup.id,
-          userId: response.admin,
-          role: GroupMemberRole.ADMIN,
-        },
-      });
-
-      for (const p of participants) {
-        await tx.groupMember.create({
-          data: {
-            groupId: newGroup.id,
-            userId: p.userId,
-            role: GroupMemberRole.MEMBER,
-          },
-        });
-      }
-
-      await tx.activity.create({
-        data: {
-          userId: response.admin,
-          type: ActivityType.GROUPCREATED,
-          content: `Group "${name}" created successfully.`,
-        },
-      });
-
-      return response;
-    });
-    return response;
-  } catch (error) {
-    console.error("Error creating group:", error);
-    throw new Error("Failed to create group");
-  }
-};
-
-export const deleteGroup = async ({
-  chatId,
-  token,
-}: {
-  chatId: string;
-  token: string;
-}) => {
-  try {
-    const response = await db.$transaction(async (tx) => {
-      const group = await tx.group.findUnique({
-        where: { backendId: chatId },
-      });
-
-      if (!group) throw new Error("Group not found.");
-
-      await deleteGroupChat({
-        chatId: group.backendId,
-        token,
-      });
-
-      await tx.group.delete({
-        where: { backendId: chatId },
-      });
-
-      await tx.activity.create({
-        data: {
-          userId: group.creatorId,
-          type: ActivityType.GROUPDELETED,
-          content: `Group "${group.name}" deleted successfully.`,
-        },
-      });
-      return null;
-    });
-    return response;
-  } catch (error) {
-    console.error("Error deleting group:", error);
-    throw new Error("Failed to delete group");
   }
 };

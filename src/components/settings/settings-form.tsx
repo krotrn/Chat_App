@@ -15,7 +15,7 @@ import {
   privacySwitches,
 } from "@/lib/settings/options";
 import { config } from "@/config";
-import { signout } from "@/actions/signout";
+import { signout } from "@/actions/auth";
 
 export default function SettingsForm() {
   const { setFontSize } = useSettings();
@@ -86,7 +86,11 @@ export default function SettingsForm() {
           </SettingsCard>
         </TabsContent>
       </Tabs>
-      <Button variant="destructive" className="w-full mt-4" onClick={signout}>
+      <Button
+        variant="destructive"
+        className="w-full mt-4"
+        onClick={() => signout()}
+      >
         Sign Out
       </Button>
     </motion.div>

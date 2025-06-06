@@ -1,4 +1,4 @@
-import { getUserFriends } from "@/actions/userUtils";
+import { getUserFriends } from "@/actions/user";
 import { queryKeys } from "@/lib/config";
 import { useQuery } from "@tanstack/react-query";
 import { useAppSelector } from "../useReduxType";

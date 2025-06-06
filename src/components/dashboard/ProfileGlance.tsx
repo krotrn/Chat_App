@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Edit, MessageSquareMoreIcon } from "lucide-react";
 import Link from "next/link";
 import { ProfileGlanceSkeleton } from "../skeleton/profile-glance-skeletons";
-import { getUserDataByUsername } from "@/actions/userUtils";
+import { getUserDataByUsername } from "@/actions/user";
 import { auth } from "@/auth";
 
 const ProfileGlance = async () => {

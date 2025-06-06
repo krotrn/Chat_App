@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SearchUserType } from "@/types/formattedDataTypes";
-import { handleFriendRequest } from "@/actions/userUtils";
+import { handleFriendRequest } from "@/actions/user";
 import { toast } from "sonner";
 import { useFriendSearchQuery } from "@/hooks/queries/useFriendSearchQuery";
 import { FriendshipStatus } from "@prisma/client";

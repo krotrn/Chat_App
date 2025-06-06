@@ -1,7 +1,7 @@
 "use client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { RecommendationWithRelations } from "@/actions/userUtils";
+import { RecommendationWithRelations } from "@/actions/user";
 import RecommendationCard from "@/components/dashboard/recommendation-card";
 import {
   Carousel,

@@ -18,7 +18,7 @@ import { FormError } from "@/components/auth/Form-Error";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
-import { signInCredential } from "@/actions/signin";
+import { signInCredential } from "@/actions/auth";
 
 const LoginForm = (): React.ReactNode => {
   const form = useForm<z.infer<typeof signInSchema>>({

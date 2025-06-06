@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { getRecommendations } from "@/actions/userUtils";
+import { getRecommendations } from "@/actions/user";
 import Recommendations from "@/components/dashboard/Recommendations";
 
 export default async function RecommendationsPage() {

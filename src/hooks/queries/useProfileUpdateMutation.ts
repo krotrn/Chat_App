@@ -1,4 +1,4 @@
-import { updateProfile } from "@/actions/userUtils";
+import { updateProfile } from "@/actions/user";
 import { useMutation } from "@tanstack/react-query";
 import { useAppDispatch } from "../useReduxType";
 import { setUser } from "@/lib/redux/slices/user-slice";

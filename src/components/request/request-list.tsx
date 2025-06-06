@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import RequestItem from "@/components/request/request-item";
 import { FriendRequestType } from "@/types/formattedDataTypes";
-import { handleFriendRequest } from "@/actions/userUtils";
+import { handleFriendRequest } from "@/actions/user";
 import { FriendshipStatus } from "@prisma/client";
 import { actionMessages } from "@/lib/helper";
 interface RequestsListProps {

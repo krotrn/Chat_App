@@ -1,4 +1,4 @@
-import { removeFriend } from "@/actions/userUtils";
+import { removeFriend } from "@/actions/user";
 import { queryKeys } from "@/lib/config";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 

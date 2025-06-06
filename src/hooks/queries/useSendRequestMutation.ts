@@ -1,4 +1,4 @@
-import { sendFriendRequest } from "@/actions/userUtils";
+import { sendFriendRequest } from "@/actions/user";
 import { useMutation } from "@tanstack/react-query";
 
 export function useSendRequestMutation() {

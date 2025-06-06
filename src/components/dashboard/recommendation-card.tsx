@@ -1,7 +1,4 @@
-import {
-  RecommendationWithRelations,
-  sendFriendRequest,
-} from "@/actions/userUtils";
+import { RecommendationWithRelations, sendFriendRequest } from "@/actions/user";
 import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 import { RecommendationType } from "@prisma/client";
