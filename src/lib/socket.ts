@@ -20,13 +20,16 @@ export function initSocket(token: string): SocketIOClient.Socket {
     transports: ["websocket", "polling"],
     reconnectionAttempts: MAX_RECONNECT_ATTEMPTS,
     reconnectionDelay: 1000,
+    reconnectionDelayMax: 5000,
     timeout: 20000,
     upgrade: true,
+    forceNew: true,
   });
 
   if (!socket) {
     throw new Error("Error configuring socket connection");
   }
+
   socket.on("connect", () => {
     console.log("Socket connected successfully");
   });
@@ -49,6 +52,10 @@ export function initSocket(token: string): SocketIOClient.Socket {
 
   socket.on("disconnect", (reason: string) => {
     console.log("Socket disconnected:", reason);
+  });
+
+  socket.on("pong", (data: { timestamp: number }) => {
+    console.log("Received pong from server:", data);
   });
 
   return socket;
@@ -173,4 +180,49 @@ export function onUserOffline(
   return () => {
     socket?.off(ChatEventEnum.USER_IS_OFFLINE_EVENT, callback);
   };
+}
+
+export function onOnlineUsersList(
+  callback: (data: { onlineUsers: string[] }) => void,
+): () => void {
+  socket?.on(ChatEventEnum.ONLINE_USERS_LIST_EVENT, callback);
+  return () => {
+    socket?.off(ChatEventEnum.ONLINE_USERS_LIST_EVENT, callback);
+  };
+}
+
+export function checkSocketHealth(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (!socket || !socket.connected) {
+      resolve(false);
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      resolve(false);
+    }, 5000);
+
+    socket.emit(
+      "ping",
+      { timestamp: Date.now() },
+      (response: { timestamp: number }) => {
+        clearTimeout(timeout);
+        resolve(Boolean(response && response.timestamp));
+      },
+    );
+  });
+}
+
+// Force socket reconnection
+export function forceReconnect(): void {
+  if (socket) {
+    console.log("Forcing socket disconnection and reconnection");
+    socket.disconnect();
+    socket.connect();
+  }
+}
+
+// Check if socket is really connected (not just thinks it is)
+export function isSocketReallyConnected(): boolean {
+  return Boolean(socket && socket.connected && socket.id);
 }

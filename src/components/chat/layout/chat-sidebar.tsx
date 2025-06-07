@@ -98,7 +98,8 @@ export default function ChatSidebar({ aiModels }: ChatSidebarProps) {
         currentChat && "hidden md:flex",
       )}
       minSize={20}
-      defaultSize={25}
+      defaultSize={30}
+      maxSize={50}
     >
       <motion.div
         className="flex h-full w-full flex-col border-r space-y-2"

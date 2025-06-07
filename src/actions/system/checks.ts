@@ -12,7 +12,7 @@ export async function checkDB() {
 
     return createHealthResponse(
       "ok",
-      `Database connection is healthy. ${userCount} users in system.`
+      `Database connection is healthy. ${userCount} users in system.`,
     );
   } catch (error) {
     const errorMessage = handleActionError(error, "Database connection failed");
@@ -27,19 +27,19 @@ export async function checkEnvironment() {
     const requiredEnvVars = ["DATABASE_URL", "NEXTAUTH_SECRET", "NEXTAUTH_URL"];
 
     const missingVars = requiredEnvVars.filter(
-      (varName) => !process.env[varName]
+      (varName) => !process.env[varName],
     );
 
     if (missingVars.length > 0) {
       return createHealthResponse(
         "error",
-        `Missing environment variables: ${missingVars.join(", ")}`
+        `Missing environment variables: ${missingVars.join(", ")}`,
       );
     }
 
     return createHealthResponse(
       "ok",
-      "All required environment variables are configured"
+      "All required environment variables are configured",
     );
   } catch (error) {
     const errorMessage = handleActionError(error, "Environment check failed");
@@ -68,7 +68,7 @@ export async function checkSystemHealth() {
     };
 
     const allHealthy = Object.values(results).every(
-      (result) => result.status === "ok"
+      (result) => result.status === "ok",
     );
 
     return {

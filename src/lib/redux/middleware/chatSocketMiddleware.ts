@@ -17,7 +17,7 @@ import {
   ChatType,
   MessagesPageData,
 } from "@/types/ChatType";
-import { initSocket, joinChat, getSocket, setSocket } from "@/lib/socket";
+import { initSocket, getSocket, setSocket } from "@/lib/socket";
 import { ChatEventEnum } from "@/lib/socket-event";
 import { InfiniteData, QueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/config";
@@ -52,12 +52,22 @@ export const chatSocketMiddleware: Middleware =
         store.dispatch(setConnectionState(ConnectionState.CONNECTING));
         socket.on("connect", () => {
           store.dispatch(setConnectionState(ConnectionState.CONNECTED));
-
           setTimeout(() => {
             socket.emit(ChatEventEnum.USER_ONLINE_EVENT);
             console.log("Socket connected successfully and user is online");
           }, 100);
         });
+
+        socket.on(
+          ChatEventEnum.ONLINE_USERS_LIST_EVENT,
+          (data: { onlineUsers: string[] }) => {
+            console.log(
+              "Received initial online users list:",
+              data.onlineUsers,
+            );
+            store.dispatch(setOnlineUsers(data.onlineUsers));
+          },
+        );
 
         socket.on(
           ChatEventEnum.USER_IS_OFFLINE_EVENT,
@@ -106,13 +116,21 @@ export const chatSocketMiddleware: Middleware =
           setTimeout(() => {
             socket.emit(ChatEventEnum.USER_ONLINE_EVENT);
             console.log("User marked as online after reconnection");
-          }, 100);
 
-          const currentChat = store.getState().chat.currentChat;
-          if (currentChat) {
-            console.log(`Reconnected to chat ${currentChat._id}`);
-            joinChat(currentChat._id);
-          }
+            const currentChat = store.getState().chat.currentChat;
+            if (currentChat) {
+              console.log(
+                `Rejoining chat ${currentChat._id} after reconnection`,
+              );
+              socket.emit(ChatEventEnum.JOIN_CHAT_EVENT, currentChat._id);
+            }
+
+            if (queryClient) {
+              queryClient.invalidateQueries({
+                queryKey: queryKeys.chats.infinite(20),
+              });
+            }
+          }, 500);
         });
         socket.on(
           ChatEventEnum.MESSAGE_RECEIVED_EVENT,

@@ -76,7 +76,8 @@ export default function ChatMain() {
           "h-full flex items-center justify-center",
           !currentChat && "hidden md:flex",
         )}
-        minSize={40}
+        minSize={50}
+        defaultSize={70}
       >
         <div className="hidden md:flex flex-1 items-center justify-center">
           <p className="text-muted-foreground">No chat selected</p>
@@ -86,7 +87,7 @@ export default function ChatMain() {
   }
 
   return (
-    <ResizablePanel minSize={40}>
+    <ResizablePanel minSize={50} defaultSize={70}>
       <motion.div
         className="flex flex-1 flex-col h-full bg-background"
         initial={{ opacity: 0 }}

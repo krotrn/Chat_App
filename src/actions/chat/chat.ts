@@ -26,7 +26,7 @@ export async function sendMessageAction({
     validateRequiredParams({ chatId, content, token });
 
     const uploadedAttachments = await Promise.all(
-      attachments.map(async (file) => await uploadAttachment(file))
+      attachments.map(async (file) => await uploadAttachment(file)),
     );
 
     return sendMessage({
@@ -57,7 +57,7 @@ export async function deleteMessageAction({
 
     if (message.attachments.length > 0) {
       const deletionPromises = message.attachments.map((attachment) =>
-        deleteFileFromCloudinary(attachment.public_id, attachment.type)
+        deleteFileFromCloudinary(attachment.public_id, attachment.type),
       );
 
       await Promise.allSettled(deletionPromises);
@@ -83,7 +83,7 @@ const uploadAttachment = async (file: File): Promise<AttachmentResponse> => {
     const preset = process.env.CLOUDINARY_CHAT_FILE_UPLOAD_PRESET;
     if (!preset) {
       throw new Error(
-        "Missing Cloudinary chat upload preset in environment variables."
+        "Missing Cloudinary chat upload preset in environment variables.",
       );
     }
 

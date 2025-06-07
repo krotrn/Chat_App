@@ -19,7 +19,7 @@ interface ResponseType<T> {
 }
 
 export const updateProfile = async (
-  data: z.infer<typeof profileSchema>
+  data: z.infer<typeof profileSchema>,
 ): Promise<
   ResponseType<{
     id: string;
@@ -74,7 +74,7 @@ export const updateProfile = async (
         role: user.role,
         email: user.email,
       },
-      "Profile updated successfully."
+      "Profile updated successfully.",
     );
   } catch (error) {
     const errorMsg =
@@ -86,7 +86,7 @@ export const updateProfile = async (
 
 export async function uploadAvatar(
   avatar: File,
-  username: string
+  username: string,
 ): Promise<string> {
   try {
     const result = await uploadToCloudinary(avatar, {
@@ -108,14 +108,14 @@ export async function uploadAvatar(
 
 export async function deleteFileFromCloudinary(
   publicId: string,
-  resourceType: "image" | "video" | "raw" | "auto" = "auto"
+  resourceType: "image" | "video" | "raw" | "auto" = "auto",
 ): Promise<{ success: boolean; message: string }> {
   try {
     return await deleteFromCloudinary(publicId, resourceType);
   } catch (error) {
     const errorMessage = handleActionError(
       error,
-      "Failed to delete file from Cloudinary"
+      "Failed to delete file from Cloudinary",
     );
     console.error("Error deleting file from Cloudinary:", errorMessage);
     return { success: false, message: errorMessage };

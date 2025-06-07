@@ -47,7 +47,7 @@ export const registerCredential = async (credentials: {
     if (existingUsername) {
       return createAuthResponse(
         false,
-        `${existingUsername.username} already in use`
+        `${existingUsername.username} already in use`,
       );
     }
 
@@ -88,7 +88,7 @@ export const registerCredential = async (credentials: {
 
     return createAuthResponse(
       true,
-      "Registration successful! Please verify your email."
+      "Registration successful! Please verify your email.",
     );
   } catch (error) {
     const errorMessage = handleActionError(error, "Registration failed");

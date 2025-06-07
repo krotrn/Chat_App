@@ -21,7 +21,7 @@ export default async function ChatsLayout({
           className="flex h-full overflow-hidden bg-background"
         >
           {chatList}
-          <ResizableHandle />
+          <ResizableHandle withHandle />
           {chatMain}
         </ResizablePanelGroup>
       </SocketLayout>

@@ -8,7 +8,7 @@ import { createAuthResponse } from "../../types/response-types";
 import { handleActionError, sanitizeInput } from "../../lib/utils/utils";
 
 export const signInCredential = async (
-  credentials: z.infer<typeof signInSchema>
+  credentials: z.infer<typeof signInSchema>,
 ): Promise<{
   success: boolean;
   message: string;
@@ -38,7 +38,7 @@ export const signInCredential = async (
         case "AccessDenied":
           return createAuthResponse(
             false,
-            "Access denied. Please verify your email first."
+            "Access denied. Please verify your email first.",
           );
         default:
           return createAuthResponse(false, "An authentication error occurred");

@@ -15,7 +15,7 @@ const generateVerificationToken = async (email: string) => {
     const expirationTime = config.emailTokenExpirationTime;
 
     const emailVerificationExpiry = new Date(
-      Date.now() + expirationTime * 60 * 1000
+      Date.now() + expirationTime * 60 * 1000,
     );
 
     const user = await db.user.update({
@@ -35,7 +35,7 @@ const generateVerificationToken = async (email: string) => {
 };
 
 export const sendVerificationEmail = async (
-  to: string
+  to: string,
 ): Promise<{
   success: boolean;
   message: string;
@@ -68,7 +68,7 @@ export const sendVerificationEmail = async (
 
     const encryptedToken = await encryptToken(response.token);
     const verificationLink = `${config.baseUrl}/auth/verify?email=${encodeURIComponent(
-      sanitizedEmail
+      sanitizedEmail,
     )}&token=${encodeURIComponent(encryptedToken)}`;
 
     const resend = new Resend(config.resendApiKey);
@@ -89,12 +89,12 @@ export const sendVerificationEmail = async (
 
     return createAuthResponse(
       true,
-      "Verification email sent. Please check your inbox."
+      "Verification email sent. Please check your inbox.",
     );
   } catch (error) {
     const errorMessage = handleActionError(
       error,
-      "Failed to send verification email"
+      "Failed to send verification email",
     );
     return createAuthResponse(false, errorMessage);
   }
@@ -140,7 +140,7 @@ export const verifyEmailAction = async ({
     if (!user) {
       return createAuthResponse(
         false,
-        "Invalid or expired verification token. Please request a new one."
+        "Invalid or expired verification token. Please request a new one.",
       );
     }
 
@@ -162,7 +162,7 @@ export const verifyEmailAction = async ({
 
     return createAuthResponse(
       true,
-      `Welcome ${verifiedUser.username}! Your email has been verified.`
+      `Welcome ${verifiedUser.username}! Your email has been verified.`,
     );
   } catch (error) {
     const errorMessage = handleActionError(error, "Email verification failed");

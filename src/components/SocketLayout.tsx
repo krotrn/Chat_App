@@ -1,12 +1,11 @@
 "use client";
 
 import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
-import {
-  INITIALIZE_SOCKET,
-  TERMINATE_SOCKET,
-} from "@/lib/redux/chatSocketActions";
+import { TERMINATE_SOCKET } from "@/lib/redux/chatSocketActions";
 import { ConnectionState } from "@/types/ChatType";
 import { useEffect, useRef } from "react";
+import { useOnlineStatusSync } from "@/hooks/useOnlineStatusSync";
+import { useConnectionRecovery } from "@/hooks/useConnectionRecovery";
 
 export default function SocketLayout({
   children,
@@ -18,19 +17,21 @@ export default function SocketLayout({
   const connectionState = useAppSelector((state) => state.chat.connectionState);
   const hasInitialized = useRef(false);
 
+  const { forceReconnection } = useOnlineStatusSync();
+  useConnectionRecovery();
+
   useEffect(() => {
     if (
       token &&
       !hasInitialized.current &&
       connectionState === ConnectionState.DISCONNECTED
     ) {
-      dispatch({ type: INITIALIZE_SOCKET, payload: { token } });
-      hasInitialized.current = true;
+      forceReconnection();
     }
     if (!token) {
       hasInitialized.current = false;
     }
-  }, [token, connectionState, dispatch]);
+  }, [token, connectionState, forceReconnection]);
 
   useEffect(() => {
     return () => {
