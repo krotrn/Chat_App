@@ -82,10 +82,10 @@ export function joinChat(chatId: string): boolean {
         console.log(`Successfully joined chat: ${chatId}`);
       } else {
         console.error(
-          `Failed to join chat: ${response.error || "Unknown error"}`,
+          `Failed to join chat: ${response.error || "Unknown error"}`
         );
       }
-    },
+    }
   );
   return true;
 }
@@ -99,35 +99,6 @@ export function leaveChat(chatId: string): boolean {
   return true;
 }
 
-export function onTyping(
-  callback: (data: { userId: string; chatId: string }) => void,
-): () => void {
-  socket?.on(
-    ChatEventEnum.TYPING_EVENT,
-    (data: { userId: string; chatId: string }) => {
-      console.log(data);
-      callback(data);
-    },
-  );
-  return () => {
-    socket?.off(ChatEventEnum.TYPING_EVENT, callback);
-  };
-}
-
-export function onStopTyping(
-  callback: (data: { userId: string; chatId: string }) => void,
-): () => void {
-  socket?.on(
-    ChatEventEnum.STOP_TYPING_EVENT,
-    (data: { userId: string; chatId: string }) => {
-      console.log(data);
-      callback(data);
-    },
-  );
-  return () => {
-    socket?.off(ChatEventEnum.STOP_TYPING_EVENT, callback);
-  };
-}
 
 export function emitTyping(data: { userId: string; chatId: string }): boolean {
   if (socket?.connected) {
@@ -165,7 +136,7 @@ export function emitUserOffline(): boolean {
 }
 
 export function onUserOnline(
-  callback: (data: { userId: string }) => void,
+  callback: (data: { userId: string }) => void
 ): () => void {
   socket?.on(ChatEventEnum.USER_IS_ONLINE_EVENT, callback);
   return () => {
@@ -174,7 +145,7 @@ export function onUserOnline(
 }
 
 export function onUserOffline(
-  callback: (data: { userId: string }) => void,
+  callback: (data: { userId: string }) => void
 ): () => void {
   socket?.on(ChatEventEnum.USER_IS_OFFLINE_EVENT, callback);
   return () => {
@@ -182,8 +153,8 @@ export function onUserOffline(
   };
 }
 
-export function onOnlineUsersList(
-  callback: (data: { onlineUsers: string[] }) => void,
+export function ononlineUserIdsList(
+  callback: (data: { onlineUserIds: string[] }) => void
 ): () => void {
   socket?.on(ChatEventEnum.ONLINE_USERS_LIST_EVENT, callback);
   return () => {
@@ -208,7 +179,7 @@ export function checkSocketHealth(): Promise<boolean> {
       (response: { timestamp: number }) => {
         clearTimeout(timeout);
         resolve(Boolean(response && response.timestamp));
-      },
+      }
     );
   });
 }

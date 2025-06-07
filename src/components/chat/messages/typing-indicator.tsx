@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { ParticipantsType } from "@/types/ChatType";
+import { memo } from "react";
 
 interface TypingIndicatorProps {
   isTyping: boolean;
@@ -10,7 +11,7 @@ interface TypingIndicatorProps {
   participants: ParticipantsType[];
 }
 
-export default function TypingIndicator({
+function TypingIndicator({
   isTyping,
   typingUserIds,
   participants,
@@ -20,7 +21,7 @@ export default function TypingIndicator({
   }
 
   const typingUsers = participants.filter((participant) =>
-    typingUserIds.includes(participant.userId),
+    typingUserIds.includes(participant.userId)
   );
 
   if (typingUsers.length === 0) {
@@ -91,3 +92,5 @@ export default function TypingIndicator({
     </motion.div>
   );
 }
+
+export default memo(TypingIndicator);

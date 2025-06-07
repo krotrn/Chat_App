@@ -9,7 +9,8 @@ import {
 } from "@/lib/redux/chatSocketActions";
 import {
   setConnectionState,
-  setOnlineUsers,
+  setonlineUserIds,
+  setTypingUserIds,
 } from "@/lib/redux/slices/chat-slice";
 import {
   ConnectionState,
@@ -60,34 +61,75 @@ export const chatSocketMiddleware: Middleware =
 
         socket.on(
           ChatEventEnum.ONLINE_USERS_LIST_EVENT,
-          (data: { onlineUsers: string[] }) => {
+          (data: { onlineUserIds: string[] }) => {
             console.log(
               "Received initial online users list:",
-              data.onlineUsers,
+              data.onlineUserIds
             );
-            store.dispatch(setOnlineUsers(data.onlineUsers));
-          },
+            store.dispatch(setonlineUserIds(data.onlineUserIds));
+          }
+        );
+
+        socket.on(
+          ChatEventEnum.TYPING_EVENT,
+          (data: { userId: string; chatId: string }) => {
+            const typingUserIds = store.getState().chat.typingUserIds;
+            if (
+              !typingUserIds.some(
+                (u: { userId: string; chatId: string }) =>
+                  u.userId === data.userId && u.chatId === data.chatId
+              )
+            ) {
+              store.dispatch(setTypingUserIds([...typingUserIds, data]));
+
+              setTimeout(() => {
+                const currentTypingUserIds =
+                  store.getState().chat.typingUserIds;
+                const cleanedTypingUserIds = currentTypingUserIds.filter(
+                  (u: { userId: string; chatId: string }) =>
+                    !(u.userId === data.userId && u.chatId === data.chatId)
+                );
+                if (
+                  cleanedTypingUserIds.length !== currentTypingUserIds.length
+                ) {
+                  store.dispatch(setTypingUserIds(cleanedTypingUserIds));
+                }
+              }, 5000);
+            }
+          }
+        );
+
+        socket.on(
+          ChatEventEnum.STOP_TYPING_EVENT,
+          (data: { userId: string; chatId: string }) => {
+            const typingUserIds = store.getState().chat.typingUserIds;
+            const updatedTypingUserIds = typingUserIds.filter(
+              (u: { userId: string; chatId: string }) =>
+                !(u.userId === data.userId && u.chatId === data.chatId)
+            );
+            store.dispatch(setTypingUserIds(updatedTypingUserIds));
+          }
         );
 
         socket.on(
           ChatEventEnum.USER_IS_OFFLINE_EVENT,
           (data: { userId: string }) => {
             console.log(`User ${data.userId} is offline`);
-            const onlineUsers = store.getState().chat.onlineUsers;
+            const onlineUserIds = store.getState().chat.onlineUserIds;
             store.dispatch(
-              setOnlineUsers(
-                onlineUsers.filter((id: string) => id !== data.userId),
-              ),
+              setonlineUserIds(
+                onlineUserIds.filter((id: string) => id !== data.userId)
+              )
             );
-          },
+          }
         );
         socket.on(
           ChatEventEnum.USER_IS_ONLINE_EVENT,
           (data: { userId: string }) => {
             console.log(`User ${data.userId} is online`);
-            const onlineUsers: string[] = store.getState().chat.onlineUsers;
-            store.dispatch(setOnlineUsers([...onlineUsers, data.userId]));
-          },
+            const onlineUserIds: string[] = store.getState().chat.onlineUserIds;
+            store.dispatch(setonlineUserIds([...onlineUserIds, data.userId]));
+          }
         );
 
         socket.on("connect_error", (error: Error) => {
@@ -120,7 +162,7 @@ export const chatSocketMiddleware: Middleware =
             const currentChat = store.getState().chat.currentChat;
             if (currentChat) {
               console.log(
-                `Rejoining chat ${currentChat._id} after reconnection`,
+                `Rejoining chat ${currentChat._id} after reconnection`
               );
               socket.emit(ChatEventEnum.JOIN_CHAT_EVENT, currentChat._id);
             }
@@ -143,8 +185,8 @@ export const chatSocketMiddleware: Middleware =
 
                   const realMessageExists = old.pages.some((page) =>
                     page.messages.some(
-                      (msg: MessageType) => msg._id === message._id,
-                    ),
+                      (msg: MessageType) => msg._id === message._id
+                    )
                   );
 
                   if (realMessageExists) {
@@ -161,7 +203,7 @@ export const chatSocketMiddleware: Middleware =
                         msg.sender.userId === message.sender.userId &&
                         Math.abs(
                           new Date(msg.createdAt).getTime() -
-                            new Date(message.createdAt).getTime(),
+                            new Date(message.createdAt).getTime()
                         ) < 10000
                       ) {
                         hasOptimisticMessage = true;
@@ -183,7 +225,7 @@ export const chatSocketMiddleware: Middleware =
                     }
                     return { ...old, pages: addPages };
                   }
-                },
+                }
               );
               queryClient.setQueryData<InfiniteData<{ chats: ChatType[] }>>(
                 queryKeys.chats.infinite(20),
@@ -202,10 +244,10 @@ export const chatSocketMiddleware: Middleware =
                     }),
                   }));
                   return { ...old, pages: newPages };
-                },
+                }
               );
             }
-          },
+          }
         );
         socket.on(
           ChatEventEnum.MESSAGE_REACTION_EVENT,
@@ -221,15 +263,15 @@ export const chatSocketMiddleware: Middleware =
                         return message._id === newMessage._id
                           ? newMessage
                           : message;
-                      },
+                      }
                     );
                     return { ...page, messages: newMessages };
                   });
                   return { ...old, pages: newPages };
-                },
+                }
               );
             }
-          },
+          }
         );
 
         socket.on(
@@ -246,15 +288,15 @@ export const chatSocketMiddleware: Middleware =
                     messages: page.messages.map((msg: MessageType) =>
                       msg._id === data.messageId
                         ? { ...msg, isPinned: true }
-                        : msg,
+                        : msg
                     ),
                   }));
 
                   return { ...old, pages: newPages };
-                },
+                }
               );
             }
-          },
+          }
         );
         socket.on(
           ChatEventEnum.MESSAGE_UNPINNED_EVENT,
@@ -270,15 +312,15 @@ export const chatSocketMiddleware: Middleware =
                     messages: page.messages.map((msg: MessageType) =>
                       msg._id === data.messageId
                         ? { ...msg, isPinned: false }
-                        : msg,
+                        : msg
                     ),
                   }));
 
                   return { ...old, pages: newPages };
-                },
+                }
               );
             }
-          },
+          }
         );
         socket.on(
           ChatEventEnum.MESSAGE_DELETE_EVENT,
@@ -292,12 +334,12 @@ export const chatSocketMiddleware: Middleware =
                   const newPages = old.pages.map((page) => ({
                     ...page,
                     messages: page.messages.filter(
-                      (msg) => msg._id !== data.messageId,
+                      (msg) => msg._id !== data.messageId
                     ),
                   }));
 
                   return { ...old, pages: newPages };
-                },
+                }
               );
               queryClient.setQueryData<InfiniteData<{ chats: ChatType[] }>>(
                 queryKeys.chats.infinite(20),
@@ -319,10 +361,10 @@ export const chatSocketMiddleware: Middleware =
                     }),
                   }));
                   return { ...old, pages: newPages };
-                },
+                }
               );
             }
-          },
+          }
         );
         socket.on(
           ChatEventEnum.MESSAGE_EDITED_EVENT,
@@ -335,12 +377,12 @@ export const chatSocketMiddleware: Middleware =
 
                   const newPages = old.pages.map((page) => {
                     const newMessages: MessageType[] = page.messages.map(
-                      (msg) => (msg._id === message._id ? message : msg),
+                      (msg) => (msg._id === message._id ? message : msg)
                     );
                     return { ...page, messages: newMessages };
                   });
                   return { ...old, pages: newPages };
-                },
+                }
               );
               queryClient.setQueryData<InfiniteData<{ chats: ChatType[] }>>(
                 queryKeys.chats.infinite(20),
@@ -362,10 +404,55 @@ export const chatSocketMiddleware: Middleware =
                     }),
                   }));
                   return { ...old, pages: newPages };
-                },
+                }
               );
             }
-          },
+          }
+        );
+        socket.on(
+          ChatEventEnum.MESSAGE_READ_EVENT,
+          (data: {
+            chatId: string;
+            messageIds: string[];
+            readBy: { userId: string; readAt: string };
+          }) => {
+            if (queryClient) {
+              queryClient.setQueryData<InfiniteData<MessagesPageData>>(
+                queryKeys.messages.infinite(data.chatId, 20),
+                (old) => {
+                  if (!old) return old;
+
+                  const newPages = old.pages.map((page) => ({
+                    ...page,
+                    messages: page.messages.map((msg: MessageType) => {
+                      if (data.messageIds.includes(msg._id)) {
+                        const existingReadBy = msg.readBy || [];
+                        const isAlreadyRead = existingReadBy.some(
+                          (read) => read.userId === data.readBy.userId
+                        );
+
+                        if (isAlreadyRead) {
+                          return msg;
+                        }
+                        const readByEntry = {
+                          userId: data.readBy.userId,
+                          readAt: new Date(data.readBy.readAt),
+                        };
+
+                        return {
+                          ...msg,
+                          readBy: [...existingReadBy, readByEntry],
+                        };
+                      }
+                      return msg;
+                    }),
+                  }));
+
+                  return { ...old, pages: newPages };
+                }
+              );
+            }
+          }
         );
         socket.on(ChatEventEnum.NEW_CHAT_EVENT, (chat: ChatType) => {
           if (queryClient) {
@@ -379,7 +466,7 @@ export const chatSocketMiddleware: Middleware =
                   chats: [chat, ...page.chats],
                 }));
                 return { ...old, pages: newPages };
-              },
+              }
             );
           }
         });
@@ -395,7 +482,7 @@ export const chatSocketMiddleware: Middleware =
                   chats: page.chats.map((c) => (c._id === chat._id ? chat : c)),
                 }));
                 return { ...old, pages: newPages };
-              },
+              }
             );
           }
         });
@@ -413,7 +500,7 @@ export const chatSocketMiddleware: Middleware =
                   chats: page.chats.filter((c) => c._id !== chat._id),
                 }));
                 return { ...old, pages: newPages };
-              },
+              }
             );
           }
         });

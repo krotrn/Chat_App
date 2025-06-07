@@ -5,14 +5,16 @@ interface ChatState {
   connectionState: ConnectionState;
   currentChat: ChatType | null;
   replyMessage: MessageType | null;
-  onlineUsers: string[];
+  onlineUserIds: string[];
+  typingUserIds: { userId: string; chatId: string }[];
 }
 
 const initialState: ChatState = {
   connectionState: ConnectionState.DISCONNECTED,
   currentChat: null,
   replyMessage: null,
-  onlineUsers: [],
+  onlineUserIds: [],
+  typingUserIds: [],
 };
 
 const chatSlice = createSlice({
@@ -28,19 +30,19 @@ const chatSlice = createSlice({
     clearChatState(state) {
       state.currentChat = null;
       state.connectionState = ConnectionState.DISCONNECTED;
-      state.onlineUsers = [];
+      state.onlineUserIds = [];
     },
     setReplyMessage(state, action: PayloadAction<MessageType | null>) {
       state.replyMessage = action.payload;
     },
-    setOnlineUsers(state, action: PayloadAction<string[]>) {
-      state.onlineUsers = action.payload;
+    setonlineUserIds(state, action: PayloadAction<string[]>) {
+      state.onlineUserIds = action.payload;
     },
-    addUserOnline(state, action: PayloadAction<string>) {
-      const userId = action.payload;
-      if (!state.onlineUsers.includes(userId)) {
-        state.onlineUsers.push(userId);
-      }
+    setTypingUserIds(
+      state,
+      action: PayloadAction<{ userId: string; chatId: string }[]>
+    ) {
+      state.typingUserIds = action.payload;
     },
   },
 });
@@ -50,8 +52,8 @@ export const {
   setCurrentChat,
   clearChatState,
   setReplyMessage,
-  setOnlineUsers,
-  addUserOnline,
+  setonlineUserIds,
+  setTypingUserIds,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

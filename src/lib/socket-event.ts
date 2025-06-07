@@ -6,7 +6,7 @@ export const ChatEventEnum = Object.freeze({
   USER_OFFLINE_EVENT: "userOffline", // Emitted by client when it goes offline explicitly
   USER_IS_ONLINE_EVENT: "userIsOnline", // Emitted by server to notify clients that a user is online
   USER_IS_OFFLINE_EVENT: "userIsOffline", // Emitted by server to notify clients that a user is offline
-  ONLINE_USERS_LIST_EVENT: "onlineUsersList", // Emitted by server to send complete list of online users
+  ONLINE_USERS_LIST_EVENT: "onlineUserIdsList", // Emitted by server to send complete list of online users
   SOCKET_ERROR_EVENT: "socketError", // Emitted by server on socket-related errors
 
   // Chat Room Specific Events
