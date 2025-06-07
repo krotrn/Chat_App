@@ -21,7 +21,7 @@ export default function HeaderActions({
   onToggleDetails,
 }: HeaderActionsProps) {
   const { mutate: onDeleteChat } = useDeleteDirectChatMutation();
-  const chatId = useAppSelector((state) => state.chat.currentChat?._id);
+  const chatId = useAppSelector((state) => state.currentChat.currentChat?._id);
   if (!chatId) {
     return null;
   }

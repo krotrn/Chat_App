@@ -17,7 +17,7 @@ import {
 import { reactionEmoji } from "@/lib/emojis";
 import { useReactToMessageMutation } from "@/hooks/queries/useReactToMessageMutation";
 import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
-import { setReplyMessage } from "@/lib/redux/slices/chat-slice";
+import { setReplyMessage } from "@/lib/redux/slices/current-chat-slice";
 
 interface MessageActionsProps {
   message: MessageType;

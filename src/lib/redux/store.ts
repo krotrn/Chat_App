@@ -1,16 +1,22 @@
 import { configureStore } from "@reduxjs/toolkit";
-import chatReducer from "@/lib/redux/slices/chat-slice";
 import userReducer from "@/lib/redux/slices/user-slice";
-import { chatSocketMiddleware } from "@/lib/redux/middleware/chatSocketMiddleware";
+import connectionReducer from "@/lib/redux/slices/connection-slice";
+import onlineUsersReducer from "@/lib/redux/slices/online-users-slice";
+import typingReducer from "@/lib/redux/slices/typing-slice";
+import currentChatReducer from "@/lib/redux/slices/current-chat-slice";
+import { chatSocketMiddlewares } from "@/lib/redux/middleware";
 
 export const makeStore = () => {
   return configureStore({
     reducer: {
-      chat: chatReducer,
       user: userReducer,
+      connection: connectionReducer,
+      onlineUsers: onlineUsersReducer,
+      typing: typingReducer,
+      currentChat: currentChatReducer,
     },
     middleware: (getDefaultMiddleware) =>
-      getDefaultMiddleware().concat(chatSocketMiddleware),
+      getDefaultMiddleware().concat(...chatSocketMiddlewares),
   });
 };
 

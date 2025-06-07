@@ -100,7 +100,7 @@ export function leaveChat(chatId: string): boolean {
 }
 
 
-export function emitTyping(data: { userId: string; chatId: string }): boolean {
+export function emitTyping(data: { userId: string; chatId: string; }): boolean { 
   if (socket?.connected) {
     socket.emit(ChatEventEnum.TYPING_EVENT, data);
     return true;
@@ -162,6 +162,7 @@ export function ononlineUserIdsList(
   };
 }
 
+
 export function checkSocketHealth(): Promise<boolean> {
   return new Promise((resolve) => {
     if (!socket || !socket.connected) {
@@ -184,7 +185,6 @@ export function checkSocketHealth(): Promise<boolean> {
   });
 }
 
-// Force socket reconnection
 export function forceReconnect(): void {
   if (socket) {
     console.log("Forcing socket disconnection and reconnection");
@@ -193,7 +193,6 @@ export function forceReconnect(): void {
   }
 }
 
-// Check if socket is really connected (not just thinks it is)
 export function isSocketReallyConnected(): boolean {
   return Boolean(socket && socket.connected && socket.id);
 }

@@ -20,7 +20,7 @@ interface ChatSidebarProps {
 
 export default function ChatSidebar({ aiModels }: ChatSidebarProps) {
   const [searchChatQuery, setSearchQuery] = useState<string>("");
-  const { currentChat } = useAppSelector((state) => state.chat);
+  const { currentChat } = useAppSelector((state) => state.currentChat);
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useFetchChatsInfiniteQuery();
 

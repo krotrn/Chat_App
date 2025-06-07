@@ -24,7 +24,7 @@ import {
 import { reactionEmoji } from "@/lib/emojis";
 import { useDeleteMessageMutation } from "@/hooks/queries/useDeleteMessageMutation";
 import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
-import { setReplyMessage } from "@/lib/redux/slices/chat-slice";
+import { setReplyMessage } from "@/lib/redux/slices/current-chat-slice";
 import { useReactToMessageMutation } from "@/hooks/queries/useReactToMessageMutation";
 
 interface MessageContextMenuProps {

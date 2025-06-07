@@ -2,14 +2,8 @@
 
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { ParticipantsType } from "@/types/ChatType";
 import { memo } from "react";
-
-interface TypingIndicatorProps {
-  isTyping: boolean;
-  typingUserIds: string[];
-  participants: ParticipantsType[];
-}
+import { TypingIndicatorProps } from "@/features/typing/types";
 
 function TypingIndicator({
   isTyping,
@@ -48,45 +42,22 @@ function TypingIndicator({
       <div className="flex items-center">
         <span className="mr-2">{typingMessage}</span>
         <div className="flex space-x-1">
-          <motion.div
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.4, 1, 0.4],
-            }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              repeatType: "loop",
-              delay: 0,
-            }}
-            className="h-1.5 w-1.5 rounded-full bg-muted-foreground"
-          />
-          <motion.div
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.4, 1, 0.4],
-            }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              repeatType: "loop",
-              delay: 0.2,
-            }}
-            className="h-1.5 w-1.5 rounded-full bg-muted-foreground"
-          />
-          <motion.div
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.4, 1, 0.4],
-            }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              repeatType: "loop",
-              delay: 0.4,
-            }}
-            className="h-1.5 w-1.5 rounded-full bg-muted-foreground"
-          />
+          {[0, 0.2, 0.4].map((delay, index) => (
+            <motion.div
+              key={index}
+              animate={{
+                scale: [1, 1.2, 1],
+                opacity: [0.4, 1, 0.4],
+              }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                repeatType: "loop",
+                delay,
+              }}
+              className="h-1.5 w-1.5 rounded-full bg-muted-foreground"
+            />
+          ))}
         </div>
       </div>
     </motion.div>

@@ -15,7 +15,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
 import { useDeleteDirectChatMutation } from "@/hooks/queries/useDirectChatMutation";
 import { useDeleteGroupChatMutation } from "@/hooks/queries/useGroupChatMutations";
-import { setCurrentChat } from "@/lib/redux/slices/chat-slice";
+import { setCurrentChat } from "@/lib/redux/slices/current-chat-slice";
 import { useRouter } from "next/navigation";
 
 interface ChatItemProps {
@@ -28,7 +28,7 @@ export default function ChatItem({ chat }: ChatItemProps) {
   const { mutate: handleDeleteDirectChat } = useDeleteDirectChatMutation();
   const { mutate: handleDeleteGroupChat } = useDeleteGroupChatMutation();
   const currentUser = useAppSelector((state) => state.user.user);
-  const currentChat = useAppSelector((state) => state.chat.currentChat);
+  const currentChat = useAppSelector((state) => state.currentChat.currentChat);
   const isSelected = currentChat?._id === chat._id;
   const router = useRouter();
 
@@ -65,7 +65,7 @@ export default function ChatItem({ chat }: ChatItemProps) {
     <motion.div
       className={cn(
         "flex cursor-pointer items-center gap-3 rounded-md p-2",
-        isSelected ? "bg-accent" : "hover:bg-muted",
+        isSelected ? "bg-accent" : "hover:bg-muted"
       )}
       onClick={onClick}
       whileHover={{ scale: 1.02 }}

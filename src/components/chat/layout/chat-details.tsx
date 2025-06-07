@@ -10,7 +10,7 @@ import { useDeleteDirectChatMutation } from "@/hooks/queries/useDirectChatMutati
 import { useDeleteGroupChatMutation } from "@/hooks/queries/useGroupChatMutations";
 import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
 import { useRouter } from "next/navigation";
-import { setCurrentChat } from "@/lib/redux/slices/chat-slice";
+import { setCurrentChat } from "@/lib/redux/slices/current-chat-slice";
 
 interface ChatDetailsProps {
   onClose: () => void;
@@ -28,7 +28,7 @@ export default function ChatDetails({
   const { mutate: handleDeleteGroupChat } = useDeleteGroupChatMutation();
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const currentChat = useAppSelector((state) => state.chat.currentChat);
+  const currentChat = useAppSelector((state) => state.currentChat.currentChat);
 
   if (!chat) return null;
   const isGroupChat = chat.type === "group";

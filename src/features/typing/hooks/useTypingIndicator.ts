@@ -1,26 +1,24 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { emitTyping, emitStopTyping } from "@/lib/socket";
-import { useAppSelector } from "./useReduxType";
+import { useAppSelector } from "@/hooks/useReduxType";
+import { TypingService } from "../services/typingService";
+import type {
+  UseTypingIndicatorProps,
+  UseTypingIndicatorReturn,
+} from "../types";
 
-interface UseTypingIndicatorProps {
-  chatId: string | null;
-  currentUserId: string;
-}
-
-export default function useTypingIndicator({
+export function useTypingIndicator({
   chatId,
   currentUserId,
-}: UseTypingIndicatorProps) {
-  const [isTyping, setIsTyping] = useState(false);
+}: UseTypingIndicatorProps): UseTypingIndicatorReturn {
 
-  const typingUserIds = useAppSelector((state) => state.chat.typingUserIds);
+  const [isTyping, setIsTyping] = useState(false);
+  const typingUserIds = useAppSelector((state) => state.typing.typingUserIds);
 
   const lastTypingEventRef = useRef<number>(0);
   const typingDelayRef = useRef<NodeJS.Timeout | null>(null);
+
   const currentChatTypingUserIds = chatId
-    ? typingUserIds
-        .filter((typing) => typing.chatId === chatId)
-        .map((typing) => typing.userId)
+    ? TypingService.filterTypingUsersByChatId(typingUserIds, chatId)
     : [];
 
   const handleLocalUserTyping = useCallback(() => {
@@ -30,7 +28,7 @@ export default function useTypingIndicator({
 
     if (now - lastTypingEventRef.current > 2000) {
       lastTypingEventRef.current = now;
-      emitTyping({ chatId, userId: currentUserId });
+      TypingService.emitTyping({ chatId, userId: currentUserId });
     }
 
     if (typingDelayRef.current) {
@@ -41,9 +39,10 @@ export default function useTypingIndicator({
 
     typingDelayRef.current = setTimeout(() => {
       setIsTyping(false);
-      emitStopTyping({ chatId, userId: currentUserId });
+      TypingService.emitStopTyping({ chatId, userId: currentUserId });
     }, 3000);
   }, [chatId, currentUserId]);
+
   useEffect(() => {
     return () => {
       const currentTypingDelay = typingDelayRef.current;
@@ -54,7 +53,7 @@ export default function useTypingIndicator({
       }
 
       if (currentIsTyping && chatId) {
-        emitStopTyping({ chatId, userId: currentUserId });
+        TypingService.emitStopTyping({ chatId, userId: currentUserId });
       }
     };
   }, [chatId, currentUserId, isTyping]);

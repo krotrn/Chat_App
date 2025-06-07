@@ -18,7 +18,9 @@ export default function FriendCard({ friend }: FriendCardProps) {
   const { mutate: removeFriend } = useRemoveFriendMutation();
   const token = useAppSelector((state) => state.user.token);
   const user = useAppSelector((state) => state.user.user);
-  const connectionState = useAppSelector((state) => state.chat.connectionState);
+  const connectionState = useAppSelector(
+    (state) => state.connection.connectionState
+  );
   const isConnected = connectionState === ConnectionState.CONNECTED;
   const handleMessageClick = async () => {
     if (!token || !user?.id) return;

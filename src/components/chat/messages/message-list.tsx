@@ -16,7 +16,7 @@ interface MessageListProps {
 
 export default function MessageList({ participants }: MessageListProps) {
   const currentUserId = useAppSelector((state) => state.user.user?.id);
-  const chatId = useAppSelector((state) => state.chat.currentChat?._id);
+  const chatId = useAppSelector((state) => state.currentChat.currentChat?._id);
   const { mutate: markAsReadMutation } = useMarkAsReadMutation();
   const dispatch = useAppDispatch();
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
@@ -43,18 +43,18 @@ export default function MessageList({ participants }: MessageListProps) {
           fetchNextPage();
         }
       },
-      { root: ele, threshold: 0 },
+      { root: ele, threshold: 0 }
     );
     if (topTrigger.current) observer.observe(topTrigger.current);
     return () => observer.disconnect();
   }, [fetchNextPage, isFetchingNextPage, hasNextPage]);
   const messages = useMemo(
     () => allMessages.flatMap((page) => page.messages) ?? [],
-    [allMessages],
+    [allMessages]
   );
   const groupedMessages = useMemo(
     () => groupMessagesByDate(messages),
-    [messages],
+    [messages]
   );
 
   useEffect(() => {
@@ -77,7 +77,7 @@ export default function MessageList({ participants }: MessageListProps) {
       .filter(
         (msg) =>
           msg.sender.userId !== currentUserId &&
-          !msg.readBy.some((r) => r.userId === currentUserId),
+          !msg.readBy.some((r) => r.userId === currentUserId)
       )
       .map((msg) => msg._id);
     if (messageIds.length) {

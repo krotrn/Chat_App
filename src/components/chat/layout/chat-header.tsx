@@ -27,7 +27,9 @@ export default function ChatHeader({
   const username = useAppSelector((state) => state.user.user?.username);
   const user = useGetUserByUsernameQuery(username).data;
   const isAdmin = chat.admin === user?.id;
-  const onlineUserIds = useAppSelector((state) => state.chat.onlineUserIds);
+  const onlineUserIds = useAppSelector(
+    (state) => state.onlineUsers.onlineUserIds
+  );
   const isOnline = useMemo(
     () => onlineUserIds.some((p) => p !== user?.id),
     [onlineUserIds, user?.id]

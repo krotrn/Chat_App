@@ -1,81 +1,77 @@
 "use client";
-import { useEffect, useCallback } from "react";
+
+import { useCallback, useEffect, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAppSelector } from "@/hooks/useReduxType";
 import { ConnectionState } from "@/types/ChatType";
-import {
-  checkSocketHealth,
-  forceReconnect,
-  isSocketReallyConnected,
-} from "@/lib/socket";
-import { messageQueue } from "@/lib/messageQueue";
-import { useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/config";
+import { ConnectionRecoveryService } from "../features/connection-recovery/services/connectionRecoveryService";
+import type { ConnectionRecoveryHookReturn } from "../features/connection-recovery/types";
 
-export function useConnectionRecovery() {
-  const connectionState = useAppSelector((state) => state.chat.connectionState);
+export function useConnectionRecovery(): ConnectionRecoveryHookReturn {
+  const connectionState = useAppSelector(
+    (state) => state.connection.connectionState
+  );
   const queryClient = useQueryClient();
-
-  const retryPendingMessages = useCallback(async () => {
-    if (
-      connectionState === ConnectionState.CONNECTED &&
-      isSocketReallyConnected()
-    ) {
-      console.log("Connection restored, retrying pending messages...");
-
-      await messageQueue.retryFailedMessages(async (message) => {
-        try {
-          console.log("Retrying message:", message.content);
-          return true;
-        } catch (error) {
-          console.error("Failed to retry message:", error);
-          return false;
-        }
-      });
-    }
-  }, [connectionState]);
+  const lastActiveRef = useRef<number>(Date.now());
+  const healthCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const performConnectionRecovery = useCallback(async () => {
-    if (connectionState === ConnectionState.CONNECTED) {
-      const isHealthy = await checkSocketHealth();
-
-      if (!isHealthy) {
-        console.warn("Connection appears stale, forcing reconnection...");
-        forceReconnect();
-        return;
-      }
-    }
+    await ConnectionRecoveryService.performRecovery(connectionState);
 
     if (connectionState === ConnectionState.CONNECTED) {
-      console.log("Connection confirmed healthy, refreshing data...");
-
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.chats.infinite(20),
-      });
-      await retryPendingMessages();
+      queryClient.invalidateQueries();
     }
-  }, [connectionState, queryClient, retryPendingMessages]);
+  }, [connectionState, queryClient]);
 
   useEffect(() => {
     if (connectionState === ConnectionState.CONNECTED) {
-      const timeout = setTimeout(performConnectionRecovery, 2000);
-      return () => clearTimeout(timeout);
+      performConnectionRecovery();
     }
   }, [connectionState, performConnectionRecovery]);
 
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden && connectionState === ConnectionState.CONNECTED) {
-        setTimeout(performConnectionRecovery, 1000);
-      }
+    const handleVisibilityChange = async () => {
+      await ConnectionRecoveryService.handleVisibilityChange(
+        connectionState,
+        lastActiveRef.current
+      );
+      lastActiveRef.current = Date.now();
+    };
+
+    const handleOnlineChange = async () => {
+      await ConnectionRecoveryService.handleOnlineStatusChange();
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () =>
+    window.addEventListener("online", handleOnlineChange);
+
+    return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [connectionState, performConnectionRecovery]);
+      window.removeEventListener("online", handleOnlineChange);
+    };
+  }, [connectionState]);
+
+  // Start periodic health checks
+  useEffect(() => {
+    if (healthCheckIntervalRef.current) {
+      clearInterval(healthCheckIntervalRef.current);
+    }
+
+    healthCheckIntervalRef.current = setInterval(async () => {
+      await ConnectionRecoveryService.performPeriodicHealthCheck(
+        connectionState
+      );
+    }, 30000); // Every 30 seconds
+
+    return () => {
+      if (healthCheckIntervalRef.current) {
+        clearInterval(healthCheckIntervalRef.current);
+      }
+    };
+  }, [connectionState]);
 
   return {
     performConnectionRecovery,
-    retryPendingMessages,
+    isRecovering: connectionState === ConnectionState.RECONNECTING,
   };
 }

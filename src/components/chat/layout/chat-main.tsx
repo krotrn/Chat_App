@@ -15,17 +15,18 @@ import { WifiOff } from "lucide-react";
 import { ResizablePanel } from "@/components/ui/resizable";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
-import useTypingIndicator from "@/hooks/useTypingIndicator";
-import { setCurrentChat } from "@/lib/redux/slices/chat-slice";
+import { setCurrentChat } from "@/lib/redux/slices/current-chat-slice";
 import { useFetchChatsInfiniteQuery } from "@/hooks/queries/useFetchChatsInfiniteQuery";
 import { JOIN_CHAT_ROOM, LEAVE_CHAT_ROOM } from "@/lib/redux/chatSocketActions";
+import { useTypingIndicator } from "@/features/typing/hooks/useTypingIndicator";
 
 export default function ChatMain() {
   const router = useRouter();
   const isMobile = useIsMobile();
   const [showDetails, setShowDetails] = useState(false);
-  const { connectionState, currentChat } = useAppSelector(
-    (state) => state.chat
+  const currentChat = useAppSelector((state) => state.currentChat.currentChat);
+  const connectionState = useAppSelector(
+    (state) => state.connection.connectionState
   );
   new Promise((resolve) => {
     if (connectionState === ConnectionState.CONNECTING) {
@@ -55,6 +56,7 @@ export default function ChatMain() {
   const chat = data?.pages[0].chats.find(
     (chat) => chat._id === currentChat?._id
   );
+
   const { typingUserIds } = useTypingIndicator({
     chatId: currentChat?._id || null,
     currentUserId: currentUserId!,

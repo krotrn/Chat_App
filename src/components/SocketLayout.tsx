@@ -14,7 +14,9 @@ export default function SocketLayout({
 }) {
   const dispatch = useAppDispatch();
   const token = useAppSelector((state) => state.user.token);
-  const connectionState = useAppSelector((state) => state.chat.connectionState);
+  const connectionState = useAppSelector(
+    (state) => state.connection.connectionState
+  );
   const hasInitialized = useRef(false);
 
   const { forceReconnection } = useOnlineStatusSync();

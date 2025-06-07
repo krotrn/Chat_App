@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
-import { setConnectionState } from "@/lib/redux/slices/chat-slice";
+import { setConnectionState } from "@/lib/redux/slices/connection-slice";
 import { ConnectionState } from "@/types/ChatType";
 import { getSocket, emitUserOnline } from "@/lib/socket";
 import { INITIALIZE_SOCKET } from "@/lib/redux/chatSocketActions";
@@ -12,7 +12,9 @@ import { INITIALIZE_SOCKET } from "@/lib/redux/chatSocketActions";
 
 export function useOnlineStatusSync() {
   const dispatch = useAppDispatch();
-  const connectionState = useAppSelector((state) => state.chat.connectionState);
+  const connectionState = useAppSelector(
+    (state) => state.connection.connectionState
+  );
   const token = useAppSelector((state) => state.user.token);
   const lastActiveRef = useRef<number>(Date.now());
   const healthCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -27,7 +29,7 @@ export function useOnlineStatusSync() {
       return new Promise<boolean>((resolve) => {
         const timeout = setTimeout(() => {
           console.warn(
-            "Socket health check timeout - connection might be stale",
+            "Socket health check timeout - connection might be stale"
           );
           resolve(false);
         }, 5000);
@@ -41,7 +43,7 @@ export function useOnlineStatusSync() {
             } else {
               resolve(false);
             }
-          },
+          }
         );
       });
     }
@@ -53,10 +55,11 @@ export function useOnlineStatusSync() {
     const socket = getSocket();
 
     if (socket) {
+      socket.removeAllListeners();
       socket.disconnect();
+      dispatch(setConnectionState(ConnectionState.DISCONNECTED));
+      console.log("Socket disconnected, attempting to reconnect");
     }
-
-    dispatch(setConnectionState(ConnectionState.DISCONNECTED));
 
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
@@ -75,7 +78,7 @@ export function useOnlineStatusSync() {
 
       if (timeSinceLastActive > 5 * 60 * 1000) {
         console.log(
-          "User returned after being away, checking connection health",
+          "User returned after being away, checking connection health"
         );
 
         const isHealthy = await performHealthCheck();
