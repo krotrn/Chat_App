@@ -7,7 +7,7 @@ import {
   SocketLayout,
   StoreProvider,
 } from "@/components";
-
+import { SpeedInsights } from "@vercel/speed-insights/next";
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -22,7 +22,10 @@ export default function RootLayout({
               <div className="flex flex-col h-screen w-full space-y-2">
                 <NavMenu />
                 <main className="flex-1 overflow-x-hidden">
-                  <OnlineCheckWrapper>{children}</OnlineCheckWrapper>
+                  <OnlineCheckWrapper>
+                    {children}
+                    <SpeedInsights />
+                  </OnlineCheckWrapper>
                 </main>
               </div>
             </SocketLayout>
