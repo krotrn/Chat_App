@@ -4,7 +4,6 @@ import {
   DEFAULT_LOGIN_REDIRECT,
   apiAuthPrefix,
   authRoutes,
-  internalRoutes,
   publicRoutes,
 } from "@/routes";
 
@@ -22,17 +21,7 @@ export default auth((req) => {
   const isAuthRoute = authRoutes.some((route) =>
     nextUrl.pathname.startsWith(route),
   );
-  const isInternalRoute = internalRoutes.some((route) =>
-    nextUrl.pathname.startsWith(route),
-  );
 
-  if (isInternalRoute) {
-    const apiKey = req.headers.get("x-internal-api-key");
-    if (apiKey === process.env.INTERNAL_API_KEY) {
-      return response;
-    }
-    return new Response("Unauthorized", { status: 401 });
-  }
 
   // Allow public routes and registration API
   if (isApiAuthRoute || isPublicRoute) {

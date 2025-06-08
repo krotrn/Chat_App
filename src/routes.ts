@@ -29,13 +29,6 @@ export const authRoutes = [
 export const apiAuthPrefix = ["/api/auth"];
 
 /**
- * expose to Backend for authentication for chat related functionality.
- *
- * @constant {string[]}
- */
-export const internalRoutes = ["/api/v1/internal"];
-
-/**
  * The default URL to which users are redirected after a successful login.
  *
  * @constant {string}

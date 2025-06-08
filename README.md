@@ -1,8 +1,8 @@
-# ChatApp
+# Chat App Frontend
 
-**ChatApp** is a modern, feature-rich real-time communication platform built with Next.js (App Router) as a standalone application. It's designed to connect people through seamless messaging. Whether you're chatting one-on-one with friends or collaborating in group conversations, ChatApp offers a scalable, intuitive, and responsive experience. It leverages cutting-edge technologies like Auth.js v5 for secure authentication and PostgreSQL (via Prisma) for robust user management. User data, such as profiles and authentication details, is managed through direct interactions with the database, while chat functionalities (messages, etc.) are handled by a dedicated backend service which also uses MongoDB (via Mongoose) for efficient chat storage. The user interface, crafted with [shadcn/ui](https://ui.shadcn.com/) components, ensures a sleek, accessible, and visually appealing design.
+**Chat App** is a modern, production-ready real-time chat application built with Next.js 15 and React 19. This frontend client provides a seamless messaging experience with advanced real-time features, comprehensive Socket.IO integration, and a beautiful user interface. It connects to a dedicated Node.js backend service for chat functionality while managing user authentication and profiles through Auth.js v5 and PostgreSQL.
 
-This project is perfect for developers looking to explore a full-stack application with real-time communication features or for anyone seeking a customizable chat platform to adapt to their needs.
+The application features advanced state management with Redux Toolkit, real-time communication through Socket.IO, server state management with React Query, and a responsive UI built with shadcn/ui components. It includes sophisticated connection recovery, health monitoring, and optimistic UI updates for the best user experience.
 
 ---
 
@@ -25,107 +25,118 @@ This project is perfect for developers looking to explore a full-stack applicati
 
 ## Features
 
-ChatApp is packed with functionality to enhance user experience and provide flexibility for future growth. Here's what it offers:
+Chat App is built with advanced features and modern patterns to deliver a superior user experience:
 
-- **Authentication & Authorization**
+### 🔐 **Authentication & Security**
 
-  - **Credential Authentication**: Securely log in with an email and password combination (to be implemented)
-  - **Social Authentication**: Sign in effortlessly using Google or GitHub accounts
-  - **Email Verification**: Powered by [Resend](https://resend.com/), ensuring only verified users gain access (to be implemented)
-  - **JWT Token Management**: Secure token handling with proper expiration and validation
-  - **Session Management**: Robust session handling with access token persistence
+- **Social Authentication**: Google and GitHub OAuth integration via Auth.js v5
+- **JWT Token Management**: Secure token handling with automatic refresh and validation
+- **Session Management**: Persistent session handling with Redux state management
+- **Database Integration**: PostgreSQL user management with Prisma ORM
 
-- **Real-Time Chat Functionality**
+### 💬 **Real-time Communication**
 
-  - **Group Chats**: Create and participate in multi-user conversations
-  - **One-on-One Chats**: Enjoy private messaging with friends
-  - **Friend Requests**: Build your network by sending, accepting, or declining friend requests
-  - **Message Features**:
-    - Text messages with emoji support
-    - File attachments (images, documents, etc.)
-    - Camera capture integration
-    - Message reactions
-    - Reply to messages
-    - Read receipts
-    - Typing indicators
-    - Message editing
-    - Message deletion (for sender or admin)
-    - Rich text formatting
+- **WebSocket Integration**: Full-featured Socket.IO client with health monitoring
+- **Connection Recovery**: Automatic reconnection with exponential backoff
+- **Health Checks**: Periodic connection monitoring with stale connection detection
+- **Optimistic Updates**: Immediate UI updates with server synchronization
+- **Message Features**:
+  - Real-time messaging with instant delivery
+  - Message reactions with emoji support
+  - Message editing and deletion
+  - Reply to messages functionality
+  - Pin/unpin important messages
+  - Read receipts and status tracking
+  - File attachments and image sharing
 
-- **Smart Data Transformation**
+### 🏘️ **Chat Management**
 
-  - **Type-Safe Responses**: Consistent data structures with MessageResponseType and ChatResponseType
-  - **Efficient Data Loading**: Optimized queries with pagination and selective field projection
-  - **Real-time Data Synchronization**: Immediate updates across all connected clients
+- **Group Chats**: Create and manage multi-user conversations
+- **Direct Messages**: Private one-on-one conversations
+- **Chat Administration**: Add/remove participants, delete chats
+- **Real-time Updates**: Live chat creation, updates, and member changes
+- **Infinite Scrolling**: Efficient message loading with React Query
 
-- **User Interface**
+### 👥 **Social Features**
 
-  - **Modern and Responsive**: Built with [shadcn/ui](https://ui.shadcn.com/) components
-  - **Dark/Light Mode**: Seamless theme switching
-  - **Error Handling**: Graceful error states and user feedback
+- **Friend System**: Send, accept, and manage friend requests
+- **User Search**: Find and connect with other users
+- **Online Status**: Real-time user presence tracking
+- **Typing Indicators**: Live typing status for active conversations
+- **User Profiles**: Customizable avatars and status information
 
-- **User Profiles & Privacy**
+### 🎨 **Modern User Experience**
 
-  - **Personalization**: Edit your name, avatar, and status
-  - **Online Status**: See when your friends are available
-  - **Privacy Controls**:
-    - Online status visibility
-    - Read receipts
-    - Typing indicators
-    - Data collection preferences
+- **Responsive Design**: Mobile-first approach with adaptive layouts
+- **Dark/Light Mode**: Seamless theme switching with next-themes
+- **Smooth Animations**: Framer Motion powered interactions
+- **Loading States**: Sophisticated skeleton loaders and error boundaries
+- **Real-time Notifications**: Toast notifications with Sonner
 
-- **File Management**
+### ⚡ **Performance & State Management**
 
-  - **Drag & Drop**: Easy file uploads
-  - **Multiple File Support**: Upload up to 5 files simultaneously
-  - **File Type Validation**: Automatic file type checking
-  - **Size Limits**: Configurable file size restrictions
-  - **Progress Tracking**: Visual upload progress indicators
-
-- **Real-Time Features**
-  - **WebSocket Integration**: Instant message delivery
-  - **Socket Events**: Efficient real-time communication
-  - **Connection Management**: Automatic reconnection handling
+- **Redux Toolkit**: Advanced state management with real-time middleware
+- **React Query**: Server state management with caching and synchronization
+- **Connection Middleware**: Specialized Redux middleware for Socket.IO events
+- **Optimistic UI**: Instant feedback with error recovery
+- **Infinite Queries**: Efficient data loading with automatic pagination
 
 ---
 
 ## Tech Stack
 
-ChatApp is built with a thoughtfully selected set of technologies to ensure performance, maintainability, and developer-friendliness:
+Chat App leverages cutting-edge technologies for optimal performance and developer experience:
 
-- **Frontend**:
+### 🖥️ **Frontend Core**
 
-  - **[Next.js 15](https://nextjs.org/)**: App Router for server-side rendering and routing
-  - **[React 19](https://reactjs.org/)**: UI components and state management
-  - **[TypeScript](https://www.typescriptlang.org/)**: Type-safe code
-  - **[Tailwind CSS](https://tailwindcss.com/)**: Utility-first CSS framework
-  - **[shadcn/ui](https://ui.shadcn.com/)**: Accessible UI components
-  - **[Framer Motion](https://www.framer.com/motion/)**: Animations
-  - **[Socket.io Client](https://socket.io/)**: Real-time communication
+- **[Next.js 15](https://nextjs.org/)**: App Router with server-side rendering and advanced routing
+- **[React 19](https://reactjs.org/)**: Latest React features with concurrent rendering
+- **[TypeScript](https://www.typescriptlang.org/)**: End-to-end type safety across the application
+- **[Tailwind CSS 4.0](https://tailwindcss.com/)**: Modern utility-first CSS framework
 
-- **Backend**:
+### 🎨 **UI & Design**
 
-  - **[Next.js Server Action](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations)**: for user management
-  - **[Prisma](https://www.prisma.io/)**: PostgreSQL ORM for user data
-  - **[Separate Node.js Backend](https://github.com/krotrn/ChatApp-backend)**: Dedicated service for chat functionality
-  - **[Socket.io](https://socket.io/)**: WebSocket server (via separate backend)
-  - **[MongoDB](https://www.mongodb.com/)**: Database for chat data (via Mongoose in separate backend)
-  - **[Auth.js v5](https://authjs.dev/)**: Authentication
-  - **[Resend](https://resend.com/)**: Email service
+- **[shadcn/ui](https://ui.shadcn.com/)**: Beautiful, accessible component library
+- **[Radix UI](https://www.radix-ui.com/)**: Low-level UI primitives for complex components
+- **[Framer Motion](https://www.framer.com/motion/)**: Smooth animations and transitions
+- **[Lucide React](https://lucide.dev/)**: Beautiful SVG icon library
+- **[next-themes](https://github.com/pacocoursey/next-themes)**: Theme switching support
 
-- **Business Logic & Data Processing**:
+### ⚡ **State Management & Data**
 
-  - **Prisma ORM**: For user data management
-  - **Type Conversion Logic**: Consistent field transformations for frontend consumption
-  - **Stateless Architecture**: Clean separation of database entities and API responses
-  - **Error Resilience**: Retry mechanisms for critical operations
-  - **Real-time Event Dispatching**: Efficient socket event broadcasting
+- **[Redux Toolkit](https://redux-toolkit.js.org/)**: Predictable state management
+- **[React Query (TanStack Query)](https://tanstack.com/query/)**: Server state management and caching
+- **[React Hook Form](https://react-hook-form.com/)**: Performant form handling
+- **[Zod](https://zod.dev/)**: TypeScript-first schema validation
 
-- **Development Tools**:
-  - **[Turbopack](https://turbo.build/pack)**: Fast development server
-  - **[ESLint](https://eslint.org/)**: Code linting
-  - **[Prettier](https://prettier.io/)**: Code formatting
-  - **[TypeScript](https://www.typescriptlang.org/)**: End-to-end type safety
+### 🔄 **Real-time Communication**
+
+- **[Socket.IO Client](https://socket.io/)**: WebSocket communication with the backend
+- **Custom Middleware**: Redux middleware for Socket.IO event handling
+- **Connection Recovery**: Advanced reconnection logic with health monitoring
+- **Event Management**: Type-safe Socket.IO event definitions and handlers
+
+### 🗄️ **Database & Authentication**
+
+- **[Prisma](https://www.prisma.io/)**: PostgreSQL ORM for user data management
+- **[Auth.js v5](https://authjs.dev/)**: Modern authentication with OAuth providers
+- **[PostgreSQL](https://www.postgresql.org/)**: Robust relational database for user management
+- **[MongoDB](https://www.mongodb.com/)**: Chat data storage (via backend service)
+
+### 🛠️ **Development & Tooling**
+
+- **[Turbopack](https://turbo.build/pack)**: Ultra-fast development bundler
+- **[ESLint](https://eslint.org/)**: Code linting with TypeScript support
+- **[Prettier](https://prettier.io/)**: Consistent code formatting
+- **[PostCSS](https://postcss.org/)**: CSS processing and optimization
+
+### 📦 **Additional Libraries**
+
+- **[date-fns](https://date-fns.org/)**: Modern date utility library
+- **[lodash](https://lodash.com/)**: Utility functions for data manipulation
+- **[Sonner](https://sonner.emilkowal.ski/)**: Toast notifications
+- **[Embla Carousel](https://www.embla-carousel.com/)**: Lightweight carousel component
+- **[React Resizable Panels](https://github.com/bvaughn/react-resizable-panels)**: Resizable UI panels
 
 ---
 
@@ -201,21 +212,40 @@ Before you begin, ensure you have the following installed:
 
    ```env
    # Database
-   DATABASE_URL="postgresql://user:password@localhost:5432/chat_app"
+   DATABASE_URL = "postgresql://********:*****************.*********************.****.tech/*****?sslmode=require"
 
-   # Authentication
-   NEXTAUTH_URL="http://localhost:3000"
-   NEXTAUTH_SECRET="your-secret-key"
-   GOOGLE_CLIENT_ID="your-google-client-id"
-   GOOGLE_CLIENT_SECRET="your-google-client-secret"
-   GITHUB_CLIENT_ID="your-github-client-id"
-   GITHUB_CLIENT_SECRET="your-github-client-secret"
+   NODE_ENV = "development"
+   AUTH_SECRET = **********************************************************************
 
-   # Email Service
-   RESEND_API_KEY="your-resend-api-key"
+   # from chat-backend at http://github.com/krotrn/chat-backend
+   NEXT_PUBLIC_API_BASE_URL = http://localhost:3000 
 
-   # Chat API
-   NEXT_PUBLIC_CHAT_API_URL="your-chat-api-url"
+   # Auth0 credentials for NextAuth
+   GITHUB_CLIENT_ID = ***************
+   GITHUB_CLIENT_SECRET = ****************************************
+   GOOGLE_CLIENT_ID = ************-********************************.apps.googleusercontent.com
+   GOOGLE_CLIENT_SECRET = *****-***********************************************
+
+   # Resend API key
+   RESEND_API_KEY = your_resend_api_key_here
+   RESEND_FROM_EMAIL = ****************
+   NEXT_PUBLIC_APP_NAME = "Chat App"
+
+   # similar to chat-backend chat-backend at http://github.com/krotrn/chat-backend
+   JWT_SECRET = "your_jwt_secret_here"
+
+   # for Encryption of verification code
+   ENCRYPTION_KEY = "your_encryption_key_here"
+   EMAIL_TOKEN_EXPIRATION_TIME = "in_HOURS"
+   NEXT_PUBLIC_CHAT_API_URL = "your_chat_api_url_here"
+   NEXT_PUBLIC_SUPPORT_EMAIL = "enter_your_support_email_here"
+
+   # Cloudinary Configuration
+   CLOUDINARY_CLOUD_NAME = your_cloudinary_cloud_name_here
+   CLOUDINARY_API_KEY = your_cloudinary_api_key_here
+   CLOUDINARY_API_SECRET = your_cloudinary_api_secret_here
+   CLOUDINARY_AVATAR_UPLOAD_PRESET = chat_app_avatar
+   CLOUDINARY_CHAT_FILE_UPLOAD_PRESET = chat_app_files
    ```
 
 4. **Database Setup**
