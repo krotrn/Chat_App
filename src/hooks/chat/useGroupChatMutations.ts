@@ -7,7 +7,7 @@ import {
 } from "@/services/chat";
 import { queryKeys } from "@/lib/config";
 import { createGroup, deleteGroup } from "@/actions/user";
-import { useAppSelector } from "../useReduxType";
+import { useAppSelector } from "@/hooks/types/useReduxType";
 
 export function useCreateGroupChatMutation() {
   const queryClient = useQueryClient();

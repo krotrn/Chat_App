@@ -12,11 +12,11 @@ import { MessageEditor } from "@/components/chat/messages/message/editor";
 import { ReplyPreview } from "@/components/chat/messages/reply-preview";
 import { ReactionsDisplay } from "@/components/chat/input/reaction-display";
 import { MessageTimestampStatus } from "@/components/chat/messages/message-timestamp-status";
-import useTouchActions from "@/hooks/useTouchActions";
+import { useTouchActions } from "@/hooks/ui";
 import { motion } from "framer-motion";
 import { AttachmentPreviews } from "@/components/chat/attachments/attachment-previews";
-import { useEditMessageMutation } from "@/hooks/queries/useEditMessageMutation";
-import { useAppSelector } from "@/hooks/useReduxType";
+import { useEditMessageMutation } from "@/hooks/messages";
+import { useAppSelector } from "@/hooks/types";
 
 interface MessageItemProps {
   participants: ParticipantsType[];

@@ -2,7 +2,6 @@ import { getSocket } from "./connection";
 import { ChatEventEnum } from "@/lib/socket-event";
 import type { SocketEventCallback } from "./types";
 
-// Event emitters
 export function emitUserOnline(): boolean {
   const socket = getSocket();
   if (socket?.connected) {
@@ -35,10 +34,10 @@ export function emitJoinChat(chatId: string): boolean {
         console.log(`Successfully joined chat: ${chatId}`);
       } else {
         console.error(
-          `Failed to join chat: ${response.error || "Unknown error"}`
+          `Failed to join chat: ${response.error || "Unknown error"}`,
         );
       }
-    }
+    },
   );
   return true;
 }
@@ -53,9 +52,8 @@ export function emitLeaveChat(chatId: string): boolean {
   return true;
 }
 
-// Event listeners
 export function onUserOnline(
-  callback: SocketEventCallback<{ userId: string }>
+  callback: SocketEventCallback<{ userId: string }>,
 ): () => void {
   const socket = getSocket();
   socket?.on(ChatEventEnum.USER_IS_ONLINE_EVENT, callback);
@@ -65,7 +63,7 @@ export function onUserOnline(
 }
 
 export function onUserOffline(
-  callback: SocketEventCallback<{ userId: string }>
+  callback: SocketEventCallback<{ userId: string }>,
 ): () => void {
   const socket = getSocket();
   socket?.on(ChatEventEnum.USER_IS_OFFLINE_EVENT, callback);
@@ -75,7 +73,7 @@ export function onUserOffline(
 }
 
 export function onOnlineUsersList(
-  callback: SocketEventCallback<{ onlineUserIds: string[] }>
+  callback: SocketEventCallback<{ onlineUserIds: string[] }>,
 ): () => void {
   const socket = getSocket();
   socket?.on(ChatEventEnum.ONLINE_USERS_LIST_EVENT, callback);

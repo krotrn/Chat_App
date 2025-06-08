@@ -19,7 +19,7 @@ export class OnlineStatusService {
 
   static filterOnlineUsers(
     userIds: string[],
-    onlineUserIds: string[]
+    onlineUserIds: string[],
   ): string[] {
     return userIds.filter((userId) => onlineUserIds.includes(userId));
   }

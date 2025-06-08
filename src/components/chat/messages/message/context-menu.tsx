@@ -22,10 +22,10 @@ import {
   Pin,
 } from "lucide-react";
 import { reactionEmoji } from "@/lib/emojis";
-import { useDeleteMessageMutation } from "@/hooks/queries/useDeleteMessageMutation";
-import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
+import { useDeleteMessageMutation } from "@/hooks/messages";
+import { useAppDispatch, useAppSelector } from "@/hooks/types";
 import { setReplyMessage } from "@/lib/redux/slices/current-chat-slice";
-import { useReactToMessageMutation } from "@/hooks/queries/useReactToMessageMutation";
+import { useReactToMessageMutation } from "@/hooks/messages";
 
 interface MessageContextMenuProps {
   message: MessageType;

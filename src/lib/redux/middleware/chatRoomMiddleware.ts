@@ -19,14 +19,14 @@ export const chatRoomMiddleware: Middleware = (store) => (next) => (action) => {
       const { chatId } = (action as unknown as { payload: JoinChatPayload })
         .payload;
       emitJoinChat(chatId);
-      store.dispatch(setConnectionState(ConnectionState.CONNECTED))
+      store.dispatch(setConnectionState(ConnectionState.CONNECTED));
       break;
     }
     case LEAVE_CHAT_ROOM: {
       const { chatId } = (action as unknown as { payload: JoinChatPayload })
         .payload;
       emitLeaveChat(chatId);
-      store.dispatch(setConnectionState(ConnectionState.DISCONNECTED))
+      store.dispatch(setConnectionState(ConnectionState.DISCONNECTED));
       console.log("ChatRoomMiddleware: LEAVE_CHAT_ROOM action received");
       break;
     }

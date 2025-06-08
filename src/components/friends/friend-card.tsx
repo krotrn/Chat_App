@@ -6,9 +6,9 @@ import { MessageSquareMore, UserMinus } from "lucide-react";
 import { FormattedFriendType } from "@/types/formattedDataTypes";
 import { friendCardVariant } from "@/animations/friends/friend-card-variant";
 import { ConnectionState, ParticipantsType } from "@/types/ChatType";
-import { useCreateDirectChatMutation } from "@/hooks/queries/useDirectChatMutation";
-import { useAppSelector } from "@/hooks/useReduxType";
-import { useRemoveFriendMutation } from "@/hooks/queries/useRemoveFriendMutation";
+import { useCreateDirectChatMutation } from "@/hooks/chat";
+import { useAppSelector } from "@/hooks/types";
+import { useRemoveFriendMutation } from "@/hooks/friends";
 interface FriendCardProps {
   friend: FormattedFriendType;
 }
@@ -19,7 +19,7 @@ export default function FriendCard({ friend }: FriendCardProps) {
   const token = useAppSelector((state) => state.user.token);
   const user = useAppSelector((state) => state.user.user);
   const connectionState = useAppSelector(
-    (state) => state.connection.connectionState
+    (state) => state.connection.connectionState,
   );
   const isConnected = connectionState === ConnectionState.CONNECTED;
   const handleMessageClick = async () => {

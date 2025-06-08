@@ -17,10 +17,10 @@ import { FormError } from "@/components/auth/Form-Error";
 import { FormSuccess } from "@/components/auth/Form-Success";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useProfileUpdateMutation } from "@/hooks/queries/useProfileUpdateMutation";
-import { useGetUserByUsernameQuery } from "@/hooks/queries/useGetUserByUsernameQuery";
+import { useProfileUpdateMutation } from "@/hooks/profile";
+import { useGetUserByUsernameQuery } from "@/hooks/friends";
 import ProfileUpdateSkeleton from "../skeleton/profile-update-skeleton";
-import { useAppSelector } from "@/hooks/useReduxType";
+import { useAppSelector } from "@/hooks/types";
 
 export default function ProfileForm() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);

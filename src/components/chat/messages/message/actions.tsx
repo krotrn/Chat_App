@@ -15,8 +15,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { reactionEmoji } from "@/lib/emojis";
-import { useReactToMessageMutation } from "@/hooks/queries/useReactToMessageMutation";
-import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
+import { useReactToMessageMutation } from "@/hooks/messages";
+import { useAppDispatch, useAppSelector } from "@/hooks/types";
 import { setReplyMessage } from "@/lib/redux/slices/current-chat-slice";
 
 interface MessageActionsProps {

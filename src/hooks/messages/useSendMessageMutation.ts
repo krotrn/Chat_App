@@ -10,7 +10,7 @@ import {
   StatusEnum,
 } from "@/types/ChatType";
 import { queryKeys } from "@/lib/config";
-import { useAppSelector } from "@/hooks/useReduxType";
+import { useAppSelector } from "@/hooks/types/useReduxType";
 import { sendMessageAction } from "@/actions/chat";
 
 export function useSendMessageMutation() {
@@ -137,7 +137,6 @@ export function useSendMessageMutation() {
         },
       );
 
-      // Update the last message in chats list
       queryClient.setQueryData<InfiniteData<{ chats: ChatType[] }>>(
         queryKeys.chats.infinite(20),
         (old) => {

@@ -6,9 +6,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { ChatType, ParticipantsType } from "@/types/ChatType";
-import { useDeleteDirectChatMutation } from "@/hooks/queries/useDirectChatMutation";
-import { useDeleteGroupChatMutation } from "@/hooks/queries/useGroupChatMutations";
-import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
+import { useDeleteDirectChatMutation } from "@/hooks/chat";
+import { useDeleteGroupChatMutation } from "@/hooks/chat";
+import { useAppDispatch, useAppSelector } from "@/hooks/types";
 import { useRouter } from "next/navigation";
 import { setCurrentChat } from "@/lib/redux/slices/current-chat-slice";
 

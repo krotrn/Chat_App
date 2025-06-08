@@ -1,5 +1,5 @@
 "use client";
-import useSearchQuery from "@/hooks/useSearchQuery";
+import { useSearchQuery } from "@/hooks/ui";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
@@ -17,9 +17,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SearchUserType } from "@/types/formattedDataTypes";
 import { handleFriendRequest } from "@/actions/user";
 import { toast } from "sonner";
-import { useFriendSearchQuery } from "@/hooks/queries/useFriendSearchQuery";
+import { useFriendSearchQuery } from "@/hooks/friends";
 import { FriendshipStatus } from "@prisma/client";
-import { useSendRequestMutation } from "@/hooks/queries/useSendRequestMutation";
+import { useSendRequestMutation } from "@/hooks/friends";
 
 export default function FriendSearch() {
   const [searchQuery, setSearchQuery] = useSearchQuery("nfr", "");

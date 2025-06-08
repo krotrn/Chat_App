@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getGroupChatDetails } from "@/services/chat";
-import { useAppSelector } from "@/hooks/useReduxType";
+import { useAppSelector } from "@/hooks/types/useReduxType";
 import { queryKeys } from "@/lib/config";
 
 export function useGroupChatDetailsQuery(chatId: string) {

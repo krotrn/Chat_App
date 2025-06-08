@@ -80,7 +80,7 @@ export const connectionMiddleware: Middleware =
             const currentChat = store.getState().currentChat.currentChat;
             if (currentChat) {
               console.log(
-                `Rejoining chat ${currentChat._id} after reconnection`
+                `Rejoining chat ${currentChat._id} after reconnection`,
               );
               socket.emit(ChatEventEnum.JOIN_CHAT_EVENT, currentChat._id);
             }

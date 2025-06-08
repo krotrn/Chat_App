@@ -27,7 +27,7 @@ const currentChatSlice = createSlice({
     },
     updateCurrentChatLastMessage: (
       state,
-      action: PayloadAction<MessageType>
+      action: PayloadAction<MessageType>,
     ) => {
       if (
         state.currentChat &&

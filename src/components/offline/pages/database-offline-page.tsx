@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { RefreshCw, Database } from "lucide-react";
 import { config } from "@/config";
 import Link from "next/link";
-import { useCheckDBQuery } from "@/hooks/queries/useCheckDBQuery";
+import { useCheckDBQuery } from "@/hooks/system";
 
 export function DatabaseOfflinePage() {
   const { data, isLoading, refetch } = useCheckDBQuery();

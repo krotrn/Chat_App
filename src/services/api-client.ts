@@ -79,7 +79,6 @@ export const isConnectionHealthy = (): boolean => {
   return !isConnectionIssue;
 };
 
-// Explicitly check connection health
 export const checkConnectionHealth = async (): Promise<boolean> => {
   try {
     await api.get("/ping", {

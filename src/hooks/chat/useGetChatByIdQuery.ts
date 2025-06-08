@@ -1,6 +1,6 @@
 import { getChatById } from "@/services/chat";
 import { useQuery } from "@tanstack/react-query";
-import { useAppSelector } from "@/hooks/useReduxType";
+import { useAppSelector } from "@/hooks/types/useReduxType";
 import { queryKeys } from "@/lib/config";
 
 export const useGetChatIdQuery = (chatId: string) => {

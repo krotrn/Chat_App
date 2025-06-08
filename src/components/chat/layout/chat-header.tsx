@@ -5,10 +5,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import HeaderActions from "@/components/chat/ui/header-action";
 import { ChatType } from "@/types/ChatType";
 import { User } from "next-auth";
-import { useAppSelector } from "@/hooks/useReduxType";
+import { useAppSelector } from "@/hooks/types";
 import { useMemo } from "react";
 import { AnimatedTooltip } from "@/components/ui/animate-tootip";
-import { useGetUserByUsernameQuery } from "@/hooks/queries/useGetUserByUsernameQuery";
+import { useGetUserByUsernameQuery } from "@/hooks/friends";
 
 interface ChatHeaderProps {
   chat: ChatType;
@@ -28,11 +28,11 @@ export default function ChatHeader({
   const user = useGetUserByUsernameQuery(username).data;
   const isAdmin = chat.admin === user?.id;
   const onlineUserIds = useAppSelector(
-    (state) => state.onlineUsers.onlineUserIds
+    (state) => state.onlineUsers.onlineUserIds,
   );
   const isOnline = useMemo(
     () => onlineUserIds.some((p) => p !== user?.id),
-    [onlineUserIds, user?.id]
+    [onlineUserIds, user?.id],
   );
 
   let title: string;

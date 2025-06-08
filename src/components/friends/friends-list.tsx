@@ -8,12 +8,12 @@ import {
 } from "@/components/ui/card";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import useSearchQuery from "@/hooks/useSearchQuery";
+import { useSearchQuery } from "@/hooks/ui";
 import { AnimatePresence } from "framer-motion";
 import FriendCard from "@/components/friends/friend-card";
 import { FormattedFriendType } from "@/types/formattedDataTypes";
 import { useState, useEffect } from "react";
-import { useFetchFriendsQuery } from "@/hooks/queries/useFetchFriendsQuery";
+import { useFetchFriendsQuery } from "@/hooks/friends";
 import FriendsListSkeleton from "../skeleton/friend-list-skeleton";
 
 export default function FriendsList() {

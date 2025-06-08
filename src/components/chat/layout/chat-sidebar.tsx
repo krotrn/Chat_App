@@ -8,9 +8,9 @@ import AIChatItem from "@/components/chat/ui/ai-chat-item";
 import { AIModel, ChatType } from "@/types/ChatType";
 import { cn } from "@/lib/utils";
 import { ResizablePanel } from "@/components/ui/resizable";
-import { useAppSelector } from "@/hooks/useReduxType";
+import { useAppSelector } from "@/hooks/types";
 import { useCallback, useEffect, useState, useMemo, useRef } from "react";
-import { useFetchChatsInfiniteQuery } from "@/hooks/queries/useFetchChatsInfiniteQuery";
+import { useFetchChatsInfiniteQuery } from "@/hooks/chat";
 import CreateGroupDialog from "../ui/group-dialog";
 import ChatSideBarSkeleton from "@/components/skeleton/chat-sidebar-skeleton";
 

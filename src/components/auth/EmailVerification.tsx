@@ -4,7 +4,7 @@ import { CardWrapper } from "@/components/auth/card-wrapper";
 import { Button } from "@/components/ui/button";
 import { FormError } from "@/components/auth/Form-Error";
 import { FormSuccess } from "@/components/auth/Form-Success";
-import useCountdown from "@/hooks/useCountdown";
+import { useCountdown } from "@/hooks/ui";
 import { sendVerificationEmail } from "@/actions/auth";
 
 export default function EmailVerification({

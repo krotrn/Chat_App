@@ -10,15 +10,15 @@ import ChatDetails from "@/components/chat/layout/chat-details";
 import TypingIndicator from "@/components/chat/messages/typing-indicator";
 
 import { ConnectionState } from "@/types/ChatType";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/ui";
 import { WifiOff } from "lucide-react";
 import { ResizablePanel } from "@/components/ui/resizable";
 import { cn } from "@/lib/utils";
-import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
+import { useAppDispatch, useAppSelector } from "@/hooks/types";
 import { setCurrentChat } from "@/lib/redux/slices/current-chat-slice";
-import { useFetchChatsInfiniteQuery } from "@/hooks/queries/useFetchChatsInfiniteQuery";
+import { useFetchChatsInfiniteQuery } from "@/hooks/chat";
 import { JOIN_CHAT_ROOM, LEAVE_CHAT_ROOM } from "@/lib/redux/chatSocketActions";
-import { useTypingIndicator } from "@/features/typing/hooks/useTypingIndicator";
+import { useTypingIndicator } from "@/hooks/ui";
 
 export default function ChatMain() {
   const router = useRouter();
@@ -26,7 +26,7 @@ export default function ChatMain() {
   const [showDetails, setShowDetails] = useState(false);
   const currentChat = useAppSelector((state) => state.currentChat.currentChat);
   const connectionState = useAppSelector(
-    (state) => state.connection.connectionState
+    (state) => state.connection.connectionState,
   );
   new Promise((resolve) => {
     if (connectionState === ConnectionState.CONNECTING) {
@@ -54,7 +54,7 @@ export default function ChatMain() {
     };
   }, [currentChat?._id, dispatch, router]);
   const chat = data?.pages[0].chats.find(
-    (chat) => chat._id === currentChat?._id
+    (chat) => chat._id === currentChat?._id,
   );
 
   const { typingUserIds } = useTypingIndicator({
@@ -76,7 +76,7 @@ export default function ChatMain() {
       <ResizablePanel
         className={cn(
           "h-full flex items-center justify-center",
-          !currentChat && "hidden md:flex"
+          !currentChat && "hidden md:flex",
         )}
         minSize={50}
         defaultSize={70}

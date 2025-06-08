@@ -6,7 +6,7 @@ import {
 import { getSocket } from "@/features/socket/connection";
 import { ChatEventEnum } from "@/lib/socket-event";
 import { INITIALIZE_SOCKET } from "@/lib/redux/chatSocketActions";
-import type { TypingUser } from "@/features/typing/types";
+import { TypingUser } from "@/types/ChatType";
 
 export const typingMiddleware: Middleware = (store) => (next) => (action) => {
   if (typeof action !== "object" || !action || !("type" in action)) {
@@ -23,7 +23,7 @@ export const typingMiddleware: Middleware = (store) => (next) => (action) => {
           const typingUserIds = store.getState().typing.typingUserIds;
           const exists = typingUserIds.some(
             (u: TypingUser) =>
-              u.userId === data.userId && u.chatId === data.chatId
+              u.userId === data.userId && u.chatId === data.chatId,
           );
 
           if (!exists) {
@@ -34,14 +34,14 @@ export const typingMiddleware: Middleware = (store) => (next) => (action) => {
                 store.getState().typing.typingUserIds;
               const stillTyping = currentTypingUserIds.some(
                 (u: TypingUser) =>
-                  u.userId === data.userId && u.chatId === data.chatId
+                  u.userId === data.userId && u.chatId === data.chatId,
               );
               if (stillTyping) {
                 store.dispatch(removeTypingUser(data));
               }
             }, 5000);
           }
-        }
+        },
       );
 
       socket.on(
@@ -49,7 +49,7 @@ export const typingMiddleware: Middleware = (store) => (next) => (action) => {
         (data: { userId: string; chatId: string }) => {
           console.log("User stop typing event:", data);
           store.dispatch(removeTypingUser(data));
-        }
+        },
       );
     }
   }

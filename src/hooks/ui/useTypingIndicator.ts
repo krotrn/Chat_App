@@ -1,16 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useAppSelector } from "@/hooks/useReduxType";
-import { TypingService } from "../services/typingService";
-import type {
+import { useAppSelector } from "@/hooks/types/useReduxType";
+import {
   UseTypingIndicatorProps,
   UseTypingIndicatorReturn,
-} from "../types";
+} from "@/types/ChatType";
+import { TypingService } from "@/features/typing/services/typingService";
 
 export function useTypingIndicator({
   chatId,
   currentUserId,
 }: UseTypingIndicatorProps): UseTypingIndicatorReturn {
-
   const [isTyping, setIsTyping] = useState(false);
   const typingUserIds = useAppSelector((state) => state.typing.typingUserIds);
 

@@ -6,9 +6,9 @@ import { useEffect, useMemo, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import DateDivider from "@/components/chat/messages/date-divider";
 import MessageItem from "@/components/chat/messages/message-item";
-import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
-import { useMessagesInfiniteQuery } from "@/hooks/queries/useMessagesInfiniteQuery";
-import { useMarkAsReadMutation } from "@/hooks/queries/useMarkAsReadMutation";
+import { useAppDispatch, useAppSelector } from "@/hooks/types";
+import { useMessagesInfiniteQuery } from "@/hooks/messages";
+import { useMarkAsReadMutation } from "@/hooks/messages";
 
 interface MessageListProps {
   participants: ParticipantsType[];
@@ -43,18 +43,18 @@ export default function MessageList({ participants }: MessageListProps) {
           fetchNextPage();
         }
       },
-      { root: ele, threshold: 0 }
+      { root: ele, threshold: 0 },
     );
     if (topTrigger.current) observer.observe(topTrigger.current);
     return () => observer.disconnect();
   }, [fetchNextPage, isFetchingNextPage, hasNextPage]);
   const messages = useMemo(
     () => allMessages.flatMap((page) => page.messages) ?? [],
-    [allMessages]
+    [allMessages],
   );
   const groupedMessages = useMemo(
     () => groupMessagesByDate(messages),
-    [messages]
+    [messages],
   );
 
   useEffect(() => {
@@ -77,7 +77,7 @@ export default function MessageList({ participants }: MessageListProps) {
       .filter(
         (msg) =>
           msg.sender.userId !== currentUserId &&
-          !msg.readBy.some((r) => r.userId === currentUserId)
+          !msg.readBy.some((r) => r.userId === currentUserId),
       )
       .map((msg) => msg._id);
     if (messageIds.length) {

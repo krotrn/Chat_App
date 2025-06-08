@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useOnlineStatus } from "@/hooks/use-online-status";
+import { useOnlineStatus } from "@/hooks/system";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, WifiOff } from "lucide-react";
 

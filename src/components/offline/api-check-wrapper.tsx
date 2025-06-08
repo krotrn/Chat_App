@@ -1,6 +1,6 @@
 "use client";
 import { ApiOfflinePage } from "@/components/offline/pages/api-offline-page";
-import { useConnectionHealthQuery } from "@/hooks/queries/useConnectionHealthQuery";
+import { useConnectionHealthQuery } from "@/hooks/system";
 
 export default function APICheckWrapper({
   children,

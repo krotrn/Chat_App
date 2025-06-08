@@ -1,0 +1,1 @@
+export { useProfileUpdateMutation } from "./useProfileUpdateMutation";

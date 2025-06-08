@@ -23,7 +23,7 @@ export class TypingService {
 
   static filterTypingUsersByChatId(
     typingUsers: Array<{ userId: string; chatId: string }>,
-    chatId: string
+    chatId: string,
   ): string[] {
     return typingUsers
       .filter((typing) => typing.chatId === chatId)
@@ -32,12 +32,12 @@ export class TypingService {
 
   static addTypingUser(
     typingUsers: Array<{ userId: string; chatId: string }>,
-    newTypingUser: { userId: string; chatId: string }
+    newTypingUser: { userId: string; chatId: string },
   ): Array<{ userId: string; chatId: string }> {
     const exists = typingUsers.some(
       (user) =>
         user.userId === newTypingUser.userId &&
-        user.chatId === newTypingUser.chatId
+        user.chatId === newTypingUser.chatId,
     );
 
     if (!exists) {
@@ -49,14 +49,14 @@ export class TypingService {
 
   static removeTypingUser(
     typingUsers: Array<{ userId: string; chatId: string }>,
-    userToRemove: { userId: string; chatId: string }
+    userToRemove: { userId: string; chatId: string },
   ): Array<{ userId: string; chatId: string }> {
     return typingUsers.filter(
       (user) =>
         !(
           user.userId === userToRemove.userId &&
           user.chatId === userToRemove.chatId
-        )
+        ),
     );
   }
 }

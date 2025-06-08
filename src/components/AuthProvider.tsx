@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { setAuth, clearAuth } from "@/lib/redux/slices/user-slice";
-import { useAppDispatch } from "@/hooks/useReduxType";
+import { useAppDispatch } from "@/hooks/types";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();

@@ -13,11 +13,11 @@ import FileUploader from "@/components/chat/input/file-uploader";
 import { Textarea } from "@/components/ui/textarea";
 import EmojiPicker from "@/components/chat/input/emoji-picker";
 import CameraCapture from "@/components/chat/input/camera-capture";
-import { useSendMessageMutation } from "@/hooks/queries/useSendMessageMutation";
+import { useSendMessageMutation } from "@/hooks/messages";
 import { SimpleAttachmentPreview } from "@/components/chat/attachments/simple-attachment-preview";
-import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
+import { useAppDispatch, useAppSelector } from "@/hooks/types";
 import { setReplyMessage } from "@/lib/redux/slices/current-chat-slice";
-import { useTypingIndicator } from "@/features/typing/hooks/useTypingIndicator";
+import { useTypingIndicator } from "@/hooks/ui";
 
 export interface MessageInputProps {
   participants: ParticipantsType[];
@@ -28,11 +28,9 @@ export default function MessageInput({ participants }: MessageInputProps) {
   const [attachments, setAttachments] = useState<File[]>([]);
   const [isAttaching, setIsAttaching] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { currentChat: chat } = useAppSelector(
-    (state) => state.currentChat
-  );
+  const { currentChat: chat } = useAppSelector((state) => state.currentChat);
   const connectionState = useAppSelector(
-    (state) => state.connection.connectionState
+    (state) => state.connection.connectionState,
   );
   const disabled = connectionState !== ConnectionState.CONNECTED;
   const { mutate: handleSendMessage } = useSendMessageMutation();
@@ -80,7 +78,7 @@ export default function MessageInput({ participants }: MessageInputProps) {
       replyMessage,
       chat,
       token,
-    ]
+    ],
   );
 
   const handleKeyDown = useCallback(
@@ -92,7 +90,7 @@ export default function MessageInput({ participants }: MessageInputProps) {
         dispatch(setReplyMessage(null));
       }
     },
-    [handleSubmit, replyMessage, dispatch]
+    [handleSubmit, replyMessage, dispatch],
   );
 
   const handleEmojiSelect = useCallback(
@@ -110,7 +108,7 @@ export default function MessageInput({ participants }: MessageInputProps) {
         textarea.focus();
       }, 0);
     },
-    [message]
+    [message],
   );
 
   const handleFileSelect = useCallback((files: File[]) => {
@@ -131,7 +129,7 @@ export default function MessageInput({ participants }: MessageInputProps) {
       setMessage(e.target.value);
       handleLocalUserTyping();
     },
-    [handleLocalUserTyping]
+    [handleLocalUserTyping],
   );
 
   const replyToUser = replyMessage

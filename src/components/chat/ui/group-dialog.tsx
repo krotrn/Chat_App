@@ -21,8 +21,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import MemberList from "./member-list";
-import { useCreateGroupChatMutation } from "@/hooks/queries/useGroupChatMutations";
-import { useAppSelector } from "@/hooks/useReduxType";
+import { useCreateGroupChatMutation } from "@/hooks/chat";
+import { useAppSelector } from "@/hooks/types";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
@@ -43,7 +43,6 @@ export default function CreateGroupDialog() {
     },
   });
 
-  // Handle error display
   useEffect(() => {
     if (error) {
       console.error("Group creation error:", error);
@@ -51,7 +50,6 @@ export default function CreateGroupDialog() {
     }
   }, [error]);
 
-  // Handle success
   useEffect(() => {
     if (isSuccess) {
       toast.success("Group created successfully!");

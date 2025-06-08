@@ -153,3 +153,73 @@ export interface CloudinaryUploadResponse {
   secure_url: string;
   status: "pending" | "completed" | "failed";
 }
+
+export interface TypingState {
+  typingUserIds: TypingUser[];
+}
+
+export interface TypingUser {
+  userId: string;
+  chatId: string;
+}
+
+export interface TypingEvent {
+  userId: string;
+  chatId: string;
+}
+
+export interface TypingIndicatorProps {
+  isTyping: boolean;
+  typingUserIds: string[];
+  participants: Array<{
+    userId: string;
+    name: string;
+    avatarUrl?: string;
+  }>;
+}
+
+export interface UseTypingIndicatorProps {
+  chatId: string | null;
+  currentUserId: string;
+}
+
+export interface UseTypingIndicatorReturn {
+  typingUserIds: string[];
+  isTyping: boolean;
+  handleLocalUserTyping: () => void;
+}
+
+export interface ConnectionRecoveryState {
+  isRecovering: boolean;
+  lastRecoveryAttempt: Date | null;
+  recoveryAttempts: number;
+}
+
+export interface ConnectionHealthConfig {
+  healthCheckInterval: number;
+  maxRecoveryAttempts: number;
+  recoveryDelay: number;
+  staleConnectionThreshold: number;
+}
+
+export interface ConnectionRecoveryHookReturn {
+  performConnectionRecovery: () => Promise<void>;
+  isRecovering: boolean;
+}
+
+export interface OnlineStatusState {
+  onlineUserIds: string[];
+  lastUpdated: number | null;
+}
+
+export interface UserOnlineEvent {
+  userId: string;
+}
+
+export interface UserOfflineEvent {
+  userId: string;
+}
+
+export interface OnlineUsersListEvent {
+  onlineUserIds: string[];
+}

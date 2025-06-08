@@ -6,7 +6,7 @@ import {
 import { updateReaction } from "@/services/message";
 import { queryKeys } from "@/lib/config";
 import { MessagesPageData, MessageType } from "@/types/ChatType";
-import { useAppSelector } from "@/hooks/useReduxType";
+import { useAppSelector } from "@/hooks/types/useReduxType";
 
 export function useReactToMessageMutation() {
   const queryClient = useQueryClient();

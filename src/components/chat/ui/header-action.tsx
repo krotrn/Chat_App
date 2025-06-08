@@ -8,8 +8,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useDeleteDirectChatMutation } from "@/hooks/queries/useDirectChatMutation";
-import { useAppSelector } from "@/hooks/useReduxType";
+import { useDeleteDirectChatMutation } from "@/hooks/chat";
+import { useAppSelector } from "@/hooks/types";
 
 interface HeaderActionsProps {
   isAdmin: boolean;

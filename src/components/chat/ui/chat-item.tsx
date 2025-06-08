@@ -12,9 +12,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
-import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
-import { useDeleteDirectChatMutation } from "@/hooks/queries/useDirectChatMutation";
-import { useDeleteGroupChatMutation } from "@/hooks/queries/useGroupChatMutations";
+import { useAppDispatch, useAppSelector } from "@/hooks/types";
+import { useDeleteDirectChatMutation } from "@/hooks/chat";
+import { useDeleteGroupChatMutation } from "@/hooks/chat";
 import { setCurrentChat } from "@/lib/redux/slices/current-chat-slice";
 import { useRouter } from "next/navigation";
 
@@ -65,7 +65,7 @@ export default function ChatItem({ chat }: ChatItemProps) {
     <motion.div
       className={cn(
         "flex cursor-pointer items-center gap-3 rounded-md p-2",
-        isSelected ? "bg-accent" : "hover:bg-muted"
+        isSelected ? "bg-accent" : "hover:bg-muted",
       )}
       onClick={onClick}
       whileHover={{ scale: 1.02 }}

@@ -1,5 +1,5 @@
+import { OnlineStatusState } from "@/types/ChatType";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { OnlineStatusState } from "@/features/online-status/types";
 
 const initialState: OnlineStatusState = {
   onlineUserIds: [],
@@ -22,7 +22,7 @@ const onlineUsersSlice = createSlice({
     },
     removeOnlineUser: (state, action: PayloadAction<string>) => {
       state.onlineUserIds = state.onlineUserIds.filter(
-        (userId) => userId !== action.payload
+        (userId) => userId !== action.payload,
       );
       state.lastUpdated = Date.now();
     },

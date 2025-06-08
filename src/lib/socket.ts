@@ -82,10 +82,10 @@ export function joinChat(chatId: string): boolean {
         console.log(`Successfully joined chat: ${chatId}`);
       } else {
         console.error(
-          `Failed to join chat: ${response.error || "Unknown error"}`
+          `Failed to join chat: ${response.error || "Unknown error"}`,
         );
       }
-    }
+    },
   );
   return true;
 }
@@ -99,8 +99,7 @@ export function leaveChat(chatId: string): boolean {
   return true;
 }
 
-
-export function emitTyping(data: { userId: string; chatId: string; }): boolean { 
+export function emitTyping(data: { userId: string; chatId: string }): boolean {
   if (socket?.connected) {
     socket.emit(ChatEventEnum.TYPING_EVENT, data);
     return true;
@@ -136,7 +135,7 @@ export function emitUserOffline(): boolean {
 }
 
 export function onUserOnline(
-  callback: (data: { userId: string }) => void
+  callback: (data: { userId: string }) => void,
 ): () => void {
   socket?.on(ChatEventEnum.USER_IS_ONLINE_EVENT, callback);
   return () => {
@@ -145,7 +144,7 @@ export function onUserOnline(
 }
 
 export function onUserOffline(
-  callback: (data: { userId: string }) => void
+  callback: (data: { userId: string }) => void,
 ): () => void {
   socket?.on(ChatEventEnum.USER_IS_OFFLINE_EVENT, callback);
   return () => {
@@ -154,14 +153,13 @@ export function onUserOffline(
 }
 
 export function ononlineUserIdsList(
-  callback: (data: { onlineUserIds: string[] }) => void
+  callback: (data: { onlineUserIds: string[] }) => void,
 ): () => void {
   socket?.on(ChatEventEnum.ONLINE_USERS_LIST_EVENT, callback);
   return () => {
     socket?.off(ChatEventEnum.ONLINE_USERS_LIST_EVENT, callback);
   };
 }
-
 
 export function checkSocketHealth(): Promise<boolean> {
   return new Promise((resolve) => {
@@ -180,7 +178,7 @@ export function checkSocketHealth(): Promise<boolean> {
       (response: { timestamp: number }) => {
         clearTimeout(timeout);
         resolve(Boolean(response && response.timestamp));
-      }
+      },
     );
   });
 }

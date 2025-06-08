@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { memo } from "react";
-import { TypingIndicatorProps } from "@/features/typing/types";
+import { TypingIndicatorProps } from "@/types/ChatType";
 
 function TypingIndicator({
   isTyping,
@@ -15,7 +15,7 @@ function TypingIndicator({
   }
 
   const typingUsers = participants.filter((participant) =>
-    typingUserIds.includes(participant.userId)
+    typingUserIds.includes(participant.userId),
   );
 
   if (typingUsers.length === 0) {

@@ -3,19 +3,18 @@ import {
   forceReconnection,
   performHealthCheck,
 } from "@/features/socket/health";
-import { ConnectionState } from "@/types/ChatType";
-import { ConnectionHealthConfig } from "../types";
+import { ConnectionHealthConfig, ConnectionState } from "@/types/ChatType";
 
 export class ConnectionRecoveryService {
   private static defaultConfig: ConnectionHealthConfig = {
-    healthCheckInterval: 30000, // 30 seconds
+    healthCheckInterval: 30000,
     maxRecoveryAttempts: 3,
-    recoveryDelay: 2000, // 2 seconds
-    staleConnectionThreshold: 300000, // 5 minutes
+    recoveryDelay: 2000,
+    staleConnectionThreshold: 300000,
   };
 
   static async performRecovery(
-    connectionState: ConnectionState
+    connectionState: ConnectionState,
   ): Promise<boolean> {
     if (connectionState === ConnectionState.CONNECTED) {
       const isHealthy = await performHealthCheck();
@@ -32,14 +31,14 @@ export class ConnectionRecoveryService {
 
   static async handleVisibilityChange(
     connectionState: ConnectionState,
-    lastActiveTime: number
+    lastActiveTime: number,
   ): Promise<void> {
     if (!document.hidden) {
       const timeSinceLastActive = Date.now() - lastActiveTime;
 
       if (timeSinceLastActive > this.defaultConfig.staleConnectionThreshold) {
         console.log(
-          "User returned after being away, checking connection health"
+          "User returned after being away, checking connection health",
         );
         const isHealthy = await performHealthCheck();
         if (!isHealthy) {
@@ -55,7 +54,7 @@ export class ConnectionRecoveryService {
     if (navigator.onLine) {
       console.log("Browser back online, checking socket connection");
       await new Promise((resolve) =>
-        setTimeout(resolve, this.defaultConfig.recoveryDelay)
+        setTimeout(resolve, this.defaultConfig.recoveryDelay),
       );
 
       const isHealthy = await performHealthCheck();
@@ -66,7 +65,7 @@ export class ConnectionRecoveryService {
   }
 
   static async performPeriodicHealthCheck(
-    connectionState: ConnectionState
+    connectionState: ConnectionState,
   ): Promise<void> {
     if (connectionState === ConnectionState.CONNECTED) {
       const isHealthy = await performHealthCheck();

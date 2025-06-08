@@ -1,9 +1,9 @@
-import { useAppSelector } from "@/hooks/useReduxType";
-import { OnlineStatusService } from "../services/onlineStatusService";
+import { useAppSelector } from "@/hooks/types/useReduxType";
+import { OnlineStatusService } from "@/features/online-status/onlineStatusService";
 
 export function useOnlineStatus() {
   const onlineUserIds = useAppSelector(
-    (state) => state.onlineUsers.onlineUserIds
+    (state) => state.onlineUsers.onlineUserIds,
   );
 
   const isUserOnline = (userId: string): boolean => {

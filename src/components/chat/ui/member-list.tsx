@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { FormattedFriendType } from "@/types/formattedDataTypes";
 import { groupDetailsSchema } from "@/schemas/group-details";
 import { z } from "zod";
-import { useFetchFriendsQuery } from "@/hooks/queries/useFetchFriendsQuery";
+import { useFetchFriendsQuery } from "@/hooks/friends";
 
 interface MemberListProps {
   field: ControllerRenderProps<z.infer<typeof groupDetailsSchema>, "members">;

@@ -48,7 +48,7 @@ export default function RecommendationCard({
       }
       try {
         await sendFriendRequest(recommendation.recommendedUser.id);
-        //TODO Delete Recommendations
+        toast.success("Friend request sent successfully!");
       } catch (error) {
         if (error instanceof Error) {
           console.log(error.message);
@@ -66,7 +66,6 @@ export default function RecommendationCard({
         return;
       }
       try {
-        //TODO Join Group
       } catch (error) {
         if (error instanceof Error) {
           console.log(error.message);

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { RefreshCw, Server, Wifi, Coffee } from "lucide-react";
 import { config } from "@/config";
 import Link from "next/link";
-import { useConnectionHealthQuery } from "@/hooks/queries/useConnectionHealthQuery";
+import { useConnectionHealthQuery } from "@/hooks/system";
 import { serverCheckVariants } from "@/animations/chat/servercheckVariant";
 
 export function ApiOfflinePage() {

@@ -22,10 +22,10 @@ export const onlineStatusMiddleware: Middleware =
           (data: { onlineUserIds: string[] }) => {
             console.log(
               "Received initial online users list:",
-              data.onlineUserIds
+              data.onlineUserIds,
             );
             store.dispatch(setOnlineUserIds(data.onlineUserIds));
-          }
+          },
         );
 
         socket.on(
@@ -33,7 +33,7 @@ export const onlineStatusMiddleware: Middleware =
           (data: { userId: string }) => {
             console.log(`User ${data.userId} is online`);
             store.dispatch(addOnlineUser(data.userId));
-          }
+          },
         );
 
         socket.on(
@@ -41,7 +41,7 @@ export const onlineStatusMiddleware: Middleware =
           (data: { userId: string }) => {
             console.log(`User ${data.userId} is offline`);
             store.dispatch(removeOnlineUser(data.userId));
-          }
+          },
         );
       }
     }

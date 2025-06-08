@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import OfflinePage from "@/components/offline/pages/offline-page";
-import { useOnlineStatus } from "@/hooks/use-online-status";
+import { useOnlineStatus } from "@/hooks/system";
 
 export default function OnlineCheckWrapper({
   children,

@@ -1,6 +1,6 @@
 "use client";
 import { DatabaseOfflinePage } from "@/components/offline/pages/database-offline-page";
-import { useCheckDBQuery } from "@/hooks/queries/useCheckDBQuery";
+import { useCheckDBQuery } from "@/hooks/system";
 
 export default function DatabaseCheckWrapper({
   children,

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useCallback } from "react";
-import { useAppDispatch, useAppSelector } from "@/hooks/useReduxType";
+import { useAppDispatch, useAppSelector } from "@/hooks/types/useReduxType";
 import { setConnectionState } from "@/lib/redux/slices/connection-slice";
 import { ConnectionState } from "@/types/ChatType";
 import { getSocket, emitUserOnline } from "@/lib/socket";
@@ -13,7 +13,7 @@ import { INITIALIZE_SOCKET } from "@/lib/redux/chatSocketActions";
 export function useOnlineStatusSync() {
   const dispatch = useAppDispatch();
   const connectionState = useAppSelector(
-    (state) => state.connection.connectionState
+    (state) => state.connection.connectionState,
   );
   const token = useAppSelector((state) => state.user.token);
   const lastActiveRef = useRef<number>(Date.now());
@@ -29,7 +29,7 @@ export function useOnlineStatusSync() {
       return new Promise<boolean>((resolve) => {
         const timeout = setTimeout(() => {
           console.warn(
-            "Socket health check timeout - connection might be stale"
+            "Socket health check timeout - connection might be stale",
           );
           resolve(false);
         }, 5000);
@@ -43,7 +43,7 @@ export function useOnlineStatusSync() {
             } else {
               resolve(false);
             }
-          }
+          },
         );
       });
     }
@@ -78,7 +78,7 @@ export function useOnlineStatusSync() {
 
       if (timeSinceLastActive > 5 * 60 * 1000) {
         console.log(
-          "User returned after being away, checking connection health"
+          "User returned after being away, checking connection health",
         );
 
         const isHealthy = await performHealthCheck();
