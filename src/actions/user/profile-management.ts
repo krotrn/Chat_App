@@ -9,7 +9,10 @@ import { StatsProps } from "@/types/formattedDataTypes";
 import { UserRoles } from "@prisma/client";
 import { z } from "zod";
 import { handleActionError } from "@/lib/utils/utils";
-import { deleteFromCloudinary, uploadToCloudinary } from "@/lib/utils/cloudinary.utils";
+import {
+  deleteFromCloudinary,
+  uploadToCloudinary,
+} from "@/lib/utils/cloudinary.utils";
 
 interface ResponseType<T> {
   success: boolean;

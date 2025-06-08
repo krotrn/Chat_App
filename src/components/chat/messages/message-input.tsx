@@ -16,7 +16,13 @@ import {
   useTypingIndicator,
 } from "@/hooks";
 import { setReplyMessage } from "@/lib/redux/slices/current-chat-slice";
-import { Button, Popover, PopoverContent, PopoverTrigger, Textarea } from "@/components/ui";
+import {
+  Button,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Textarea,
+} from "@/components/ui";
 
 export interface MessageInputProps {
   participants: ParticipantsType[];

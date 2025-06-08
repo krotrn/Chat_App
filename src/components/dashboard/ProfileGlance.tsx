@@ -1,4 +1,12 @@
-import { Card, CardContent, CardHeader,Avatar, AvatarFallback, AvatarImage, Button } from "@/components/ui";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Button,
+} from "@/components/ui";
 import { Edit, MessageSquareMoreIcon } from "lucide-react";
 import Link from "next/link";
 import { ProfileGlanceSkeleton } from "@/components/skeleton";

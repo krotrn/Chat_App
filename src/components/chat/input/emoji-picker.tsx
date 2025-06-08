@@ -4,7 +4,12 @@ import { useState, useEffect } from "react";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import { Smile } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger, Button } from "@/components/ui";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Button,
+} from "@/components/ui";
 
 interface EmojiPickerProps {
   onEmojiSelect: (emoji: { native: string }) => void;

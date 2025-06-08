@@ -1,9 +1,12 @@
 "use client";
+import { FriendCard, FriendsListSkeleton } from "@/components";
 import {
-  FriendCard,
-  FriendsListSkeleton,
-} from "@/components";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui";
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useSearchQuery, useFetchFriendsQuery } from "@/hooks";

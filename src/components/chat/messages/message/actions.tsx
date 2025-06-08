@@ -8,7 +8,9 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-  Popover, PopoverContent, PopoverTrigger
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui";
 import { reactionEmoji } from "@/lib/emojis";
 import {

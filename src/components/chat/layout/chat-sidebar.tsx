@@ -1,11 +1,7 @@
 "use client";
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
-import {
-  AIChatItem,
-  ChatItem,
-  CreateGroupDialog,
-} from "@/components";
+import { AIChatItem, ChatItem, CreateGroupDialog } from "@/components";
 import { Input, ScrollArea, ResizablePanel } from "@/components/ui";
 import { AIModel, ChatType } from "@/types";
 import { cn } from "@/lib/utils";
@@ -24,7 +20,7 @@ export function ChatSidebar({ aiModels }: ChatSidebarProps) {
 
   const allChats = useMemo(
     () => data?.pages.flatMap((page) => page.chats) ?? [],
-    [data]
+    [data],
   );
 
   const [filteredChats, setFilteredChats] = useState<ChatType[]>(allChats);
@@ -52,7 +48,7 @@ export function ChatSidebar({ aiModels }: ChatSidebarProps) {
         root: scrollArea,
         threshold: 0.1,
         rootMargin: "100px",
-      }
+      },
     );
 
     observer.observe(trigger);
@@ -77,12 +73,12 @@ export function ChatSidebar({ aiModels }: ChatSidebarProps) {
             (chat) =>
               chat.name.toLowerCase().includes(value) ||
               (chat.lastMessage?.content &&
-                chat.lastMessage.content.toLowerCase().includes(value))
-          )
+                chat.lastMessage.content.toLowerCase().includes(value)),
+          ),
         );
       }
     },
-    [allChats]
+    [allChats],
   );
 
   return (
@@ -95,8 +91,7 @@ export function ChatSidebar({ aiModels }: ChatSidebarProps) {
       defaultSize={30}
       maxSize={70}
     >
-      <motion.div
-      >
+      <motion.div>
         {/* Search Bar */}
         <div className="p-4">
           <div className="relative">

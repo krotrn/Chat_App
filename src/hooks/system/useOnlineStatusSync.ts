@@ -1,6 +1,10 @@
 "use client";
 import { useEffect, useRef, useCallback } from "react";
-import { useAppDispatch, useAppSelector } from "@/hooks";
+import {
+  useAppDispatch,
+  useAppSelector,
+  useConnectionHealthQuery,
+} from "@/hooks";
 import { setConnectionState } from "@/lib/redux/slices/connection-slice";
 import { ConnectionState } from "@/types";
 import { getSocket, emitUserOnline } from "@/lib/socket";
@@ -19,6 +23,7 @@ export function useOnlineStatusSync() {
   const lastActiveRef = useRef<number>(Date.now());
   const healthCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { data, isLoading } = useConnectionHealthQuery();
 
   const performHealthCheck = useCallback(async () => {
     const socket = getSocket();
@@ -66,11 +71,11 @@ export function useOnlineStatusSync() {
     }
 
     reconnectTimeoutRef.current = setTimeout(() => {
-      if (token) {
+      if (token && data && !isLoading) {
         dispatch({ type: INITIALIZE_SOCKET, payload: { token } });
       }
     }, 1000);
-  }, [dispatch, token]);
+  }, [dispatch, token, data, isLoading]);
 
   const handleVisibilityChange = useCallback(async () => {
     if (!document.hidden && token) {

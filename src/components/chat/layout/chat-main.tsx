@@ -29,7 +29,7 @@ export function ChatMain() {
   const [showDetails, setShowDetails] = useState(false);
   const currentChat = useAppSelector((state) => state.currentChat.currentChat);
   const connectionState = useAppSelector(
-    (state) => state.connection.connectionState
+    (state) => state.connection.connectionState,
   );
   new Promise((resolve) => {
     if (connectionState === ConnectionState.CONNECTING) {
@@ -57,7 +57,7 @@ export function ChatMain() {
     };
   }, [currentChat?._id, dispatch, router]);
   const chat = data?.pages[0].chats.find(
-    (chat) => chat._id === currentChat?._id
+    (chat) => chat._id === currentChat?._id,
   );
 
   const { typingUserIds } = useTypingIndicator({

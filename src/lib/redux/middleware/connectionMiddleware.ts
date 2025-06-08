@@ -51,7 +51,7 @@ export const connectionMiddleware: Middleware =
         });
 
         socket.on("connect_error", (error: Error) => {
-          console.error("Socket connection error:", error);
+          console.log("Socket connection error:", error);
           store.dispatch(setConnectionState(ConnectionState.FAILED));
         });
 

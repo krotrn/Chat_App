@@ -4,6 +4,7 @@ import {
   OnlineCheckWrapper,
   QueryProvider,
   SessionProviderWrapper,
+  SocketLayout,
   StoreProvider,
 } from "@/components";
 
@@ -17,12 +18,14 @@ export default function RootLayout({
       <SessionProviderWrapper>
         <AuthProvider>
           <QueryProvider>
-            <div className="flex flex-col h-screen w-full space-y-2">
-              <NavMenu />
-              <main className="flex-1 overflow-x-hidden">
-                <OnlineCheckWrapper>{children}</OnlineCheckWrapper>
-              </main>
-            </div>
+            <SocketLayout>
+              <div className="flex flex-col h-screen w-full space-y-2">
+                <NavMenu />
+                <main className="flex-1 overflow-x-hidden">
+                  <OnlineCheckWrapper>{children}</OnlineCheckWrapper>
+                </main>
+              </div>
+            </SocketLayout>
           </QueryProvider>
         </AuthProvider>
       </SessionProviderWrapper>

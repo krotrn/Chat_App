@@ -61,7 +61,7 @@ function setupConnectionListeners(): void {
   });
 
   socket.on("connect_error", (error: Error) => {
-    console.error("Socket connection error:", error);
+    console.log("Socket connection error:", error);
   });
 
   socket.on("disconnect", (reason: string) => {

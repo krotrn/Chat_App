@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  Skeleton,
-} from "@/components/ui";
+import { Card, CardContent, CardHeader, Skeleton } from "@/components/ui";
 import { RequestSkeleton } from "@/components";
 
 export function RequestListSkeleton() {

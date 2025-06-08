@@ -1,12 +1,6 @@
 import { auth } from "@/auth";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui";
-import { DatabaseCheckWrapper
-} from "@/components";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui";
+import { DatabaseCheckWrapper } from "@/components";
 export default async function FriendsLayout({
   friendsList,
   friendsSearch,

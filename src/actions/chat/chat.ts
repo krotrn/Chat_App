@@ -3,10 +3,7 @@
 import { deleteMessage, sendMessage } from "@/services/message";
 import { AttachmentResponse, MessageType } from "@/types";
 import { deleteFileFromCloudinary } from "@/actions";
-import {
-  handleActionError,
-  validateRequiredParams,
-} from "@/lib/utils/utils";
+import { handleActionError, validateRequiredParams } from "@/lib/utils/utils";
 import { uploadToCloudinary } from "@/lib/utils/cloudinary.utils";
 
 export async function sendMessageAction({

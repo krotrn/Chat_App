@@ -5,7 +5,10 @@ import {
   CarouselContent,
   CarouselItem,
   EmptyState,
-  Card, CardContent, CardHeader, CardTitle
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui";
 import { RecommendationCard } from "./recommendation-card";
 import Autoplay from "embla-carousel-autoplay";

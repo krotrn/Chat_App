@@ -1,21 +1,15 @@
 "use client";
 import { useForm } from "react-hook-form";
-import {
-
-  CardWrapper,
-
-  FormError,
-
-} from "@/components";
+import { CardWrapper, FormError } from "@/components";
 import {
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
   Input,
-    Form,
+  Form,
   FormControl,
-    Button,
+  Button,
 } from "@/components/ui";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";

@@ -12,11 +12,7 @@ import {
   ReactionsDisplay,
   ReplyPreview,
 } from "@/components";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { messageVariants } from "@/animations/chat/messageVariants";
 

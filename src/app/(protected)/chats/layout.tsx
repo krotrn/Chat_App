@@ -1,7 +1,4 @@
-import {
-  APICheckWrapper,
-  SocketLayout,
-} from "@/components";
+import { APICheckWrapper } from "@/components";
 import { ResizableHandle, ResizablePanelGroup } from "@/components/ui";
 
 export default async function ChatsLayout({
@@ -14,15 +11,11 @@ export default async function ChatsLayout({
 }) {
   return (
     <APICheckWrapper>
-      <SocketLayout>
-        <ResizablePanelGroup
-          direction="horizontal"
-        >
-          {chatList}
-          <ResizableHandle withHandle />
-          {chatMain}
-        </ResizablePanelGroup>
-      </SocketLayout>
+      <ResizablePanelGroup direction="horizontal">
+        {chatList}
+        <ResizableHandle withHandle />
+        {chatMain}
+      </ResizablePanelGroup>
     </APICheckWrapper>
   );
 }
