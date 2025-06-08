@@ -2,6 +2,7 @@ import { connectionMiddleware } from "./connectionMiddleware";
 import { onlineStatusMiddleware } from "./onlineStatusMiddleware";
 import { typingMiddleware } from "./typingMiddleware";
 import { chatRoomMiddleware } from "./chatRoomMiddleware";
+import { messageEventsMiddleware } from "./messageEventsMiddleware";
 import { QueryClient } from "@tanstack/react-query";
 
 let queryClient: QueryClient | null = null;
@@ -16,4 +17,5 @@ export const chatSocketMiddlewares = [
   onlineStatusMiddleware,
   typingMiddleware,
   chatRoomMiddleware,
+  messageEventsMiddleware,
 ];

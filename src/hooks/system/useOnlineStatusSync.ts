@@ -7,7 +7,8 @@ import {
 } from "@/hooks";
 import { setConnectionState } from "@/lib/redux/slices/connection-slice";
 import { ConnectionState } from "@/types";
-import { getSocket, emitUserOnline } from "@/lib/socket";
+import { getSocket } from "@/features/socket/connection";
+import { emitUserOnline } from "@/features/socket/events";
 import { INITIALIZE_SOCKET } from "@/lib/redux/chatSocketActions";
 
 /**

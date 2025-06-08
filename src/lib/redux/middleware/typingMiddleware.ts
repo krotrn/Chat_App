@@ -19,7 +19,6 @@ export const typingMiddleware: Middleware = (store) => (next) => (action) => {
       socket.on(
         ChatEventEnum.TYPING_EVENT,
         (data: { userId: string; chatId: string }) => {
-          console.log("User typing event:", data);
           const typingUserIds = store.getState().typing.typingUserIds;
           const exists = typingUserIds.some(
             (u: TypingUser) =>
