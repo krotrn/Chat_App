@@ -1,10 +1,9 @@
 "use client";
 import { RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
+import { Button, EmptyState } from "@/components/ui";
 import { useRouter } from "next/navigation";
 
-export default function RefreshPage() {
+export function RefreshPage() {
   const router = useRouter();
 
   const handleRefresh = () => {

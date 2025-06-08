@@ -1,22 +1,31 @@
 "use client";
-import { MessageType, ParticipantsType } from "@/types/ChatType";
+import { MessageType, ParticipantsType } from "@/types";
 import { useCallback, useRef, useState } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  AttachmentPreviews,
+  DateDivider,
+  MessageActions,
+  MessageContent,
+  MessageContextMenu,
+  MessageEditor,
+  MessageTimestampStatus,
+  ReactionsDisplay,
+  ReplyPreview,
+} from "@/components";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { messageVariants } from "@/animations/chat/messageVariants";
-import DateDivider from "@/components/chat/messages/date-divider";
-import { MessageContextMenu } from "@/components/chat/messages/message/context-menu";
-import { MessageContent } from "@/components/chat/messages/message/content";
-import { MessageActions } from "@/components/chat/messages/message/actions";
-import { MessageEditor } from "@/components/chat/messages/message/editor";
-import { ReplyPreview } from "@/components/chat/messages/reply-preview";
-import { ReactionsDisplay } from "@/components/chat/input/reaction-display";
-import { MessageTimestampStatus } from "@/components/chat/messages/message-timestamp-status";
-import { useTouchActions } from "@/hooks/ui";
+
+import {
+  useTouchActions,
+  useEditMessageMutation,
+  useAppSelector,
+} from "@/hooks";
 import { motion } from "framer-motion";
-import { AttachmentPreviews } from "@/components/chat/attachments/attachment-previews";
-import { useEditMessageMutation } from "@/hooks/messages";
-import { useAppSelector } from "@/hooks/types";
 
 interface MessageItemProps {
   participants: ParticipantsType[];
@@ -29,7 +38,7 @@ interface MessageItemProps {
   currentUserId?: string;
 }
 
-export default function MessageItem({
+export function MessageItem({
   participants,
   message,
   isOwn,

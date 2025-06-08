@@ -1,29 +1,28 @@
 "use client";
-import { ConnectionState, ParticipantsType } from "@/types/ChatType";
+import { ConnectionState, ParticipantsType } from "@/types";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Paperclip, Send, X } from "lucide-react";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import FileUploader from "@/components/chat/input/file-uploader";
-import { Textarea } from "@/components/ui/textarea";
-import EmojiPicker from "@/components/chat/input/emoji-picker";
-import CameraCapture from "@/components/chat/input/camera-capture";
-import { useSendMessageMutation } from "@/hooks/messages";
-import { SimpleAttachmentPreview } from "@/components/chat/attachments/simple-attachment-preview";
-import { useAppDispatch, useAppSelector } from "@/hooks/types";
+  FileUploader,
+  EmojiPicker,
+  CameraCapture,
+  SimpleAttachmentPreview,
+} from "@/components";
+import {
+  useSendMessageMutation,
+  useAppDispatch,
+  useAppSelector,
+  useTypingIndicator,
+} from "@/hooks";
 import { setReplyMessage } from "@/lib/redux/slices/current-chat-slice";
-import { useTypingIndicator } from "@/hooks/ui";
+import { Button, Popover, PopoverContent, PopoverTrigger, Textarea } from "@/components/ui";
 
 export interface MessageInputProps {
   participants: ParticipantsType[];
 }
 
-export default function MessageInput({ participants }: MessageInputProps) {
+export function MessageInput({ participants }: MessageInputProps) {
   const [message, setMessage] = useState<string>("");
   const [attachments, setAttachments] = useState<File[]>([]);
   const [isAttaching, setIsAttaching] = useState(false);

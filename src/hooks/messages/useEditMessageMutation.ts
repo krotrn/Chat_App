@@ -5,7 +5,7 @@ import {
 } from "@tanstack/react-query";
 import { editMessage } from "@/services/message";
 import { queryKeys } from "@/lib/config";
-import { ChatType, MessagesPageData, MessageType } from "@/types/ChatType";
+import { ChatType, MessagesPageData, MessageType } from "@/types";
 
 export function useEditMessageMutation() {
   const queryClient = useQueryClient();

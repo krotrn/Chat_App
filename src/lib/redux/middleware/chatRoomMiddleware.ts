@@ -6,7 +6,7 @@ import {
   JoinChatPayload,
 } from "@/lib/redux/chatSocketActions";
 import { setConnectionState } from "../slices/connection-slice";
-import { ConnectionState } from "@/types/ChatType";
+import { ConnectionState } from "@/types";
 
 export const chatRoomMiddleware: Middleware = (store) => (next) => (action) => {
   if (typeof action !== "object" || !action || !("type" in action)) {

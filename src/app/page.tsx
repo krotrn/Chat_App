@@ -1,7 +1,9 @@
-import { HeroSection } from "@/components/landing/HeroSection";
-import FeaturesSection from "@/components/landing/FeaturesSection";
-import CTASection from "@/components/landing/CTASection";
-import Footer from "@/components/landing/Footer";
+import {
+  CallToAction,
+  FeaturesSection,
+  Footer,
+  HeroSection,
+} from "@/components";
 
 export default function LandingPage() {
   return (
@@ -9,7 +11,7 @@ export default function LandingPage() {
       <main>
         <HeroSection />
         <FeaturesSection />
-        <CTASection />
+        <CallToAction />
       </main>
       <Footer />
     </>

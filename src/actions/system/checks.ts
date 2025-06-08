@@ -1,8 +1,8 @@
 "use server";
 
 import { db } from "@/prisma";
-import { createHealthResponse } from "../../types/response-types";
-import { handleActionError } from "../../lib/utils/utils";
+import { createHealthResponse } from "@/types/response-types";
+import { handleActionError } from "@/lib/utils/utils";
 
 export async function checkDB() {
   try {

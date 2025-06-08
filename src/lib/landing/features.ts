@@ -1,7 +1,7 @@
-import featureProps from "@/types/features";
+import { FeatureProps } from "@/types/features";
 import { MessageSquare, Users, Lock } from "lucide-react";
 
-export const features: featureProps[] = [
+export const features: FeatureProps[] = [
   {
     title: "Group Chats",
     description: "Connect in vibrant group spaces.",

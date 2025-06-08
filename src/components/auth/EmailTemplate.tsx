@@ -1,5 +1,3 @@
-import React from "react";
-
 const EmailTemplate = ({
   verificationLink,
   expirationHours,
@@ -49,4 +47,4 @@ const EmailTemplate = ({
   );
 };
 
-export default EmailTemplate;
+export { EmailTemplate };

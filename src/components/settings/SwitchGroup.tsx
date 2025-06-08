@@ -1,7 +1,6 @@
 "use client";
 
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { Label, Switch } from "@/components/ui";
 
 interface SwitchGroupProps {
   switches: { id: string; label: string; defaultChecked?: boolean }[];

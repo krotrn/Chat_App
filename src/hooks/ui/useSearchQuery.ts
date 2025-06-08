@@ -2,7 +2,7 @@
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 
-export default function useSearchQuery(
+export function useSearchQuery(
   paramName: string = "query",
   initialValue: string,
 ): [string, (value: string) => void] {

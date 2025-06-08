@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import FriendsList from "@/components/friends/friends-list";
+import { FriendsList } from "@/components";
 
 export default async function FriendsListPage() {
   const session = await auth();

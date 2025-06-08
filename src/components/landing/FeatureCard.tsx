@@ -1,4 +1,6 @@
-import featureProps from "@/types/features";
+"use client";
+
+import { FeatureProps } from "@/types/features";
 import {
   Card,
   CardContent,
@@ -8,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { motion } from "framer-motion";
 
-const FeatureCard = ({ feature }: { feature: featureProps }) => {
+export const FeatureCard = ({ feature }: { feature: FeatureProps }) => {
   return (
     <motion.div className="div">
       <Card className=" shadow-lg hover:shadow-xl transition-shadow">
@@ -25,5 +27,3 @@ const FeatureCard = ({ feature }: { feature: featureProps }) => {
     </motion.div>
   );
 };
-
-export default FeatureCard;

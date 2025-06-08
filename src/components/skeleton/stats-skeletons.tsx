@@ -1,5 +1,4 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader, Skeleton } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 export function StatsSkeleton({ className = "" }: { className?: string }) {

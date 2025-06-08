@@ -1,13 +1,11 @@
 "use client";
 import React, { useCallback, useState, useTransition } from "react";
-import { CardWrapper } from "@/components/auth/card-wrapper";
-import { Button } from "@/components/ui/button";
-import { FormError } from "@/components/auth/Form-Error";
-import { FormSuccess } from "@/components/auth/Form-Success";
-import { useCountdown } from "@/hooks/ui";
+import { useCountdown } from "@/hooks";
 import { sendVerificationEmail } from "@/actions/auth";
+import { CardWrapper, FormError, FormSuccess } from "@/components";
+import { Button } from "@/components/ui";
 
-export default function EmailVerification({
+export function EmailVerification({
   email,
 }: {
   email: string;

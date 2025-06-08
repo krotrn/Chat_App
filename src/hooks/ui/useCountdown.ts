@@ -33,4 +33,4 @@ const useCountdown = (
 
   return { secondsLeft, startCountdown };
 };
-export default useCountdown;
+export { useCountdown };

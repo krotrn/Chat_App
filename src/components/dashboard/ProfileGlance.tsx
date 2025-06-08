@@ -1,9 +1,7 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader,Avatar, AvatarFallback, AvatarImage, Button } from "@/components/ui";
 import { Edit, MessageSquareMoreIcon } from "lucide-react";
 import Link from "next/link";
-import { ProfileGlanceSkeleton } from "../skeleton/profile-glance-skeletons";
+import { ProfileGlanceSkeleton } from "@/components/skeleton";
 import { getUserDataByUsername } from "@/actions/user";
 import { auth } from "@/auth";
 
@@ -59,4 +57,4 @@ const ProfileGlance = async () => {
   );
 };
 
-export default ProfileGlance;
+export { ProfileGlance };

@@ -8,7 +8,7 @@ interface FloatingElementsProps {
   className?: string;
 }
 
-export default function FloatingElements({
+export function FloatingElements({
   count = 6,
   className,
 }: FloatingElementsProps) {

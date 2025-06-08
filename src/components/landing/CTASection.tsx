@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-export default function CallToAction() {
+export function CallToAction() {
   return (
     <section
       id="download"

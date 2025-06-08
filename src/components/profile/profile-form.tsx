@@ -11,18 +11,21 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { FormError } from "@/components/auth/Form-Error";
-import { FormSuccess } from "@/components/auth/Form-Success";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useProfileUpdateMutation } from "@/hooks/profile";
-import { useGetUserByUsernameQuery } from "@/hooks/friends";
-import ProfileUpdateSkeleton from "../skeleton/profile-update-skeleton";
-import { useAppSelector } from "@/hooks/types";
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Input,
+  Button,
+} from "@/components/ui";
+import { FormError, FormSuccess, ProfileUpdateSkeleton } from "@/components";
 
-export default function ProfileForm() {
+import {
+  useProfileUpdateMutation,
+  useGetUserByUsernameQuery,
+  useAppSelector,
+} from "@/hooks";
+
+export function ProfileForm() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const {
     mutate: updateProfileMutation,

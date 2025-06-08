@@ -1,4 +1,4 @@
-import EmailVerification from "@/components/auth/EmailVerification";
+import { EmailVerification } from "@/components";
 import { db } from "@/prisma";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 import { redirect } from "next/navigation";

@@ -1,7 +1,7 @@
 import { getUserFriends } from "@/actions/user";
 import { queryKeys } from "@/lib/config";
 import { useQuery } from "@tanstack/react-query";
-import { useAppSelector } from "@/hooks/types/useReduxType";
+import { useAppSelector } from "@/hooks";
 
 export const useFetchFriendsQuery = () => {
   const userId = useAppSelector((state) => state.user.user?.id);

@@ -1,4 +1,4 @@
-import ProfileWrapper from "@/components/profile/profile";
+import { ProfileWrapper } from "@/components";
 
 export default async function ProfilePage() {
   return (

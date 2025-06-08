@@ -1,12 +1,8 @@
 "use client";
-import { ApiOfflinePage } from "@/components/offline/pages/api-offline-page";
-import { useConnectionHealthQuery } from "@/hooks/system";
+import { ApiOfflinePage } from "@/components";
+import { useConnectionHealthQuery } from "@/hooks";
 
-export default function APICheckWrapper({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function APICheckWrapper({ children }: { children: React.ReactNode }) {
   const { data, isLoading } = useConnectionHealthQuery();
 
   if (isLoading) {

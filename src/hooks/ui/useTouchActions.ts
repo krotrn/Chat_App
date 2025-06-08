@@ -13,7 +13,7 @@ interface TouchActions {
   handleTouchEnd: () => void;
 }
 
-export default function useTouchActions(
+export function useTouchActions(
   action: () => void,
   longPressTimeoutRef: RefObject<NodeJS.Timeout | null>,
   setIsLongPressed: Dispatch<SetStateAction<boolean>>,

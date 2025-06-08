@@ -1,15 +1,15 @@
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+  Skeleton,
+  Input,
+} from "@/components/ui";
 import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
 
-export default function FriendsListSkeleton() {
+export function FriendsListSkeleton() {
   return (
     <Card>
       <CardHeader>

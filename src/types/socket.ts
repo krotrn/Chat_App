@@ -16,11 +16,11 @@ export interface SocketEmitData<T = unknown> {
   callback?: (response: T) => void;
 }
 
-export interface HealthCheckResponse {
+export interface SocketHealthCheckResponse {
   timestamp: number;
   serverTime?: number;
 }
 
-export interface HealthCheckRequest {
+export interface SocketHealthCheckRequest {
   timestamp: number;
 }

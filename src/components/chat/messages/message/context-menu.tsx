@@ -1,5 +1,5 @@
 "use client";
-import { MessageType, StatusEnum } from "@/types/ChatType";
+import { MessageType, StatusEnum } from "@/types";
 import { ReactNode } from "react";
 import {
   ContextMenu,
@@ -11,7 +11,7 @@ import {
   ContextMenuSubContent,
   ContextMenuSubTrigger,
   ContextMenuTrigger,
-} from "@/components/ui/context-menu";
+} from "@/components/ui";
 import {
   Copy,
   Pencil,
@@ -22,10 +22,13 @@ import {
   Pin,
 } from "lucide-react";
 import { reactionEmoji } from "@/lib/emojis";
-import { useDeleteMessageMutation } from "@/hooks/messages";
-import { useAppDispatch, useAppSelector } from "@/hooks/types";
+import {
+  useDeleteMessageMutation,
+  useAppDispatch,
+  useAppSelector,
+  useReactToMessageMutation,
+} from "@/hooks";
 import { setReplyMessage } from "@/lib/redux/slices/current-chat-slice";
-import { useReactToMessageMutation } from "@/hooks/messages";
 
 interface MessageContextMenuProps {
   message: MessageType;

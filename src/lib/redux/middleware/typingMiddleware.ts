@@ -6,7 +6,7 @@ import {
 import { getSocket } from "@/features/socket/connection";
 import { ChatEventEnum } from "@/lib/socket-event";
 import { INITIALIZE_SOCKET } from "@/lib/redux/chatSocketActions";
-import { TypingUser } from "@/types/ChatType";
+import { TypingUser } from "@/types";
 
 export const typingMiddleware: Middleware = (store) => (next) => (action) => {
   if (typeof action !== "object" || !action || !("type" in action)) {

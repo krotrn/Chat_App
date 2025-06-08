@@ -1,5 +1,5 @@
 "use client";
-import { MessageType } from "@/types/ChatType";
+import { MessageType } from "@/types";
 
 interface MessageContentProps {
   message: MessageType;

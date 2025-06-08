@@ -1,10 +1,10 @@
 "use client";
 
-import { MessageType, ParticipantsType } from "@/types/ChatType";
+import { MessageType, ParticipantsType } from "@/types";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui";
 import { ChevronDown, ChevronUp, Pin } from "lucide-react";
 
 interface PinnedMessageListProps {

@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import OfflinePage from "@/components/offline/pages/offline-page";
-import { useOnlineStatus } from "@/hooks/system";
+import { OfflinePage } from "@/components";
+import { useOnlineStatus } from "@/hooks";
 
-export default function OnlineCheckWrapper({
+export function OnlineCheckWrapper({
   children,
 }: {
   children: React.ReactNode;

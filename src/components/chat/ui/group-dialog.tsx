@@ -1,33 +1,30 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+  Button,
+  Input,
+} from "@/components/ui";
 import { groupDetailsSchema } from "@/schemas/group-details";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import MemberList from "./member-list";
-import { useCreateGroupChatMutation } from "@/hooks/chat";
-import { useAppSelector } from "@/hooks/types";
+import { useCreateGroupChatMutation, useAppSelector } from "@/hooks";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import { MemberList } from "@/components";
 
-export default function CreateGroupDialog() {
+export function CreateGroupDialog() {
   const [open, setOpen] = useState(false);
   const token = useAppSelector((state) => state.user.token);
   const { mutateAsync, isPending, error, isSuccess } =

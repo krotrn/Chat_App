@@ -1,6 +1,6 @@
 import { ChatEventEnum } from "@/lib/socket-event";
-import { TypingEvent } from "../types";
 import { getSocket } from "@/features/socket/connection";
+import { TypingEvent } from "@/types";
 
 export class TypingService {
   static emitTyping(data: TypingEvent): boolean {

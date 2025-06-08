@@ -1,4 +1,4 @@
-import { StatsSkeleton } from "@/components/skeleton/stats-skeletons";
+import { StatsSkeleton } from "@/components";
 
 export default function Loading() {
   return <StatsSkeleton />;

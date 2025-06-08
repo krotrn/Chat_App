@@ -2,31 +2,34 @@
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-
-import ChatHeader from "@/components/chat/layout/chat-header";
-import MessageList from "@/components/chat/messages/message-list";
-import MessageInput from "@/components/chat/messages/message-input";
-import ChatDetails from "@/components/chat/layout/chat-details";
-import TypingIndicator from "@/components/chat/messages/typing-indicator";
-
-import { ConnectionState } from "@/types/ChatType";
-import { useIsMobile } from "@/hooks/ui";
+import { ConnectionState } from "@/types";
+import {
+  useIsMobile,
+  useAppDispatch,
+  useAppSelector,
+  useFetchChatsInfiniteQuery,
+  useTypingIndicator,
+} from "@/hooks";
 import { WifiOff } from "lucide-react";
-import { ResizablePanel } from "@/components/ui/resizable";
 import { cn } from "@/lib/utils";
-import { useAppDispatch, useAppSelector } from "@/hooks/types";
 import { setCurrentChat } from "@/lib/redux/slices/current-chat-slice";
-import { useFetchChatsInfiniteQuery } from "@/hooks/chat";
 import { JOIN_CHAT_ROOM, LEAVE_CHAT_ROOM } from "@/lib/redux/chatSocketActions";
-import { useTypingIndicator } from "@/hooks/ui";
+import {
+  ChatDetails,
+  ChatHeader,
+  MessageInput,
+  MessageList,
+  TypingIndicator,
+} from "@/components";
+import { ResizablePanel } from "@/components/ui";
 
-export default function ChatMain() {
+export function ChatMain() {
   const router = useRouter();
   const isMobile = useIsMobile();
   const [showDetails, setShowDetails] = useState(false);
   const currentChat = useAppSelector((state) => state.currentChat.currentChat);
   const connectionState = useAppSelector(
-    (state) => state.connection.connectionState,
+    (state) => state.connection.connectionState
   );
   new Promise((resolve) => {
     if (connectionState === ConnectionState.CONNECTING) {
@@ -54,7 +57,7 @@ export default function ChatMain() {
     };
   }, [currentChat?._id, dispatch, router]);
   const chat = data?.pages[0].chats.find(
-    (chat) => chat._id === currentChat?._id,
+    (chat) => chat._id === currentChat?._id
   );
 
   const { typingUserIds } = useTypingIndicator({
@@ -78,8 +81,9 @@ export default function ChatMain() {
           "h-full flex items-center justify-center",
           !currentChat && "hidden md:flex",
         )}
-        minSize={50}
+        minSize={30}
         defaultSize={70}
+        maxSize={70}
       >
         <div className="hidden md:flex flex-1 items-center justify-center">
           <p className="text-muted-foreground">No chat selected</p>

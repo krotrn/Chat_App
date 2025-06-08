@@ -1,6 +1,6 @@
 import type { Middleware } from "@reduxjs/toolkit";
 import { setConnectionState } from "@/lib/redux/slices/connection-slice";
-import { ConnectionState } from "@/types/ChatType";
+import { ConnectionState } from "@/types";
 import {
   INITIALIZE_SOCKET,
   TERMINATE_SOCKET,

@@ -1,14 +1,17 @@
 "use client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Info, MessageSquare, User, UserPlus } from "lucide-react";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Activity, ActivityType } from "@prisma/client";
-import { format } from "date-fns";
 import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  EmptyState,
   Carousel,
   CarouselContent,
   CarouselItem,
-} from "@/components/ui/carousel";
+} from "@/components/ui";
+import { Info, MessageSquare, User, UserPlus } from "lucide-react";
+import { Activity, ActivityType } from "@prisma/client";
+import { format } from "date-fns";
 import Autoplay from "embla-carousel-autoplay";
 
 interface RecentActivityProps {

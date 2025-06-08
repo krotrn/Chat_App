@@ -1,5 +1,5 @@
 import { getUserStats } from "@/actions/user";
-import { UserStats } from "@/components/dashboard/user-stats";
+import { UserStats } from "@/components";
 
 export default async function StatsPage() {
   const userStatsResponse = await getUserStats();

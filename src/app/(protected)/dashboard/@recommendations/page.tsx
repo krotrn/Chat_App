@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getRecommendations } from "@/actions/user";
-import Recommendations from "@/components/dashboard/Recommendations";
+import { Recommendations } from "@/components";
 
 export default async function RecommendationsPage() {
   const session = await auth();

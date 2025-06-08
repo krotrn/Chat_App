@@ -8,8 +8,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import RequestItem from "@/components/request/request-item";
+} from "@/components/ui";
+import { RequestItem } from "@/components";
 import { FriendRequestType } from "@/types/formattedDataTypes";
 import { handleFriendRequest } from "@/actions/user";
 import { FriendshipStatus } from "@prisma/client";

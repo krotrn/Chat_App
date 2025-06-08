@@ -9,9 +9,9 @@ import {
 
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ProfileForm from "@/components/profile/profile-form";
+import { ProfileForm } from "@/components/profile/profile-form";
 
-export default function ProfileWrapper() {
+export function ProfileWrapper() {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}

@@ -1,5 +1,4 @@
 "use client";
-import { CardWrapper } from "@/components/auth/card-wrapper";
 import {
   Form,
   FormControl,
@@ -7,18 +6,19 @@ import {
   FormItem,
   FormMessage,
   FormLabel,
-} from "@/components/ui/form";
+
+  Input,
+  Button,
+} from "@/components/ui";
+import { CardWrapper, FormError, FormSuccess } from "@/components";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { registerSchema } from "@/schemas/registerSchema";
-import { Input } from "@/components/ui/input";
-import { FormError } from "@/components/auth/Form-Error";
-import { Button } from "@/components/ui/button";
+
 import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FormSuccess } from "@/components/auth/Form-Success";
 import { registerCredential } from "@/actions/auth";
 
 const RegisterForm = (): React.ReactNode => {
@@ -156,4 +156,4 @@ const RegisterForm = (): React.ReactNode => {
   );
 };
 
-export default RegisterForm;
+export { RegisterForm };

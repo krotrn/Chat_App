@@ -1,20 +1,25 @@
 "use client";
 import { motion } from "framer-motion";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import type { ChatType } from "@/types/ChatType";
+import type { ChatType } from "@/types";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { MoreVertical, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Button,
+} from "@/components/ui";
 import { formatDistanceToNow } from "date-fns";
-import { useAppDispatch, useAppSelector } from "@/hooks/types";
-import { useDeleteDirectChatMutation } from "@/hooks/chat";
-import { useDeleteGroupChatMutation } from "@/hooks/chat";
+import {
+  useAppDispatch,
+  useAppSelector,
+  useDeleteGroupChatMutation,
+  useDeleteDirectChatMutation,
+} from "@/hooks";
 import { setCurrentChat } from "@/lib/redux/slices/current-chat-slice";
 import { useRouter } from "next/navigation";
 
@@ -22,7 +27,7 @@ interface ChatItemProps {
   chat: ChatType;
 }
 
-export default function ChatItem({ chat }: ChatItemProps) {
+export function ChatItem({ chat }: ChatItemProps) {
   const { name, avatarUrl, lastMessage } = chat;
   const dispatch = useAppDispatch();
   const { mutate: handleDeleteDirectChat } = useDeleteDirectChatMutation();

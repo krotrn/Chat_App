@@ -1,4 +1,5 @@
-import ChatSideBarSkeleton from "@/components/skeleton/chat-sidebar-skeleton";
+import { ChatSideBarSkeleton } from "@/components";
+
 interface ChatListLoadingProps {
   searchParams?: Promise<{ chat: string }>;
 }

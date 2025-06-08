@@ -1,27 +1,31 @@
 "use client";
-import { useSearchQuery } from "@/hooks/ui";
+import {
+  useSearchQuery,
+  useFriendSearchQuery,
+  useSendRequestMutation,
+} from "@/hooks";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+  Input,
+} from "@/components/ui";
 import { Loader2, Search, UserPlus } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { AnimatePresence } from "framer-motion";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SearchUserType } from "@/types/formattedDataTypes";
 import { handleFriendRequest } from "@/actions/user";
 import { toast } from "sonner";
-import { useFriendSearchQuery } from "@/hooks/friends";
 import { FriendshipStatus } from "@prisma/client";
-import { useSendRequestMutation } from "@/hooks/friends";
 
-export default function FriendSearch() {
+export function FriendSearch() {
   const [searchQuery, setSearchQuery] = useSearchQuery("nfr", "");
   const [searchResults, setSearchResult] = useState<SearchUserType[]>([]);
   const { mutate, isPending, isSuccess } = useFriendSearchQuery();

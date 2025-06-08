@@ -1,7 +1,7 @@
-import FeatureGrid from "@/components/landing/FeatureGrid";
+import { FeatureGrid } from "./FeatureGrid";
 import React from "react";
 
-export default function FeaturesSection() {
+export function FeaturesSection() {
   return (
     <section
       id="features"

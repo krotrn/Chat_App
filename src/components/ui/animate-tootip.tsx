@@ -9,7 +9,7 @@ import {
   useSpring,
 } from "framer-motion";
 import Image from "next/image";
-import { ParticipantsType } from "@/types/ChatType";
+import { ParticipantsType } from "@/types";
 
 export const AnimatedTooltip = ({ items }: { items: ParticipantsType[] }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);

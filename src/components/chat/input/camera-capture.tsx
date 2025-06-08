@@ -2,21 +2,21 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Camera } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+  Button,
+} from "@/components/ui";
 
 interface CameraCaptureProps {
   onCapture: (file: File) => void;
   disabled?: boolean;
 }
 
-export default function CameraCapture({
+export function CameraCapture({
   onCapture,
   disabled = false,
 }: CameraCaptureProps) {

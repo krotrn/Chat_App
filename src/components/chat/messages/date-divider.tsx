@@ -5,7 +5,7 @@ interface DateDividerProps {
   className?: string;
 }
 
-export default function DateDivider({ date, className }: DateDividerProps) {
+export function DateDivider({ date, className }: DateDividerProps) {
   return (
     <div className={cn("relative my-6", className)}>
       <div className="absolute inset-0 flex items-center">

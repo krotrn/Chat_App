@@ -1,4 +1,4 @@
-import FriendSearch from "@/components/friends/friend-search";
+import { FriendSearch } from "@/components";
 
 export default function FriendSearchPage() {
   return <FriendSearch />;

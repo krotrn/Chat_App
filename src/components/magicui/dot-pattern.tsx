@@ -60,7 +60,7 @@ interface DotPatternProps extends React.SVGProps<SVGSVGElement> {
  * - Dots color can be controlled via the text color utility classes
  */
 
-export default function DotPattern({
+export function DotPattern({
   width = 16,
   height = 16,
   cx = 1,

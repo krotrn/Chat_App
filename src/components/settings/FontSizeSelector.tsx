@@ -1,7 +1,6 @@
 "use client";
 
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem, Label } from "@/components/ui";
 import { Type } from "lucide-react";
 import { useSettings } from "@/context/ThemeProvider";
 import { cn } from "@/lib/utils";

@@ -1,5 +1,5 @@
 "use client";
-import { MessageType } from "@/types/ChatType";
+import { MessageType } from "@/types";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Reply, Smile } from "lucide-react";
@@ -8,15 +8,14 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Popover, PopoverContent, PopoverTrigger
+} from "@/components/ui";
 import { reactionEmoji } from "@/lib/emojis";
-import { useReactToMessageMutation } from "@/hooks/messages";
-import { useAppDispatch, useAppSelector } from "@/hooks/types";
+import {
+  useReactToMessageMutation,
+  useAppDispatch,
+  useAppSelector,
+} from "@/hooks";
 import { setReplyMessage } from "@/lib/redux/slices/current-chat-slice";
 
 interface MessageActionsProps {

@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Button, Label } from "@/components/ui";
 
 interface BackButtonProps {
   label: string;
@@ -17,4 +16,4 @@ const BackButton = ({ label, href }: BackButtonProps) => {
   );
 };
 
-export default BackButton;
+export { BackButton };

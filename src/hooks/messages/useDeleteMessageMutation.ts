@@ -4,7 +4,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/config";
-import { MessagesPageData } from "@/types/ChatType";
+import { MessagesPageData } from "@/types";
 import { deleteMessageAction } from "@/actions/chat";
 
 export function useDeleteMessageMutation() {

@@ -3,14 +3,9 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import {
-  ChatType,
-  MessagesPageData,
-  MessageType,
-  StatusEnum,
-} from "@/types/ChatType";
+import { ChatType, MessagesPageData, MessageType, StatusEnum } from "@/types";
 import { queryKeys } from "@/lib/config";
-import { useAppSelector } from "@/hooks/types/useReduxType";
+import { useAppSelector } from "@/hooks";
 import { sendMessageAction } from "@/actions/chat";
 
 export function useSendMessageMutation() {

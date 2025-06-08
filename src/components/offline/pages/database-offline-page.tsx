@@ -1,10 +1,10 @@
 "use client";
 import { useCallback, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui";
 import { RefreshCw, Database } from "lucide-react";
 import { config } from "@/config";
 import Link from "next/link";
-import { useCheckDBQuery } from "@/hooks/system";
+import { useCheckDBQuery } from "@/hooks";
 
 export function DatabaseOfflinePage() {
   const { data, isLoading, refetch } = useCheckDBQuery();

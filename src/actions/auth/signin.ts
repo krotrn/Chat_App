@@ -4,8 +4,8 @@ import { signIn } from "@/auth";
 import { signInSchema } from "@/schemas/signinSchema";
 import { AuthError } from "next-auth";
 import { z } from "zod";
-import { createAuthResponse } from "../../types/response-types";
-import { handleActionError, sanitizeInput } from "../../lib/utils/utils";
+import { createAuthResponse } from "@/types/response-types";
+import { handleActionError, sanitizeInput } from "@/lib/utils/utils";
 
 export const signInCredential = async (
   credentials: z.infer<typeof signInSchema>,

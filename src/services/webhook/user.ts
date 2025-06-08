@@ -1,4 +1,4 @@
-import { ApiResponse } from "@/types/ChatType";
+import { ApiResponse } from "@/types";
 import {
   api,
   handleApiError,

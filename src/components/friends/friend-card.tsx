@@ -1,19 +1,20 @@
 "use client";
 import { motion } from "framer-motion";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage, Button } from "@/components/ui";
 import { MessageSquareMore, UserMinus } from "lucide-react";
 import { FormattedFriendType } from "@/types/formattedDataTypes";
 import { friendCardVariant } from "@/animations/friends/friend-card-variant";
-import { ConnectionState, ParticipantsType } from "@/types/ChatType";
-import { useCreateDirectChatMutation } from "@/hooks/chat";
-import { useAppSelector } from "@/hooks/types";
-import { useRemoveFriendMutation } from "@/hooks/friends";
+import { ConnectionState, ParticipantsType } from "@/types";
+import {
+  useCreateDirectChatMutation,
+  useAppSelector,
+  useRemoveFriendMutation,
+} from "@/hooks";
 interface FriendCardProps {
   friend: FormattedFriendType;
 }
 
-export default function FriendCard({ friend }: FriendCardProps) {
+export function FriendCard({ friend }: FriendCardProps) {
   const { mutate: createDirectChat, isPending } = useCreateDirectChatMutation();
   const { mutate: removeFriend } = useRemoveFriendMutation();
   const token = useAppSelector((state) => state.user.token);

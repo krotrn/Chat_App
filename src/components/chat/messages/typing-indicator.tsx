@@ -3,9 +3,9 @@
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { memo } from "react";
-import { TypingIndicatorProps } from "@/types/ChatType";
+import { TypingIndicatorProps } from "@/types";
 
-function TypingIndicator({
+function TypingIndicatorJsx({
   isTyping,
   typingUserIds,
   participants,
@@ -64,4 +64,4 @@ function TypingIndicator({
   );
 }
 
-export default memo(TypingIndicator);
+export const TypingIndicator = memo(TypingIndicatorJsx);

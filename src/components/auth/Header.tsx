@@ -23,4 +23,4 @@ const Header = ({ label }: HeaderProps) => {
   );
 };
 
-export default Header;
+export { Header };

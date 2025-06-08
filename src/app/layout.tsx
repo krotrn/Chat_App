@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { ThemeProvider } from "@/components/ThemeProvider";
+import { ThemeProvider, ScrollProgress } from "@/components";
 import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
-import { ScrollProgress } from "@/components/magicui/scroll-progress";
 
 const inter = Inter({ subsets: ["latin"] });
 

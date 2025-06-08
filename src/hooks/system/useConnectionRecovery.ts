@@ -2,11 +2,8 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAppSelector } from "@/hooks/types/useReduxType";
-import {
-  ConnectionRecoveryHookReturn,
-  ConnectionState,
-} from "@/types/ChatType";
+import { useAppSelector } from "@/hooks";
+import { ConnectionRecoveryHookReturn, ConnectionState } from "@/types";
 import { ConnectionRecoveryService } from "@/features/connection-recovery/connectionRecoveryService";
 
 export function useConnectionRecovery(): ConnectionRecoveryHookReturn {

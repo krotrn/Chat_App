@@ -1,4 +1,4 @@
-import { useAppSelector } from "@/hooks/types/useReduxType";
+import { useAppSelector } from "@/hooks";
 import { OnlineStatusService } from "@/features/online-status/onlineStatusService";
 
 export function useOnlineStatus() {

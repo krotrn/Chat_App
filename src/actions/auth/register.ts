@@ -4,8 +4,8 @@ import { hashPassword } from "@/lib/utils/auth.utils";
 import { db } from "@/prisma";
 import { registerSchema } from "@/schemas/registerSchema";
 import { AccountType, UserRoles } from "@prisma/client";
-import { createAuthResponse } from "../../types/response-types";
-import { handleActionError, sanitizeInput } from "../../lib/utils/utils";
+import { createAuthResponse } from "@/types/response-types";
+import { handleActionError, sanitizeInput } from "@/lib/utils/utils";
 
 export const registerCredential = async (credentials: {
   email: string;

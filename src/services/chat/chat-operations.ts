@@ -4,7 +4,7 @@ import {
   handleApiError,
   withConnectionCheck,
 } from "../api-client";
-import { ApiResponse, ChatType } from "@/types/ChatType"; // Adjusted path
+import { ApiResponse, ChatType } from "@/types";
 
 // Fetch all chats
 export const fetchChats = async (

@@ -5,8 +5,8 @@ import {
 } from "@tanstack/react-query";
 import { updateReaction } from "@/services/message";
 import { queryKeys } from "@/lib/config";
-import { MessagesPageData, MessageType } from "@/types/ChatType";
-import { useAppSelector } from "@/hooks/types/useReduxType";
+import { MessagesPageData, MessageType } from "@/types";
+import { useAppSelector } from "@/hooks";
 
 export function useReactToMessageMutation() {
   const queryClient = useQueryClient();

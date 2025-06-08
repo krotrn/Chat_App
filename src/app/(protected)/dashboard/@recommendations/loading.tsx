@@ -1,4 +1,4 @@
-import { RecommendationsSkeleton } from "@/components/skeleton/recommendations-skeletons";
+import { RecommendationsSkeleton } from "@/components";
 
 export default function Loading() {
   return <RecommendationsSkeleton />;

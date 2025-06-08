@@ -1,5 +1,5 @@
+"use client";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
 import {
   File as FileIcon,
   FileText,
@@ -15,7 +15,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+  Button,
+} from "@/components/ui";
 
 export function SimpleAttachmentPreview({
   file,

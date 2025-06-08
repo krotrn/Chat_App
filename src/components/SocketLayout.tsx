@@ -1,17 +1,16 @@
 "use client";
 
-import { useAppDispatch, useAppSelector } from "@/hooks/types";
+import {
+  useAppDispatch,
+  useAppSelector,
+  useOnlineStatusSync,
+  useConnectionRecovery,
+} from "@/hooks";
 import { TERMINATE_SOCKET } from "@/lib/redux/chatSocketActions";
-import { ConnectionState } from "@/types/ChatType";
+import { ConnectionState } from "@/types";
 import { useEffect, useRef } from "react";
-import { useOnlineStatusSync } from "@/hooks/system";
-import { useConnectionRecovery } from "@/hooks/system";
 
-export default function SocketLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function SocketLayout({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch();
   const token = useAppSelector((state) => state.user.token);
   const connectionState = useAppSelector(

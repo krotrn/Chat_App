@@ -1,4 +1,4 @@
-import { ActivitySkeleton } from "@/components/skeleton/activity-skeletons";
+import { ActivitySkeleton } from "@/components";
 
 export default function Loading() {
   return <ActivitySkeleton />;

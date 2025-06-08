@@ -1,6 +1,6 @@
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui";
 
-export default function RequestSkeleton() {
+export function RequestSkeleton() {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between rounded-lg border p-4 gap-4">
       <div className="flex items-center space-x-3">

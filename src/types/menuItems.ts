@@ -1,6 +1,7 @@
 import { LucideProps } from "lucide-react";
 import { ForwardRefExoticComponent, RefAttributes } from "react";
-interface menuItemProps {
+
+export interface MenuItemProps {
   name: string;
   href: string;
   icon: ForwardRefExoticComponent<
@@ -8,4 +9,4 @@ interface menuItemProps {
   >;
 }
 
-export default menuItemProps;
+export default MenuItemProps;

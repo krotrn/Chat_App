@@ -1,8 +1,6 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { Input, ScrollArea, Skeleton } from "@/components/ui";
 
 interface ChatSideBarSkeletonProps {
   count?: number;
@@ -11,7 +9,7 @@ interface ChatSideBarSkeletonProps {
   };
 }
 
-export default function ChatSideBarSkeleton({
+export function ChatSideBarSkeleton({
   count = 5,
   params,
 }: ChatSideBarSkeletonProps) {

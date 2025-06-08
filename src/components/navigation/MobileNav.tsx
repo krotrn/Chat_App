@@ -68,4 +68,4 @@ function MobileNav({ pathname, setIsOpen }: MobileNavProps) {
   );
 }
 
-export default MobileNav;
+export { MobileNav };

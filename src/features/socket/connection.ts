@@ -1,6 +1,6 @@
 import io from "socket.io-client";
 import { config } from "@/config";
-import type { SocketConfig } from "./types";
+import type { SocketConfig } from "@/types";
 
 let socket: SocketIOClient.Socket | null = null;
 

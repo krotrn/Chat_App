@@ -1,5 +1,4 @@
-import { CardWrapper } from "@/components/auth/card-wrapper";
-import VerificationPage from "@/components/auth/VerificationPage";
+import { CardWrapper, VerificationPage } from "@/components";
 
 export default async function Page({
   searchParams,

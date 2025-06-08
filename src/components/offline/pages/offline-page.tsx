@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useOnlineStatus } from "@/hooks/system";
-import { Button } from "@/components/ui/button";
+import { useOnlineStatus } from "@/hooks";
+import { Button } from "@/components/ui";
 import { RefreshCw, WifiOff } from "lucide-react";
 
-export default function OfflinePage() {
+export function OfflinePage() {
   const isOnline = useOnlineStatus();
   const router = useRouter();
   const [isRefreshing, setIsRefreshing] = useState(false);

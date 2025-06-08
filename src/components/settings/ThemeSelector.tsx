@@ -1,7 +1,6 @@
 "use client";
 
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
+import { Label, RadioGroup, RadioGroupItem } from "@/components/ui";
 import { Sun, Moon, Monitor } from "lucide-react";
 import { config } from "@/config";
 import { cn } from "@/lib/utils";

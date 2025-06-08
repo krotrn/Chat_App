@@ -1,5 +1,5 @@
 "use client";
-import { MessageType, StatusEnum } from "@/types/ChatType";
+import { MessageType, StatusEnum } from "@/types";
 import { formatDistanceToNow } from "date-fns";
 import { AlertCircle, Check, RefreshCw } from "lucide-react";
 import {
@@ -7,7 +7,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 interface MessageTimestampStatusProps {

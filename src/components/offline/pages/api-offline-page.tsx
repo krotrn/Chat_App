@@ -1,11 +1,11 @@
 "use client";
 import { useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui";
 import { RefreshCw, Server, Wifi, Coffee } from "lucide-react";
 import { config } from "@/config";
 import Link from "next/link";
-import { useConnectionHealthQuery } from "@/hooks/system";
+import { useConnectionHealthQuery } from "@/hooks";
 import { serverCheckVariants } from "@/animations/chat/servercheckVariant";
 
 export function ApiOfflinePage() {

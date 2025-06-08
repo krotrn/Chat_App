@@ -9,7 +9,7 @@ import {
   AttachmentResponse,
   ChatType,
   MessageType,
-} from "@/types/ChatType";
+} from "@/types";
 
 // Pin a message in a chat
 export const pinMessage = async ({

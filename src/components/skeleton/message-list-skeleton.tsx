@@ -1,10 +1,10 @@
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui";
 
 interface MessageListSkeletonProps {
   messageCount?: number;
 }
 
-export default function MessageListSkeleton({
+export function MessageListSkeleton({
   messageCount = 6,
 }: MessageListSkeletonProps) {
   return (

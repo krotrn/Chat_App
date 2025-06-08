@@ -1,5 +1,9 @@
-import ProfileUpdateSkeleton from "@/components/skeleton/profile-update-skeleton";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ProfileUpdateSkeleton } from "@/components";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui";
 import { config } from "@/config";
 
 export default function ProfileLoading() {

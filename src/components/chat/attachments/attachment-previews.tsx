@@ -9,11 +9,10 @@ import {
   Music,
   X,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { AttachmentResponse } from "@/types/ChatType";
+import { AttachmentResponse } from "@/types";
 import {
   FileArchive,
   FileAudio,
@@ -28,7 +27,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+  Button,
+} from "@/components/ui";
 
 interface AttachmentPreviewProps {
   file: File | AttachmentResponse;
@@ -36,7 +36,7 @@ interface AttachmentPreviewProps {
   className?: string;
 }
 
-export default function AttachmentPreview({
+export function AttachmentPreview({
   file,
   onRemove,
   className,

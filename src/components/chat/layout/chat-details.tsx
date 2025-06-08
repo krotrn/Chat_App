@@ -1,14 +1,22 @@
+"use client";
 import { motion } from "framer-motion";
 import { X, Settings, Users, Bell, Shield, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
-import { ChatType, ParticipantsType } from "@/types/ChatType";
-import { useDeleteDirectChatMutation } from "@/hooks/chat";
-import { useDeleteGroupChatMutation } from "@/hooks/chat";
-import { useAppDispatch, useAppSelector } from "@/hooks/types";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Button,
+  ScrollArea,
+  Separator,
+  Switch,
+} from "@/components/ui";
+import { ChatType, ParticipantsType } from "@/types";
+import {
+  useDeleteDirectChatMutation,
+  useDeleteGroupChatMutation,
+  useAppDispatch,
+  useAppSelector,
+} from "@/hooks";
 import { useRouter } from "next/navigation";
 import { setCurrentChat } from "@/lib/redux/slices/current-chat-slice";
 
@@ -19,11 +27,7 @@ interface ChatDetailsProps {
   currentUserId?: string;
 }
 
-export default function ChatDetails({
-  onClose,
-  isAdmin,
-  chat,
-}: ChatDetailsProps) {
+export function ChatDetails({ onClose, isAdmin, chat }: ChatDetailsProps) {
   const { mutate: handleDeleteDirectChat } = useDeleteDirectChatMutation();
   const { mutate: handleDeleteGroupChat } = useDeleteGroupChatMutation();
   const dispatch = useAppDispatch();

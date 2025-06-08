@@ -1,4 +1,4 @@
-import { OnlineStatusState } from "@/types/ChatType";
+import { OnlineStatusState } from "@/types";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 const initialState: OnlineStatusState = {

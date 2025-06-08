@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useRef, useCallback } from "react";
-import { useAppDispatch, useAppSelector } from "@/hooks/types/useReduxType";
+import { useAppDispatch, useAppSelector } from "@/hooks";
 import { setConnectionState } from "@/lib/redux/slices/connection-slice";
-import { ConnectionState } from "@/types/ChatType";
+import { ConnectionState } from "@/types";
 import { getSocket, emitUserOnline } from "@/lib/socket";
 import { INITIALIZE_SOCKET } from "@/lib/redux/chatSocketActions";
 

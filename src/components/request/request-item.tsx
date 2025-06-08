@@ -1,6 +1,7 @@
+"use client";
+
 import { motion } from "framer-motion";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage, Button } from "@/components/ui";
 import { CheckIcon, XIcon, BanIcon } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { FriendRequestType } from "@/types/formattedDataTypes";
@@ -16,7 +17,7 @@ interface RequestItemProps {
   ) => void;
 }
 
-export default function RequestItem({
+export function RequestItem({
   request,
   isPending,
   onAction,

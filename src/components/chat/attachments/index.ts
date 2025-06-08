@@ -1,2 +1,2 @@
-export { AttachmentPreviews } from "./attachment-previews";
-export { SimpleAttachmentPreview } from "./simple-attachment-preview";
+export * from "./attachment-previews";
+export * from "./simple-attachment-preview";

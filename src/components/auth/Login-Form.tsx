@@ -1,20 +1,25 @@
 "use client";
-import { CardWrapper } from "@/components/auth/card-wrapper";
 import { useForm } from "react-hook-form";
 import {
-  Form,
-  FormControl,
+
+  CardWrapper,
+
+  FormError,
+
+} from "@/components";
+import {
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+  Input,
+    Form,
+  FormControl,
+    Button,
+} from "@/components/ui";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { signInSchema } from "@/schemas/signinSchema";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { FormError } from "@/components/auth/Form-Error";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
@@ -107,4 +112,4 @@ const LoginForm = (): React.ReactNode => {
   );
 };
 
-export default LoginForm;
+export { LoginForm };

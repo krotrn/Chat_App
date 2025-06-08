@@ -1,20 +1,22 @@
 "use client";
 
 import { groupMessagesByDate } from "@/lib/utils/groupMessageByDate";
-import { ParticipantsType } from "@/types/ChatType";
+import { ParticipantsType } from "@/types";
 import { useEffect, useMemo, useRef } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import DateDivider from "@/components/chat/messages/date-divider";
-import MessageItem from "@/components/chat/messages/message-item";
-import { useAppDispatch, useAppSelector } from "@/hooks/types";
-import { useMessagesInfiniteQuery } from "@/hooks/messages";
-import { useMarkAsReadMutation } from "@/hooks/messages";
+import { DateDivider, MessageItem } from "@/components";
+import {
+  useAppDispatch,
+  useAppSelector,
+  useMarkAsReadMutation,
+  useMessagesInfiniteQuery,
+} from "@/hooks";
+import { ScrollArea } from "@/components/ui";
 
 interface MessageListProps {
   participants: ParticipantsType[];
 }
 
-export default function MessageList({ participants }: MessageListProps) {
+export function MessageList({ participants }: MessageListProps) {
   const currentUserId = useAppSelector((state) => state.user.user?.id);
   const chatId = useAppSelector((state) => state.currentChat.currentChat?._id);
   const { mutate: markAsReadMutation } = useMarkAsReadMutation();

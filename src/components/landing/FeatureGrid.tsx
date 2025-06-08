@@ -5,9 +5,9 @@ import {
 } from "@/animations/landing/featureVariants";
 import { features } from "@/lib/landing/features";
 import { motion } from "framer-motion";
-import FeatureCard from "@/components/landing/FeatureCard";
+import { FeatureCard } from "./FeatureCard";
 
-export default function FeatureGrid() {
+export function FeatureGrid() {
   return (
     <motion.div
       className="mx-auto grid max-w-5xl grid-cols-1 gap-6 py-12 md:grid-cols-2 lg:grid-cols-3"

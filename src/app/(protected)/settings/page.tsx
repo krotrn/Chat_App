@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import SettingsForm from "@/components/settings/settings-form";
 import { config } from "@/config";
+import { SettingsForm } from "@/components";
 
 export const metadata: Metadata = {
   title: `Settings | ${config.appName}`,

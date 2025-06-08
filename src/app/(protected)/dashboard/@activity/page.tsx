@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getActivities } from "@/actions/user";
-import { RecentActivity } from "@/components/dashboard/RecentChats";
+import { RecentActivity } from "@/components";
 
 export default async function ActivityPage() {
   const session = await auth();

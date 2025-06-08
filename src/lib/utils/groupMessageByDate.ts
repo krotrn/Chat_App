@@ -1,5 +1,5 @@
 import { format, isToday, isYesterday, isSameDay } from "date-fns";
-import type { MessageType } from "@/types/ChatType";
+import type { MessageType } from "@/types";
 
 export function formatMessageDate(date: Date): string {
   if (isToday(date)) {

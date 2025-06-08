@@ -1,13 +1,13 @@
 "use server";
 
-import EmailTemplate from "@/components/auth/EmailTemplate";
+import { EmailTemplate } from "@/components";
 import { config } from "@/config";
 import { decryptToken, encryptToken } from "@/lib/utils/crypto.utils";
 import { db } from "@/prisma";
 import { Resend } from "resend";
 import { v4 } from "uuid";
-import { createAuthResponse } from "../../types/response-types";
-import { handleActionError, sanitizeInput } from "../../lib/utils/utils";
+import { createAuthResponse } from "@/types";
+import { handleActionError, sanitizeInput } from "@/lib/utils/utils";
 
 const generateVerificationToken = async (email: string) => {
   try {

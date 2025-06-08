@@ -2,19 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FormError } from "@/components/auth/Form-Error";
-import { FormSuccess } from "@/components/auth/Form-Success";
 import { verifyEmailAction } from "@/actions/auth";
+import { FormError, FormSuccess } from "@/components";
 
 interface Props {
   encodedEmail: string;
   encodedToken: string;
 }
 
-export default function VerificationPage({
-  encodedEmail,
-  encodedToken,
-}: Props) {
+export function VerificationPage({ encodedEmail, encodedToken }: Props) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");

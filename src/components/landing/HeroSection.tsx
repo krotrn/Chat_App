@@ -2,11 +2,11 @@
 
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { Button } from "../ui/button";
 import Link from "next/link";
-import FloatingElements from "../magicui/floating-elements";
-import FlowingText from "../magicui/flowing-text";
-import DotPattern from "../magicui/dot-pattern";
+import { FloatingElements } from "@/components/magicui/floating-elements";
+import { FlowingText } from "@/components/magicui/flowing-text";
+import { DotPattern } from "@/components/magicui/dot-pattern";
+import { Button } from "@/components/ui/button";
 
 export function HeroSection() {
   return (

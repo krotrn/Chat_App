@@ -3,14 +3,14 @@
 import { motion } from "framer-motion";
 import { Bot } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import type { AIModel } from "@/types/ChatType";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui";
+import type { AIModel } from "@/types";
 import { cn } from "@/lib/utils";
 interface AIChatItemProps {
   model: AIModel;
 }
 
-export default function AIChatItem({ model }: AIChatItemProps) {
+export function AIChatItem({ model }: AIChatItemProps) {
   const onClick = () => {};
   return (
     <motion.div

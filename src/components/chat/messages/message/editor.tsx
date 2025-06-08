@@ -1,7 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Button, Textarea } from "@/components/ui";
 
 interface MessageEditorProps {
   editContent: string;

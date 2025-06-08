@@ -1,4 +1,4 @@
-import menuItemProps from "@/types/menuItems";
+import { MenuItemProps } from "@/types/menuItems";
 import {
   Home,
   MessageSquare,
@@ -8,7 +8,7 @@ import {
   Users,
 } from "lucide-react";
 
-export const menuItems: menuItemProps[] = [
+export const menuItems: MenuItemProps[] = [
   { name: "Home", href: "/dashboard", icon: Home },
   { name: "Chats", href: "/chats", icon: MessageSquare },
   { name: "Friends", href: "/friends", icon: Users },

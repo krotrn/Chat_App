@@ -3,8 +3,7 @@
 import { useState, useRef, useCallback } from "react";
 import { Upload, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import { Button, Progress } from "@/components/ui";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +15,7 @@ interface FileUploaderProps {
   multiple?: boolean;
 }
 
-export default function FileUploader({
+export function FileUploader({
   onFileSelect,
   maxFiles = 5,
   maxSize = 10 * 1024 * 1024,

@@ -1,5 +1,5 @@
-import MessageListSkeleton from "@/components/skeleton/message-list-skeleton";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui";
+import { MessageListSkeleton } from "@/components";
 
 export default function ChatMainLoading() {
   return (

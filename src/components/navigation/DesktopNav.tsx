@@ -1,3 +1,5 @@
+"use client";
+
 import { menuItems } from "@/lib/navigation/menuItem";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -33,4 +35,4 @@ function DesktopNav({ pathname }: { pathname: string }) {
   );
 }
 
-export default DesktopNav;
+export { DesktopNav };

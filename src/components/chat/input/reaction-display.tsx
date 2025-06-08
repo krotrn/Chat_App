@@ -1,7 +1,7 @@
 "use client";
-import { MessageReaction } from "@/types/ChatType";
+import { MessageReaction } from "@/types";
 import { cn } from "@/lib/utils";
-import { useAppSelector } from "@/hooks/types";
+import { useAppSelector } from "@/hooks";
 
 interface ReactionsDisplayProps {
   reactions: MessageReaction[];

@@ -4,8 +4,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+  Skeleton,
+} from "@/components/ui";
 
 export default function Loading() {
   return (

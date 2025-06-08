@@ -8,7 +8,7 @@ interface FlowingTextProps {
   delay?: number;
 }
 
-export default function FlowingText({
+export function FlowingText({
   text,
   className = "",
   delay = 0,

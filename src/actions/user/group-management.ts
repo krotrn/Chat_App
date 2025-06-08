@@ -2,7 +2,7 @@
 
 import { db } from "@/prisma";
 import { createAGroupChat, deleteGroupChat } from "@/services/chat";
-import { ParticipantsType } from "@/types/ChatType";
+import { ParticipantsType } from "@/types";
 import { ActivityType, GroupMemberRole } from "@prisma/client";
 
 export const createGroup = async ({

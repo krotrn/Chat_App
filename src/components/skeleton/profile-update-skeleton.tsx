@@ -1,12 +1,12 @@
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
-} from "@/components/ui/card";
+  Skeleton,
+} from "@/components/ui";
 
-export default function ProfileUpdateSkeleton() {
+export function ProfileUpdateSkeleton() {
   return (
     <Card>
       <CardHeader>

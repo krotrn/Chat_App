@@ -1,4 +1,4 @@
-import { TypingState, TypingUser } from "@/types/ChatType";
+import { TypingState, TypingUser } from "@/types";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 const initialState: TypingState = {

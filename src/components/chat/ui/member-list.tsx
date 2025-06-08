@@ -3,25 +3,26 @@ import { useState, useEffect } from "react";
 import { ControllerRenderProps } from "react-hook-form";
 import { Search, Users, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Input,
+  Checkbox,
+  Badge,
+  Button,
+} from "@/components/ui";
 import { FormattedFriendType } from "@/types/formattedDataTypes";
 import { groupDetailsSchema } from "@/schemas/group-details";
 import { z } from "zod";
-import { useFetchFriendsQuery } from "@/hooks/friends";
+import { useFetchFriendsQuery } from "@/hooks";
 
 interface MemberListProps {
   field: ControllerRenderProps<z.infer<typeof groupDetailsSchema>, "members">;
   disabled?: boolean;
 }
 
-export default function MemberList({
-  field,
-  disabled = false,
-}: MemberListProps) {
+export function MemberList({ field, disabled = false }: MemberListProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const { data: friends, isLoading, isFetching } = useFetchFriendsQuery();
   const [filteredFriends, setFilteredFriends] = useState<FormattedFriendType[]>(

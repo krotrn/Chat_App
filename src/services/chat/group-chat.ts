@@ -4,7 +4,7 @@ import {
   handleApiError,
   withConnectionCheck,
 } from "../api-client";
-import { ApiResponse, ChatType, ParticipantsType } from "@/types/ChatType";
+import { ApiResponse, ChatType, ParticipantsType } from "@/types";
 
 // Create a group chat
 export const createAGroupChat = async ({

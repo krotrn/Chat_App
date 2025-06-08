@@ -1,4 +1,4 @@
-export { default as EmojiPicker } from "./emoji-picker";
-export { default as FileUploader } from "./file-uploader";
-export { default as CameraCapture } from "./camera-capture";
-export { ReactionsDisplay } from "./reaction-display";
+export * from "./emoji-picker";
+export * from "./file-uploader";
+export * from "./camera-capture";
+export * from "./reaction-display";

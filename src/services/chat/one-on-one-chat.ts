@@ -4,7 +4,7 @@ import {
   handleApiError,
   withConnectionCheck,
 } from "../api-client";
-import { ApiResponse, ChatType, ParticipantsType } from "@/types/ChatType";
+import { ApiResponse, ChatType, ParticipantsType } from "@/types";
 
 // Create or get a one-on-one chat
 export const createOrGetAOneOnOneChat = async ({

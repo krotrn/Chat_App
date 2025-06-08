@@ -1,4 +1,4 @@
-import FriendsListSkeleton from "@/components/skeleton/friend-list-skeleton";
+import { FriendsListSkeleton } from "@/components";
 
 export default function Loading() {
   return <FriendsListSkeleton />;

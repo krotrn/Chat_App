@@ -1,9 +1,11 @@
-import { AuthProvider } from "@/components/AuthProvider";
-import NavMenu from "@/components/navigation/NavMenu";
-import OnlineCheckWrapper from "@/components/offline/offline-checkWrapper";
-import { QueryProvider } from "@/components/query-provider";
-import SessionProviderWrapper from "@/components/SessionProvider";
-import StoreProvider from "@/components/StoreProvider";
+import {
+  AuthProvider,
+  NavMenu,
+  OnlineCheckWrapper,
+  QueryProvider,
+  SessionProviderWrapper,
+  StoreProvider,
+} from "@/components";
 
 export default function RootLayout({
   children,

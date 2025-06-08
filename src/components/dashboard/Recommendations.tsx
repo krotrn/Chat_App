@@ -1,13 +1,13 @@
 "use client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/empty-state";
 import { RecommendationWithRelations } from "@/actions/user";
-import RecommendationCard from "@/components/dashboard/recommendation-card";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-} from "@/components/ui/carousel";
+  EmptyState,
+  Card, CardContent, CardHeader, CardTitle
+} from "@/components/ui";
+import { RecommendationCard } from "./recommendation-card";
 import Autoplay from "embla-carousel-autoplay";
 
 interface RecommendationsProps {
@@ -15,7 +15,7 @@ interface RecommendationsProps {
   userId: string;
 }
 
-export default function Recommendations({
+export function Recommendations({
   recommendations,
   userId,
 }: RecommendationsProps) {

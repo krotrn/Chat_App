@@ -1,9 +1,6 @@
 import { emitUserOnline } from "@/features/socket/events";
-import {
-  forceReconnection,
-  performHealthCheck,
-} from "@/features/socket/health";
-import { ConnectionHealthConfig, ConnectionState } from "@/types/ChatType";
+import { forceReconnection, performHealthCheck } from "@/features";
+import { ConnectionHealthConfig, ConnectionState } from "@/types";
 
 export class ConnectionRecoveryService {
   private static defaultConfig: ConnectionHealthConfig = {

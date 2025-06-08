@@ -1,6 +1,6 @@
 import { getSocket } from "./connection";
 import { ChatEventEnum } from "@/lib/socket-event";
-import type { SocketEventCallback } from "./types";
+import type { SocketEventCallback } from "@/types";
 
 export function emitUserOnline(): boolean {
   const socket = getSocket();

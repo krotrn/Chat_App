@@ -3,12 +3,19 @@
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useSettings } from "@/context/ThemeProvider";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { SettingsCard } from "@/components/settings/setting-card";
-import { ThemeSelector } from "@/components/settings/ThemeSelector";
-import { FontSizeSelector } from "@/components/settings/FontSizeSelector";
-import { SwitchGroup } from "@/components/settings/SwitchGroup";
+import {
+  Button,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui";
+import {
+  FontSizeSelector,
+  SettingsCard,
+  SwitchGroup,
+  ThemeSelector,
+} from "@/components";
 import {
   appearanceSwitches,
   notificationSwitches,
@@ -17,7 +24,7 @@ import {
 import { config } from "@/config";
 import { signout } from "@/actions/auth";
 
-export default function SettingsForm() {
+export function SettingsForm() {
   const { setFontSize } = useSettings();
 
   const handleSaveChanges = () => {

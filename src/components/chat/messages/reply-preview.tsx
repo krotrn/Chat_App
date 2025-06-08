@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { MessageType, ParticipantsType } from "@/types/ChatType";
+import { MessageType, ParticipantsType } from "@/types";
 
 export function ReplyPreview({
   replyMessage,

@@ -1,4 +1,4 @@
-import DatabaseCheckWrapper from "@/components/offline/database-check-wrapper";
+import { DatabaseCheckWrapper } from "@/components";
 import { Metadata } from "next";
 import { ReactNode } from "react";
 

@@ -8,8 +8,8 @@ import { updateUserWebhook } from "@/services/webhook/user";
 import { StatsProps } from "@/types/formattedDataTypes";
 import { UserRoles } from "@prisma/client";
 import { z } from "zod";
-import { uploadToCloudinary, deleteFromCloudinary } from "../shared/cloudinary";
-import { handleActionError } from "../../lib/utils/utils";
+import { handleActionError } from "@/lib/utils/utils";
+import { deleteFromCloudinary, uploadToCloudinary } from "@/lib/utils/cloudinary.utils";
 
 interface ResponseType<T> {
   success: boolean;

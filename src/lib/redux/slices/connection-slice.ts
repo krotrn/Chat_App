@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { ConnectionState } from "@/types/ChatType";
+import { ConnectionState } from "@/types";
 
 interface ConnectionSliceState {
   connectionState: ConnectionState;

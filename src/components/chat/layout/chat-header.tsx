@@ -1,24 +1,25 @@
 "use client";
 import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import HeaderActions from "@/components/chat/ui/header-action";
-import { ChatType } from "@/types/ChatType";
-import { User } from "next-auth";
-import { useAppSelector } from "@/hooks/types";
+import { ChatType } from "@/types";
+import { useAppSelector, useGetUserByUsernameQuery } from "@/hooks";
 import { useMemo } from "react";
-import { AnimatedTooltip } from "@/components/ui/animate-tootip";
-import { useGetUserByUsernameQuery } from "@/hooks/friends";
+import {
+  AnimatedTooltip,
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Button,
+} from "@/components/ui";
+import { HeaderActions } from "@/components";
 
 interface ChatHeaderProps {
   chat: ChatType;
   userId: string;
   onToggleDetails: () => void;
   onBack?: () => void;
-  currentUser?: User;
 }
 
-export default function ChatHeader({
+export function ChatHeader({
   chat,
   userId,
   onToggleDetails,

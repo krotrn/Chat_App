@@ -1,7 +1,7 @@
 import { LucideProps } from "lucide-react";
 import { ForwardRefExoticComponent, RefAttributes } from "react";
 
-interface featureProps {
+export interface FeatureProps {
   title: string;
   description: string;
   icon: ForwardRefExoticComponent<
@@ -9,4 +9,4 @@ interface featureProps {
   >;
 }
 
-export default featureProps;
+export default FeatureProps;

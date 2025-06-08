@@ -1,5 +1,4 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { Info, MoreVertical, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
@@ -7,16 +6,16 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useDeleteDirectChatMutation } from "@/hooks/chat";
-import { useAppSelector } from "@/hooks/types";
+  Button,
+} from "@/components/ui";
+import { useDeleteDirectChatMutation, useAppSelector } from "@/hooks";
 
 interface HeaderActionsProps {
   isAdmin: boolean;
   onToggleDetails: () => void;
 }
 
-export default function HeaderActions({
+export function HeaderActions({
   isAdmin,
   onToggleDetails,
 }: HeaderActionsProps) {

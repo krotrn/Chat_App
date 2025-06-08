@@ -1,5 +1,5 @@
 import { getSocket } from "./connection";
-import type { HealthCheckResponse, HealthCheckRequest } from "./types";
+import { SocketHealthCheckRequest, SocketHealthCheckResponse } from "@/types";
 
 export function performHealthCheck(): Promise<boolean> {
   return new Promise((resolve) => {
@@ -15,16 +15,20 @@ export function performHealthCheck(): Promise<boolean> {
       resolve(false);
     }, 5000);
 
-    const healthCheckData: HealthCheckRequest = { timestamp: Date.now() };
+    const healthCheckData: SocketHealthCheckRequest = { timestamp: Date.now() };
 
-    socket.emit("ping", healthCheckData, (response: HealthCheckResponse) => {
-      clearTimeout(timeout);
-      if (response && response.timestamp) {
-        resolve(true);
-      } else {
-        resolve(false);
-      }
-    });
+    socket.emit(
+      "ping",
+      healthCheckData,
+      (response: SocketHealthCheckResponse) => {
+        clearTimeout(timeout);
+        if (response && response.timestamp) {
+          resolve(true);
+        } else {
+          resolve(false);
+        }
+      },
+    );
   });
 }
 

@@ -1,22 +1,17 @@
 "use client";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  FriendCard,
+  FriendsListSkeleton,
+} from "@/components";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { useSearchQuery } from "@/hooks/ui";
+import { useSearchQuery, useFetchFriendsQuery } from "@/hooks";
 import { AnimatePresence } from "framer-motion";
-import FriendCard from "@/components/friends/friend-card";
-import { FormattedFriendType } from "@/types/formattedDataTypes";
+import { FormattedFriendType } from "@/types";
 import { useState, useEffect } from "react";
-import { useFetchFriendsQuery } from "@/hooks/friends";
-import FriendsListSkeleton from "../skeleton/friend-list-skeleton";
 
-export default function FriendsList() {
+export function FriendsList() {
   const [searchQuery, setSearchQuery] = useSearchQuery("fr", "");
   const { data: friends, isFetching } = useFetchFriendsQuery();
   const [filteredFriends, setFilteredFriends] = useState<FormattedFriendType[]>(

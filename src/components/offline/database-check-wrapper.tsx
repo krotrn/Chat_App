@@ -1,8 +1,8 @@
 "use client";
-import { DatabaseOfflinePage } from "@/components/offline/pages/database-offline-page";
-import { useCheckDBQuery } from "@/hooks/system";
+import { DatabaseOfflinePage } from "@/components";
+import { useCheckDBQuery } from "@/hooks";
 
-export default function DatabaseCheckWrapper({
+export function DatabaseCheckWrapper({
   children,
 }: {
   children: React.ReactNode;

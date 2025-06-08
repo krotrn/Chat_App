@@ -1,6 +1,6 @@
 import axios from "axios";
 import { config } from "@/config";
-import { ApiResponse } from "@/types/ChatType";
+import { ApiResponse } from "@/types";
 
 export interface ApiErrorData {
   statusCode: number;
