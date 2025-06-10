@@ -10,13 +10,23 @@ export const generateUniqueUsername = async (base: string) => {
     .replace(/[^a-z0-9_]/g, "")
     .slice(0, 15);
 
-  const exists = await db.user.findUnique({
-    where: { username },
-    select: { id: true },
-  });
+  let finalUsername = username;
+  const MAX_ATTEMPTS = 1000;
+  let suffix = 1;
 
-  if (!exists) return username;
+  while (suffix < MAX_ATTEMPTS) {
+    const existing = await db.user.findUnique({
+      where: { username: finalUsername },
+      select: { id: true },
+    });
+    if (!existing) break;
+    finalUsername = `${username.slice(0, 10)}_${suffix}`;
+    suffix++;
+  }
 
-  const suffix = Math.random().toString(36).slice(2, 6);
-  return `${username.slice(0, 10)}_${suffix}`;
+  if (suffix >= MAX_ATTEMPTS) {
+    throw new Error("Could not generate a unique username. Please try again.");
+  }
+
+  return finalUsername;
 };

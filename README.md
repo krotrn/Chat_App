@@ -218,7 +218,7 @@ Before you begin, ensure you have the following installed:
    AUTH_SECRET = **********************************************************************
 
    # from chat-backend at http://github.com/krotrn/chat-backend
-   NEXT_PUBLIC_API_BASE_URL = http://localhost:3000 
+   NEXT_PUBLIC_API_BASE_URL = http://localhost:3000
 
    # Auth0 credentials for NextAuth
    GITHUB_CLIENT_ID = ***************

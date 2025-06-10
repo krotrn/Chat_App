@@ -22,7 +22,6 @@ export default auth((req) => {
     nextUrl.pathname.startsWith(route),
   );
 
-
   // Allow public routes and registration API
   if (isApiAuthRoute || isPublicRoute) {
     return response; // Return the response with security headers
