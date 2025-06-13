@@ -1,6 +1,5 @@
 export * from "./message";
 export * from "./chat";
-export * from "./attachment";
 
 export * from "./typing";
 export * from "./connection";
