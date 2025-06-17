@@ -1,4 +1,6 @@
 import { CardWrapper, VerificationPage } from "@/components";
+export const runtime = 'nodejs';
+
 
 export default async function Page({
   searchParams,

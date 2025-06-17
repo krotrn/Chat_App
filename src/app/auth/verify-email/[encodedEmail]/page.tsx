@@ -2,6 +2,7 @@ import { EmailVerification } from "@/components";
 import { db } from "@/prisma";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 import { redirect } from "next/navigation";
+export const runtime = "nodejs";
 
 export async function generateStaticParams() {
   return [];
