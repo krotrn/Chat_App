@@ -92,9 +92,18 @@ export async function uploadAvatar(
   username: string,
 ): Promise<string> {
   try {
+    const preset = process.env.CLOUDINARY_AVATAR_UPLOAD_PRESET;
+
+    if (!preset) {
+      throw new Error(
+        "Missing Cloudinary avatar upload preset in environment variables.",
+      );
+    }
+
     const result = await uploadToCloudinary(avatar, {
       folder: "avatars",
       publicId: `${username}_avatar_${Date.now()}`,
+      preset,
       transformation: [
         { width: 300, height: 300, crop: "fill", gravity: "face" },
         { quality: "auto", fetch_format: "auto" },

@@ -11,7 +11,8 @@ export const uploadToCloudinary = async (
     folder?: string;
     publicId?: string;
     preset?: string;
-    transformation?: unknown[];
+    transformation?: string[];
+    resourceType?: "auto" | "image" | "video" | "raw";
   } = {},
 ): Promise<{
   secure_url: string;
@@ -24,7 +25,6 @@ export const uploadToCloudinary = async (
 
 export const deleteFromCloudinary = async (
   publicId: string,
-  resourceType: "image" | "video" | "raw" | "auto" = "auto",
 ): Promise<{ success: boolean; message: string }> => {
-  return deleteUtil(publicId, resourceType);
+  return deleteUtil(publicId);
 };

@@ -4,37 +4,28 @@ import type { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { signInSchema } from "@/schemas/signinSchema";
 import { db } from "@/prisma";
-import bcrypt from "bcryptjs";
 import { ApiError } from "@/lib/api/ApiError";
 import { AccountType, UserRoles } from "@prisma/client";
 import { generateUniqueUsername } from "@/lib/utils/auth.utils";
-import jwt from "jsonwebtoken";
+import { signJWT, verifyPassword } from "@/lib/utils/edge-crypto";
 
 export default {
   callbacks: {
     async signIn({ user, account }) {
       if (account?.provider !== "credentials") return true;
       if (!user) return false;
-      if (user) {
-        return true;
-      }
-
-      return false;
+      return true;
     },
     async jwt({ token, user }) {
       if (user) {
-        const accessToken = jwt.sign(
-          {
-            id: user.id,
-            name: user.name,
-            avatarUrl: user.avatarUrl,
-            email: user.email,
-            username: user.username,
-            role: user.role,
-          },
-          process.env.JWT_SECRET!,
-          { expiresIn: "30d" } as jwt.SignOptions,
-        );
+        const accessToken = await signJWT({
+          id: user.id,
+          name: user.name,
+          avatarUrl: user.avatarUrl,
+          email: user.email,
+          username: user.username,
+          role: user.role,
+        });
 
         return {
           ...token,
@@ -145,7 +136,7 @@ export default {
 
           if (!user || !user.password) return null;
 
-          const passwordValid = await bcrypt.compare(password, user.password);
+          const passwordValid = await verifyPassword(password, user.password);
           if (!passwordValid) return null;
 
           return {
@@ -171,19 +162,5 @@ export default {
     error: "/login",
     signOut: "/",
     newUser: "/register",
-  },
-  events: {
-    async linkAccount({ user }) {
-      try {
-        await db.user.update({
-          where: { id: user.id },
-          data: {
-            emailVerified: new Date(),
-          },
-        });
-      } catch (error) {
-        console.error("Error linking account:", error);
-      }
-    },
   },
 } satisfies NextAuthConfig;
