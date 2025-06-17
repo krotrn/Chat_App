@@ -3,6 +3,7 @@ import { RequestsList } from "@/components";
 import { config } from "@/config";
 import { getFriendRequests } from "@/actions/user";
 import { auth } from "@/auth";
+export const runtime = "nodejs";
 
 export const metadata: Metadata = {
   title: `Friend Requests | ${config.appName}`,
