@@ -204,7 +204,7 @@ Before you begin, ensure you have the following installed:
 2. **Install Dependencies**
 
    ```bash
-   npm install --force
+   npm install
    ```
 
 3. **Environment Setup**

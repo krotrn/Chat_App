@@ -23,6 +23,7 @@ import {
   PopoverTrigger,
   Textarea,
 } from "@/components/ui";
+import { EmojiClickData } from "emoji-picker-react";
 
 export interface MessageInputProps {
   participants: ParticipantsType[];
@@ -99,17 +100,17 @@ export function MessageInput({ participants }: MessageInputProps) {
   );
 
   const handleEmojiSelect = useCallback(
-    (emoji: { native: string }) => {
+    (emoji: EmojiClickData) => {
       const textarea = textareaRef.current;
       if (!textarea) return;
       const start = textarea.selectionStart;
       const end = textarea.selectionEnd;
       const newMessage =
-        message.slice(0, start) + emoji.native + message.slice(end);
+        message.slice(0, start) + emoji.emoji + message.slice(end);
       setMessage(newMessage);
       setTimeout(() => {
         textarea.selectionStart = textarea.selectionEnd =
-          start + emoji.native.length;
+          start + emoji.emoji.length;
         textarea.focus();
       }, 0);
     },

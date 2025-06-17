@@ -24,9 +24,9 @@ export function RequestItem({
 }: RequestItemProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, translateY: -20 }}
-      animate={{ opacity: 1, translateY: 0 }}
-      exit={{ opacity: 0, translateY: -20 }}
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.2 }}
       className="flex flex-col sm:flex-row sm:items-center justify-between rounded-lg border p-4 gap-4"
     >

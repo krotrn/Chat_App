@@ -1,4 +1,6 @@
-export const messageVariants = {
+import { Variants } from "framer-motion";
+
+export const messageVariants: Variants = {
   initial: {
     opacity: 0,
     y: 20,

@@ -1,4 +1,6 @@
-export const serverCheckVariants = {
+import { Variants } from "framer-motion";
+
+export const serverCheckVariants: Record<string, Variants> = {
   containerVariants: {
     hidden: { opacity: 0 },
     visible: {

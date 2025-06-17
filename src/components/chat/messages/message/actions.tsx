@@ -12,13 +12,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui";
-import { reactionEmoji } from "@/lib/emojis";
 import {
   useReactToMessageMutation,
   useAppDispatch,
   useAppSelector,
 } from "@/hooks";
 import { setReplyMessage } from "@/lib/redux/slices/current-chat-slice";
+import EmojiPicker, { Theme } from "emoji-picker-react";
 
 interface MessageActionsProps {
   message: MessageType;
@@ -71,23 +71,19 @@ export function MessageActions({ message, isOwn }: MessageActionsProps) {
             align={isOwn ? "end" : "start"}
           >
             <div className="flex gap-1">
-              {reactionEmoji.map((emoji) => (
-                <button
-                  key={emoji}
-                  className="text-lg hover:scale-125 transition-transform p-1"
-                  onClick={() => {
-                    onReact({
-                      chatId: message.chatId,
-                      emoji,
-                      messageId: message._id,
-                      token: token!,
-                    });
-                    setShowReactions(false);
-                  }}
-                >
-                  {emoji}
-                </button>
-              ))}
+              <EmojiPicker
+                theme={Theme.AUTO}
+                reactionsDefaultOpen
+                onEmojiClick={(emoji) => {
+                  onReact({
+                    chatId: message.chatId,
+                    emoji: emoji.emoji,
+                    messageId: message._id,
+                    token: token!,
+                  });
+                  setShowReactions(false);
+                }}
+              />
             </div>
           </PopoverContent>
         </Popover>

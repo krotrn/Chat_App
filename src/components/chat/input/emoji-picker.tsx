@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import data from "@emoji-mart/data";
-import Picker from "@emoji-mart/react";
+import { EmojiClickData, default as Picker, Theme } from "emoji-picker-react";
+
 import { Smile } from "lucide-react";
 import {
   Popover,
@@ -12,7 +12,7 @@ import {
 } from "@/components/ui";
 
 interface EmojiPickerProps {
-  onEmojiSelect: (emoji: { native: string }) => void;
+  onEmojiSelect: (emoji: EmojiClickData) => void;
   disabled?: boolean;
 }
 
@@ -53,10 +53,9 @@ export function EmojiPicker({
         className="w-full border-none bg-transparent shadow-none"
       >
         <Picker
-          data={data}
-          onEmojiSelect={onEmojiSelect}
-          theme="light"
-          set="native"
+          searchDisabled
+          theme={Theme.AUTO}
+          onEmojiClick={onEmojiSelect}
         />
       </PopoverContent>
     </Popover>

@@ -79,6 +79,12 @@ export default {
       clientId: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
       profile: async (profile: GitHubProfile) => {
+        if (!profile.email) {
+          throw new ApiError({
+            statusCode: 400,
+            message: "GitHub account must have an email address",
+          });
+        }
         return {
           id: profile.id.toString(),
           name: profile.name || profile.login,
@@ -144,6 +150,7 @@ export default {
 
           return {
             id: user.id,
+            name: user.name || user.username,
             username: user.username,
             avatarUrl: user.avatarUrl,
             email: user.email,

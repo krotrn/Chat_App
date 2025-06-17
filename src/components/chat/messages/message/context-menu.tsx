@@ -21,7 +21,6 @@ import {
   RefreshCw,
   Pin,
 } from "lucide-react";
-import { reactionEmoji } from "@/lib/emojis";
 import {
   useDeleteMessageMutation,
   useAppDispatch,
@@ -29,6 +28,7 @@ import {
   useReactToMessageMutation,
 } from "@/hooks";
 import { setReplyMessage } from "@/lib/redux/slices/current-chat-slice";
+import EmojiPicker, { SkinTones, Theme } from "emoji-picker-react";
 
 interface MessageContextMenuProps {
   message: MessageType;
@@ -106,22 +106,20 @@ export function MessageContextMenu({
               <ContextMenuPortal>
                 <ContextMenuSubContent className="p-2">
                   <div className="flex flex-wrap gap-2 max-w-48">
-                    {reactionEmoji.map((emoji) => (
-                      <button
-                        key={emoji}
-                        className="text-lg hover:scale-125 transition-transform p-1"
-                        onClick={() =>
-                          onReact({
-                            chatId: message.chatId,
-                            messageId: message._id,
-                            emoji,
-                            token: token!,
-                          })
-                        }
-                      >
-                        {emoji}
-                      </button>
-                    ))}
+                    <EmojiPicker
+                      reactionsDefaultOpen
+                      searchDisabled
+                      theme={Theme.AUTO}
+                      defaultSkinTone={SkinTones.NEUTRAL}
+                      onEmojiClick={(emoji) => {
+                        onReact({
+                          chatId: message.chatId,
+                          emoji: emoji.emoji,
+                          messageId: message._id,
+                          token: token!,
+                        });
+                      }}
+                    />
                   </div>
                 </ContextMenuSubContent>
               </ContextMenuPortal>
