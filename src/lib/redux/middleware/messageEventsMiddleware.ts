@@ -22,12 +22,10 @@ export const messageEventsMiddleware: Middleware =
 
     if (action.type === INITIALIZE_SOCKET) {
       const socket = getSocket();
-      console.log(socket, "Socket initialized in messageEventsMiddleware");
       if (socket) {
         socket.on(
           ChatEventEnum.MESSAGE_RECEIVED_EVENT,
           (message: MessageType) => {
-            console.log("Message received event:", message);
             if (queryClient) {
               queryClient.setQueryData<InfiniteData<MessagesPageData>>(
                 queryKeys.messages.infinite(message.chatId, 20),

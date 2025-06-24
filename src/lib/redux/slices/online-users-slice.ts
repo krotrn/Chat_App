@@ -1,6 +1,8 @@
-import { OnlineStatusState } from "@/types";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-
+interface OnlineStatusState {
+  onlineUserIds: string[];
+  lastUpdated: number | null;
+}
 const initialState: OnlineStatusState = {
   onlineUserIds: [],
   lastUpdated: null,
@@ -22,7 +24,7 @@ const onlineUsersSlice = createSlice({
     },
     removeOnlineUser: (state, action: PayloadAction<string>) => {
       state.onlineUserIds = state.onlineUserIds.filter(
-        (userId) => userId !== action.payload,
+        (userId) => userId !== action.payload
       );
       state.lastUpdated = Date.now();
     },

@@ -37,40 +37,7 @@ export function initializeSocket(token: string): SocketIOClient.Socket {
     throw new Error("Error configuring socket connection");
   }
 
-  setupConnectionListeners();
   return socket;
-}
-
-function setupConnectionListeners(): void {
-  if (!socket) return;
-
-  socket.on("connect", () => {
-    console.log("Socket connected successfully");
-  });
-
-  socket.on("reconnect_attempt", (attempt: number) => {
-    console.log(`Reconnection attempt ${attempt}`);
-  });
-
-  socket.on("reconnect_failed", () => {
-    console.error("Socket reconnection failed after maximum attempts");
-  });
-
-  socket.on("error", (error: Error) => {
-    console.error("Socket error:", error);
-  });
-
-  socket.on("connect_error", (error: Error) => {
-    console.log("Socket connection error:", error);
-  });
-
-  socket.on("disconnect", (reason: string) => {
-    console.log("Socket disconnected:", reason);
-  });
-
-  socket.on("pong", (data: { timestamp: number }) => {
-    console.log("Received pong from server:", data);
-  });
 }
 
 export function getSocket(): SocketIOClient.Socket | null {
