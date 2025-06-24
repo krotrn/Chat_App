@@ -1,0 +1,26 @@
+# Development Dockerfile for hot reloading
+FROM node:18-alpine
+
+# Install libc6-compat for Alpine
+RUN apk add --no-cache libc6-compat
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY prisma ./prisma/
+
+# Install all dependencies (including dev dependencies)
+RUN npm ci
+
+# Generate Prisma client
+RUN npx prisma generate
+
+# Copy source code
+COPY . .
+
+# Expose port
+EXPOSE 3000
+
+# Start development server with turbopack
+CMD ["npm", "run", "dev"]

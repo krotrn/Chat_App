@@ -15,6 +15,7 @@ The application features advanced state management with Redux Toolkit, real-time
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
 - [Running the Application](#running-the-application)
+- [Docker Setup](#docker-setup)
 - [Deployment](#deployment)
 - [API Documentation](#api-documentation)
 - [Contributing](#contributing)
@@ -274,6 +275,109 @@ Before you begin, ensure you have the following installed:
    npm run build
 
    ```
+
+---
+
+## Docker Setup
+
+Chat App includes comprehensive Docker support for both development and production environments. The setup includes PostgreSQL database integration and optimized multi-stage builds.
+
+### 🐳 **Docker Features**
+
+- **Multi-stage Dockerfile**: Optimized for production with minimal image size
+- **PostgreSQL Integration**: Containerized database with persistent storage
+- **Development & Production Modes**: Separate configurations for different environments
+- **Health Checks**: Container health monitoring and dependency management
+- **Volume Management**: Persistent data storage and development mounting
+
+### **Quick Start with Docker**
+
+1. **Prerequisites**
+
+   - Docker Desktop installed and running
+   - Docker Compose (included with Docker Desktop)
+
+2. **Production Setup**
+
+   ```bash
+   # Copy the Docker environment template
+   cp .env.docker .env
+
+   # Update environment variables with your actual values
+   # Configure DATABASE_URL, API keys, and authentication providers
+
+   # Build and start all services
+   docker-compose up --build -d
+   ```
+
+   The application will be available at `http://localhost:3000`
+
+3. **Development Setup**
+
+   ```bash
+   # Use the development compose file
+   docker-compose -f docker-compose.dev.yml up --build -d
+
+   # Or use the npm script
+   npm run docker:dev
+   ```
+
+### **Docker Commands**
+
+```bash
+# Build and start all services
+npm run docker:up
+
+# Start in development mode with hot reload
+npm run docker:dev
+
+# Stop all services
+npm run docker:down
+
+# View logs
+docker-compose logs -f app
+
+# Access the database
+docker exec -it chat-app-postgres psql -U chatapp_user -d chatapp
+
+# Clean up everything (including volumes)
+docker-compose down -v --remove-orphans
+```
+
+### **Docker Environment Variables**
+
+Create a `.env` file with Docker-specific configurations:
+
+```env
+# Database (automatically configured for Docker)
+DATABASE_URL=postgresql://chatapp_user:chatapp_password@postgres:5432/chatapp?sslmode=disable
+
+# Backend API URLs (adjust ports as needed)
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3001
+NEXT_PUBLIC_CHAT_API_URL=http://localhost:3001
+
+# Add all other environment variables from the main setup
+# (Authentication, Cloudinary, etc.)
+```
+
+### **Container Architecture**
+
+The Docker setup includes:
+
+- **App Container**: Next.js application with optimized production build
+- **PostgreSQL Container**: Database with persistent volume storage
+- **Shared Network**: Secure communication between containers
+- **Volume Management**: Persistent database storage and development mounting
+
+### **Production Optimization**
+
+The Dockerfile uses multi-stage builds for optimal production performance:
+
+- **Dependencies Stage**: Installs only production dependencies
+- **Builder Stage**: Compiles the application with Prisma generation
+- **Runner Stage**: Minimal runtime environment with security best practices
+
+For detailed Docker documentation, see [DOCKER.md](DOCKER.md).
 
 ---
 

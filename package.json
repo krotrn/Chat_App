@@ -10,7 +10,17 @@
     "format": "prettier --write \"./\"",
     "format:check": "prettier --check \"./\"",
     "validate": "npm run lint && npm run format:check",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "docker:build": "docker build -t chat-app .",
+    "docker:run": "docker run -p 3000:3000 chat-app",
+    "docker:up": "docker-compose up -d",
+    "docker:stop": "docker-compose down",
+    "docker:dev": "docker-compose -f docker-compose.dev.yml up",
+    "docker:dev-stop": "docker-compose -f docker-compose.dev.yml down",
+    "docker:logs": "docker-compose logs -f app",
+    "docker:exec": "docker-compose exec app sh",
+    "docker:prisma-migrate": "docker-compose exec app npx prisma migrate dev",
+    "docker:prisma-studio": "docker-compose exec app npx prisma studio"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.4",

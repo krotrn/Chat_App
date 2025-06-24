@@ -1,0 +1,49 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: chat-app-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: chatapp
+      POSTGRES_USER: chatapp_user
+      POSTGRES_PASSWORD: chatapp_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d
+    networks:
+      - chat-network
+
+  # Next.js Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: chat-app-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://chatapp_user:chatapp_password@postgres:5432/chatapp?sslmode=disable
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:3001
+      NEXT_PUBLIC_CHAT_API_URL: http://localhost:3001
+    depends_on:
+      - postgres
+    networks:
+      - chat-network
+    volumes:
+      # Mount for development (uncomment for dev mode)
+      # - .:/app
+      # - /app/node_modules
+      # - /app/.next
+      - ./public:/app/public
+
+volumes:
+  postgres_data:
+
+networks:
+  chat-network:
+    driver: bridge
