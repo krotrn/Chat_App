@@ -100,7 +100,7 @@ export function HeroSection() {
           className="relative z-10 mx-auto max-w-xl py-4 text-center text-lg font-normal text-neutral-600 dark:text-neutral-400"
         >
           ChatApp makes it easy to stay connected with friends, family, and
-          colleagues. Send messages, share photos, and make video calls—all in
+          colleagues. Send messages and share photos in
           one place.
         </motion.p>
         <motion.div
