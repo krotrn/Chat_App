@@ -7,6 +7,7 @@ import {
 } from "@/components/ui";
 import { BackButton, Social } from "@/components";
 import { Header } from "@/components";
+import { MagicCard } from "../magicui/magic-card";
 
 interface CardWrapperProps {
   children?: React.ReactNode;
@@ -25,20 +26,23 @@ export const CardWrapper = ({
 }: CardWrapperProps) => {
   return (
     <Card className="w-96 shadow-md">
-      <CardHeader>
-        <CardTitle>
-          <Header label={headerLabel} />
-        </CardTitle>
-      </CardHeader>
-      {children && (
+      <MagicCard>
+
+        <CardHeader>
+          <CardTitle>
+            <Header label={headerLabel} />
+          </CardTitle>
+        </CardHeader>
+
         <CardContent className="space-y-6">
           {children}
           {showSocial && <Social />}
         </CardContent>
-      )}
-      <CardFooter>
-        <BackButton label={backButtonLabel} href={backButtonHref} />
-      </CardFooter>
+
+        <CardFooter>
+          <BackButton label={backButtonLabel} href={backButtonHref} />
+        </CardFooter>
+      </MagicCard>
     </Card>
   );
 };

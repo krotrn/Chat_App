@@ -1,48 +1,49 @@
 "use client";
-import { useForm } from "react-hook-form";
-import { CardWrapper, FormError } from "@/components";
-import {
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  Input,
-  Form,
-  FormControl,
-  Button,
-} from "@/components/ui";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { signInSchema } from "@/schemas/signinSchema";
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
-import { signInCredential } from "@/actions/auth";
+// import { useForm } from "react-hook-form";
+import { CardWrapper } from "@/components";
+// import { FormError } from "@/components";
+// import {
+//   FormField,
+//   FormItem,
+//   FormLabel,
+//   FormMessage,
+//   Input,
+//   Form,
+//   FormControl,
+//   Button,
+// } from "@/components/ui";
+// import { zodResolver } from "@hookform/resolvers/zod";
+// import { z } from "zod";
+// import { signInSchema } from "@/schemas/signinSchema";
+// import { useState, useTransition } from "react";
+// import { useRouter } from "next/navigation";
+// import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
+// import { signInCredential } from "@/actions/auth";
 
 const LoginForm = (): React.ReactNode => {
-  const form = useForm<z.infer<typeof signInSchema>>({
-    resolver: zodResolver(signInSchema),
-    defaultValues: {
-      identifier: "",
-      password: "",
-    },
-  });
-  const [error, setError] = useState<string | undefined>("");
-  const [isPending, startTransition] = useTransition();
-  const router = useRouter();
+  // const form = useForm<z.infer<typeof signInSchema>>({
+  //   resolver: zodResolver(signInSchema),
+  //   defaultValues: {
+  //     identifier: "",
+  //     password: "",
+  //   },
+  // });
+  // const [error, setError] = useState<string | undefined>("");
+  // const [isPending, startTransition] = useTransition();
+  // const router = useRouter();
 
-  const onSubmit = (credentials: z.infer<typeof signInSchema>) => {
-    setError("");
-    startTransition(async () => {
-      const response = await signInCredential(credentials);
-      if (!response.success) {
-        setError(response.message);
-        return;
-      } else {
-        router.push(DEFAULT_LOGIN_REDIRECT);
-      }
-    });
-  };
+  // const onSubmit = (credentials: z.infer<typeof signInSchema>) => {
+  //   setError("");
+  //   startTransition(async () => {
+  //     const response = await signInCredential(credentials);
+  //     if (!response.success) {
+  //       setError(response.message);
+  //       return;
+  //     } else {
+  //       router.push(DEFAULT_LOGIN_REDIRECT);
+  //     }
+  //   });
+  // };
 
   return (
     <CardWrapper
@@ -51,7 +52,7 @@ const LoginForm = (): React.ReactNode => {
       headerLabel="Welcome Back"
       showSocial
     >
-      <Form {...form}>
+      {/* <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
@@ -101,7 +102,7 @@ const LoginForm = (): React.ReactNode => {
             {isPending ? "Signing in..." : "Sign in"}
           </Button>
         </form>
-      </Form>
+      </Form>*/}
     </CardWrapper>
   );
 };

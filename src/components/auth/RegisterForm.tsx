@@ -1,67 +1,68 @@
 "use client";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-  FormLabel,
-  Input,
-  Button,
-} from "@/components/ui";
-import { CardWrapper, FormError, FormSuccess } from "@/components";
+// import {
+//   Form,
+//   FormControl,
+//   FormField,
+//   FormItem,
+//   FormMessage,
+//   FormLabel,
+//   Input,
+//   Button,
+// } from "@/components/ui";
+import { CardWrapper } from "@/components";
+// import { FormError, FormSuccess } from "@/components";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { registerSchema } from "@/schemas/registerSchema";
+// import { zodResolver } from "@hookform/resolvers/zod";
+// import { z } from "zod";
+// import { useForm } from "react-hook-form";
+// import { registerSchema } from "@/schemas/registerSchema";
 
-import { useState, useTransition } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { registerCredential } from "@/actions/auth";
+// import { useState, useTransition } from "react";
+// import { useRouter, useSearchParams } from "next/navigation";
+// import { registerCredential } from "@/actions/auth";
 
 const RegisterForm = (): React.ReactNode => {
-  const searchParams = useSearchParams();
-  const urlError =
-    searchParams.get("error") == "OAuthAccountNotLinked"
-      ? "Email already in use with different provider!"
-      : "";
-  const form = useForm<z.infer<typeof registerSchema>>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: {
-      email: "",
-      username: "",
-      password: "",
-      confirmpassword: "",
-    },
-  });
-  const router = useRouter();
+  // const searchParams = useSearchParams();
+  // const urlError =
+  //   searchParams.get("error") == "OAuthAccountNotLinked"
+  //     ? "Email already in use with different provider!"
+  //     : "";
+  // const form = useForm<z.infer<typeof registerSchema>>({
+  //   resolver: zodResolver(registerSchema),
+  //   defaultValues: {
+  //     email: "",
+  //     username: "",
+  //     password: "",
+  //     confirmpassword: "",
+  //   },
+  // });
+  // const router = useRouter();
 
-  const [error, setError] = useState<string | undefined>("");
-  const [success, setSuccess] = useState<string | undefined>("");
-  const [isPending, startTransition] = useTransition();
+  // const [error, setError] = useState<string | undefined>("");
+  // const [success, setSuccess] = useState<string | undefined>("");
+  // const [isPending, startTransition] = useTransition();
 
-  const onSubmit = (credentials: z.infer<typeof registerSchema>) => {
-    setError("");
-    startTransition(() => {
-      registerCredential(credentials)
-        .then((result) => {
-          if (result.success) {
-            setError(result.message);
-            router.push(
-              `/auth/verify-email/${encodeURIComponent(credentials.email)}`,
-            );
-            setSuccess(result.message);
-          } else {
-            setError(result.message);
-          }
-        })
-        .catch((error) => {
-          console.error("Registration error:", error);
-          setError("An unexpected error occurred. Please try again later.");
-        });
-    });
-  };
+  // const onSubmit = (credentials: z.infer<typeof registerSchema>) => {
+  //   setError("");
+  //   startTransition(() => {
+  //     registerCredential(credentials)
+  //       .then((result) => {
+  //         if (result.success) {
+  //           setError(result.message);
+  //           router.push(
+  //             `/auth/verify-email/${encodeURIComponent(credentials.email)}`,
+  //           );
+  //           setSuccess(result.message);
+  //         } else {
+  //           setError(result.message);
+  //         }
+  //       })
+  //       .catch((error) => {
+  //         console.error("Registration error:", error);
+  //         setError("An unexpected error occurred. Please try again later.");
+  //       });
+  //   });
+  // };
 
   return (
     <CardWrapper
@@ -70,7 +71,7 @@ const RegisterForm = (): React.ReactNode => {
       headerLabel="Welcome"
       showSocial
     >
-      <Form {...form}>
+      {/*<Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
@@ -150,7 +151,7 @@ const RegisterForm = (): React.ReactNode => {
             Register
           </Button>
         </form>
-      </Form>
+      </Form>*/}
     </CardWrapper>
   );
 };
