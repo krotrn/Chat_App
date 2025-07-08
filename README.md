@@ -5,7 +5,7 @@
 The application features advanced state management with Redux Toolkit, real-time communication through Socket.IO, server state management with React Query, and a responsive UI built with shadcn/ui components. It includes sophisticated connection recovery, health monitoring, and optimistic UI updates for the best user experience.
 
 ---
-
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/krotrn/Chat_App)
 ## Table of Contents
 
 - [Features](#features)
